@@ -30,5 +30,5 @@ void main(uint groupId : SV_GroupId, uint i : SV_GroupThreadId)
     ZSTDGPU_EXECUTE_SEQUENCES_SRT()
     #include "../zstdgpu_srt_decl_undef.h"
 
-    zstdgpu_ShaderEntry_ExecuteSequences(srt);
+    zstdgpu_ShaderEntry_ExecuteSequences(srt, groupId);
 }

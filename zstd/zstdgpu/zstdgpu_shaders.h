@@ -3372,8 +3372,15 @@ static void zstdgpu_ReadSeqBitsAndDecompress(ZSTDGPU_PARAM_INOUT(zstdgpu_Backwar
     const uint32_t bitcntMLen = mlenInfo & 31;
 
     const uint32_t bitsOffs = zstdgpu_Backward_BitBuffer_V0_Get(bitBuffer, bitcntOffs);
-    const uint32_t bitsMLen = zstdgpu_Backward_BitBuffer_V0_Get(bitBuffer, bitcntMLen);
-    const uint32_t bitsLLen = zstdgpu_Backward_BitBuffer_V0_Get(bitBuffer, bitcntLLen);
+
+    // MLen and LLen value extra bits are each <= 16, so their combined count is <= 32 and fits in a
+    // single backward-buffer read. The stream order is MLen (read first => high bits) then LLen
+    // (read second => low bits), so one packed Get() replaces two separate Refill+Top+Pop sequences
+    // per decoded sequence while staying bit-identical. Offs can need up to 31 extra bits, so it must
+    // remain a separate read. This mirrors the packing already used in ReadExtraBitsAndUpdateState.
+    const uint32_t bitsMLenLLen = zstdgpu_Backward_BitBuffer_V0_Get(bitBuffer, bitcntMLen + bitcntLLen);
+    const uint32_t bitsLLen = bitsMLenLLen & ((1u << bitcntLLen) - 1u);
+    const uint32_t bitsMLen = bitsMLenLLen >> bitcntLLen;
 
     outOffs = (1u << symbolOffs) + bitsOffs;
     outMLen = (mlenInfo >> 5) + bitsMLen;
@@ -3613,18 +3620,28 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
 
         uint32_t i         = dst.offs;
     const uint32_t outputEnd = dst.offs + dst.size;
+
+    // NOTE: The single-stream decoder runs the entire FSE recurrence on one thread, so the three
+    // per-symbol FSE-element gathers are fully latency-exposed (no sibling streams to hide them).
+    // We software-pipeline the loop: the next symbol's gather is issued right after the state update
+    // but BEFORE the current symbol's output stores, so the dependent load latency overlaps the
+    // store traffic. Bit reads stay in the original order, so output remains bit-identical.
+    #if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
+    #   define ZSTDGPU_SS_FSE_LLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedLLen + (s))
+    #   define ZSTDGPU_SS_FSE_OFFS(s) zstdgpu_LdsLoadU32(GS_FsePackedOffs + (s))
+    #   define ZSTDGPU_SS_FSE_MLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedMLen + (s))
+    #else
+    #   define ZSTDGPU_SS_FSE_LLEN(s) srt.inFseElems[startLLen + (s)]
+    #   define ZSTDGPU_SS_FSE_OFFS(s) srt.inFseElems[startOffs + (s)]
+    #   define ZSTDGPU_SS_FSE_MLEN(s) srt.inFseElems[startMLen + (s)]
+    #endif
+
+    uint32_t packedFseElemLLen = ZSTDGPU_SS_FSE_LLEN(stateLLen);
+    uint32_t packedFseElemOffs = ZSTDGPU_SS_FSE_OFFS(stateOffs);
+    uint32_t packedFseElemMLen = ZSTDGPU_SS_FSE_MLEN(stateMLen);
+
     for (;;)
     {
-        #if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
-            const uint32_t packedFseElemLLen = zstdgpu_LdsLoadU32(GS_FsePackedLLen + stateLLen);
-            const uint32_t packedFseElemOffs = zstdgpu_LdsLoadU32(GS_FsePackedOffs + stateOffs);
-            const uint32_t packedFseElemMLen = zstdgpu_LdsLoadU32(GS_FsePackedMLen + stateMLen);
-        #else
-            const uint32_t packedFseElemLLen = srt.inFseElems[startLLen + stateLLen];
-            const uint32_t packedFseElemOffs = srt.inFseElems[startOffs + stateOffs];
-            const uint32_t packedFseElemMLen = srt.inFseElems[startMLen + stateMLen];
-        #endif
-
         uint32_t llen = 0, offs = 0, mlen = 0;
         zstdgpu_ReadSeqBitsAndDecompress(bitBuffer,
             zstdgpu_FseElem_Symbol(packedFseElemLLen),
@@ -3636,17 +3653,30 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
         /*totalSize += llen + mlen;*/
         totalMLen += mlen;
 
+        const bool isLastSeq = (i + 1u == outputEnd);
+
+        // Advance the states and prefetch the next symbol's FSE elements ahead of the stores below.
+        if (!isLastSeq)
+        {
+            zstdgpu_ReadExtraBitsAndUpdateState(bitBuffer, packedFseElemLLen, packedFseElemOffs, packedFseElemMLen, stateLLen, stateOffs, stateMLen);
+            packedFseElemLLen = ZSTDGPU_SS_FSE_LLEN(stateLLen);
+            packedFseElemOffs = ZSTDGPU_SS_FSE_OFFS(stateOffs);
+            packedFseElemMLen = ZSTDGPU_SS_FSE_MLEN(stateMLen);
+        }
+
         srt.inoutDecompressedSequenceLLen[i] = llen;
         srt.inoutDecompressedSequenceMLen[i] = mlen;
         srt.inoutDecompressedSequenceOffs[i] = offs;
 
-        if (++i == outputEnd)
+        if (isLastSeq)
         {
             break;
         }
-
-        zstdgpu_ReadExtraBitsAndUpdateState(bitBuffer, packedFseElemLLen, packedFseElemOffs, packedFseElemMLen, stateLLen, stateOffs, stateMLen);
+        ++i;
     }
+    #undef ZSTDGPU_SS_FSE_LLEN
+    #undef ZSTDGPU_SS_FSE_OFFS
+    #undef ZSTDGPU_SS_FSE_MLEN
     ZSTDGPU_ASSERT(bitBuffer.hadlastrefill && bitBuffer.bitcnt == 0);
     #undef ZSTDGPU_BACKWARD_BITBUF
 
@@ -4037,13 +4067,57 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
                                          uint32_t seqEnd)
 {
     // NOTE(pamartis): LOOP is used to make sure validation layer doesn't complain about accessing `inDecompressedSequence*`
-    ZSTDGPU_LOOP for (; seqIdx < seqEnd; ++seqIdx)
+    // NOTE(ex13): Software-pipeline the per-sequence metadata fetch. Each sequence's {MLen,LLen,Offs}
+    // (three independent StructuredBuffer reads in zstdgpu_LoadSequence) feeds the current copies, but
+    // the *next* sequence's metadata does not depend on the current copies. By issuing the next load
+    // before running this sequence's literal+match byte copies, the global-load latency overlaps the
+    // copy work instead of stalling the serial per-sequence critical path. Bit-identical: the output
+    // writes occur in the same order with the same values; only the read-only sequence loads are
+    // hoisted, and every load stays within [seqIdx, seqEnd).
+    ZSTDGPU_BRANCH if (seqIdx < seqEnd)
     {
         // NOTE(pamartis): these are still uniform variables HLSL has no way of enforcing....
         zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
 
-        zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq.llen, dstEnd);
-        zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq, dstEnd);
+        // NOTE(ex7): Unroll the per-sequence loop two sequences at a time. Within a pair, sequence k's
+        // match copy (which reads already-written output) and sequence k+1's literal copy (which reads
+        // the separate literals buffer and writes a disjoint, strictly-higher output range) are
+        // independent: different source buffers, non-overlapping destinations. Emitting both sequences'
+        // copies as one straight-line region lets the compiler keep more independent global loads/stores
+        // in flight, hiding their latency across the otherwise serial per-sequence dstOfs recurrence and
+        // the loop backedge (achieved-occupancy ILP on a full-ceiling, zero-LDS phase). The MemCpy/
+        // MatchCopy calls execute in exactly the original order with the same dstOfs/litOfs threading, so
+        // every write keeps its value and ordering => bit-identical. The read-only sequence metadata
+        // loads stay within [seqIdx, seqEnd); on gfx1100 the few extra VGPRs are free (VGPR never limits
+        // occupancy here).
+        ZSTDGPU_LOOP for (; seqIdx + 1u < seqEnd; seqIdx += 2u)
+        {
+            const uint32_t nextSeqIdx = seqIdx + 1u;
+            zstdgpu_Sequence seq1 = zstdgpu_LoadSequence(srt, nextSeqIdx);
+
+            // Prefetch the sequence after the pair so its metadata load hides behind the four copies below.
+            const uint32_t prefetchSeqIdx = seqIdx + 2u;
+            zstdgpu_Sequence seqNext = seq1;
+            ZSTDGPU_BRANCH if (prefetchSeqIdx < seqEnd)
+            {
+                seqNext = zstdgpu_LoadSequence(srt, prefetchSeqIdx);
+            }
+
+            zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq.llen, dstEnd);
+            zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq, dstEnd);
+
+            zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq1.llen, dstEnd);
+            zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq1, dstEnd);
+
+            seq = seqNext;
+        }
+
+        // Tail: handle the final sequence when the sequence count in this frame is odd.
+        ZSTDGPU_BRANCH if (seqIdx < seqEnd)
+        {
+            zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq.llen, dstEnd);
+            zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq, dstEnd);
+        }
     }
 
     // NOTE(pamartis): copy remaining literals. If there's no sequences, we copy the entire literal block.
@@ -4051,18 +4125,20 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
     zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, litEnd - litOfs, dstEnd);
 }
 
-static void zstdgpu_ShaderEntry_ExecuteSequences(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt)
+static void zstdgpu_ShaderEntry_ExecuteSequences(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt, uint32_t groupId)
 {
     const uint32_t seqStreamCnt = srt.inoutCounters[0].Seq_Streams;
 
     const uint32_t frameCnt = srt.inoutCounters[0].Frames;
 
-    uint32_t frameIdx = 0;
-    if (WaveIsFirstLane())
-    {
-        InterlockedAdd(srt.inoutCounters[0].Frames_ExecuteSequences, 1, frameIdx);
-    }
-    frameIdx = WaveReadLaneFirst(frameIdx);
+    // NOTE(explorer): ExecuteSequences is dispatched with exactly one threadgroup per frame
+    // (`Dispatch(zstdFrameCount, 1, 1)`), so `groupId` is already a unique frame index in
+    // [0, frameCount). Use it directly instead of handing out indices via a global atomic on
+    // `Frames_ExecuteSequences`, which forced every wave to serialise through a single contended
+    // counter at dispatch time before doing any work. Frame-to-group assignment order is
+    // irrelevant for correctness because frames are independent and write disjoint output regions,
+    // and the `Frames_ExecuteSequences` counter is never read after this kernel.
+    const uint32_t frameIdx = groupId;
 
     if (frameIdx >= frameCnt)
         return;

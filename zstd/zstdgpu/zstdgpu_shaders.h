@@ -4033,6 +4033,46 @@ static void zstdgpu_MatchCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32_t, uint8_t) dstData
     }
 }
 
+// A/B(combo): per-sequence fused literal+match wave-cooperative store (333b328) with fallback to the
+// separate MemCpy + MatchCopy. Called at each copy site of the 2x-unrolled ExecuteSequences_Lit loop so
+// the fused store and main's metadata-prefetch/unroll ILP apply together. The offs>=total guard keeps
+// this sequence's match source strictly below its own output (no intra-store hazard), exactly as in the
+// standalone fuse; ordering across the straight-line pair matches main's existing MatchCopy RAW pattern.
+static void zstdgpu_ExecuteSequence_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32_t, uint8_t) dstData,
+                                              ZSTDGPU_PARAM_INOUT(uint32_t) dstOfs,
+                                              ZSTDGPU_RO_TYPED_BUFFER(uint32_t, uint8_t) litBuf,
+                                              ZSTDGPU_PARAM_INOUT(uint32_t) litOfs,
+                                              zstdgpu_Sequence seq,
+                                              uint32_t dstEnd)
+{
+    const uint32_t laneId = WaveGetLaneIndex();
+    const uint32_t laneCount = WaveGetLaneCount();
+    const uint32_t total = seq.llen + seq.mlen;
+    ZSTDGPU_BRANCH if (seq.offs >= total && total <= laneCount && dstOfs + total <= dstEnd)
+    {
+        ZSTDGPU_BRANCH if (laneId < total)
+        {
+            uint32_t value;
+            ZSTDGPU_BRANCH if (laneId < seq.llen)
+            {
+                value = litBuf[litOfs + laneId];
+            }
+            else
+            {
+                value = dstData[dstOfs + laneId - seq.offs];
+            }
+            zstdgpu_TypedStoreU8(dstData, dstOfs + laneId, value);
+        }
+        dstOfs += total;
+        litOfs += seq.llen;
+    }
+    else
+    {
+        zstdgpu_MemCpy_DstSrc(dstData, dstOfs, litBuf, litOfs, seq.llen, dstEnd);
+        zstdgpu_MatchCopy(dstData, dstOfs, seq, dstEnd);
+    }
+}
+
 /**
  *  NOTE(pamartis): This function exists solely to allow calling the same code and passing different 'litBuf'
  *                  from different condition:
@@ -4103,11 +4143,8 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
                 seqNext = zstdgpu_LoadSequence(srt, prefetchSeqIdx);
             }
 
-            zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq.llen, dstEnd);
-            zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq, dstEnd);
-
-            zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq1.llen, dstEnd);
-            zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq1, dstEnd);
+            zstdgpu_ExecuteSequence_FusedCopy(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq, dstEnd);
+            zstdgpu_ExecuteSequence_FusedCopy(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq1, dstEnd);
 
             seq = seqNext;
         }
@@ -4115,8 +4152,7 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
         // Tail: handle the final sequence when the sequence count in this frame is odd.
         ZSTDGPU_BRANCH if (seqIdx < seqEnd)
         {
-            zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq.llen, dstEnd);
-            zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, dstOfs, seq, dstEnd);
+            zstdgpu_ExecuteSequence_FusedCopy(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq, dstEnd);
         }
     }
 

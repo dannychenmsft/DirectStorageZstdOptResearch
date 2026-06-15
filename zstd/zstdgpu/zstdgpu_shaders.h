@@ -4203,6 +4203,15 @@ static void zstdgpu_ExecuteSequencePair_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32
  *          function( WaveReadLaneFirst(conditionA) != 0 ? bufferA : bufferB );
  *      }
  */
+// NVIDIA-only optimization toggle. When set, zstdgpu_ExecuteSequences_Lit deepens the per-pair metadata
+// software-pipeline (carries both sequences of the 2x-unrolled pair across the loop backedge and
+// prefetches the next pair's full {MLen,LLen,Offs}). Measured +8.79% throughput / +6.68% latency on an
+// RTX 4080 SUPER, but it regresses AMD RDNA3 (shared ExecuteSequences64 kernel), so it is OFF by default
+// and enabled only by the NVIDIA-mapped ExecuteSequences64_PairCarryPrefetch kernel entry.
+#ifndef ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH
+#define ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH 0
+#endif
+
 static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt,
                                          ZSTDGPU_RO_TYPED_BUFFER(uint32_t, uint8_t) litBuf,
                                          uint32_t litOfs,
@@ -4223,8 +4232,6 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
     ZSTDGPU_BRANCH if (seqIdx < seqEnd)
     {
         // NOTE(pamartis): these are still uniform variables HLSL has no way of enforcing....
-        zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
-
         // NOTE(ex7): Unroll the per-sequence loop two sequences at a time. Within a pair, sequence k's
         // match copy (which reads already-written output) and sequence k+1's literal copy (which reads
         // the separate literals buffer and writes a disjoint, strictly-higher output range) are
@@ -4236,6 +4243,56 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
         // every write keeps its value and ordering => bit-identical. The read-only sequence metadata
         // loads stay within [seqIdx, seqEnd); on gfx1100 the few extra VGPRs are free (VGPR never limits
         // occupancy here).
+#if ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH
+        //
+        // NOTE(ex4): Deepen the per-pair metadata software-pipeline (NVIDIA-only, see
+        // ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH). The 2x-unrolled loop consumes a
+        // PAIR {seq, seq1} per iteration, but the prior code preloaded only the FIRST sequence of the
+        // NEXT pair, so each iteration still issued seq1's three StructuredBuffer reads at the loop top
+        // and stalled the serial per-sequence store recurrence on that dependent load. Carry BOTH
+        // sequences of the current pair across the loop backedge and issue BOTH of the next pair's
+        // metadata loads (six independent read-only reads) before running this pair's copies, so all of
+        // the next iteration's metadata latency overlaps this iteration's wave stores -- more independent
+        // work in flight to hide latency on the launch-/dependency-bound execute-sequences phase.
+        // Bit-identical: the ExecuteSequence(Pair) calls run in the exact original order with identical
+        // {seq, seq1} values; only read-only metadata loads of distinct buffers are hoisted, every load
+        // stays within [seqIdx, seqEnd), and the out-of-range prefetch placeholders are provably never
+        // consumed -- the next iteration's entry condition (seqIdx+3 < seqEnd) gates seq1's reuse and the
+        // odd-count tail reads only `seq`, both exactly the indices that were actually loaded.
+        zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
+        zstdgpu_Sequence seq1 = seq;
+        ZSTDGPU_BRANCH if (seqIdx + 1u < seqEnd)
+        {
+            seq1 = zstdgpu_LoadSequence(srt, seqIdx + 1u);
+        }
+
+        ZSTDGPU_LOOP for (; seqIdx + 1u < seqEnd; seqIdx += 2u)
+        {
+            // Prefetch the entire next pair so both its metadata loads hide behind this pair's copies.
+            const uint32_t nextFirstIdx  = seqIdx + 2u;
+            const uint32_t nextSecondIdx = seqIdx + 3u;
+            zstdgpu_Sequence seqNextFirst  = seq1;
+            zstdgpu_Sequence seqNextSecond = seq1;
+            ZSTDGPU_BRANCH if (nextFirstIdx < seqEnd)
+            {
+                seqNextFirst = zstdgpu_LoadSequence(srt, nextFirstIdx);
+            }
+            ZSTDGPU_BRANCH if (nextSecondIdx < seqEnd)
+            {
+                seqNextSecond = zstdgpu_LoadSequence(srt, nextSecondIdx);
+            }
+
+            zstdgpu_ExecuteSequencePair_FusedCopy(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq, seq1, dstEnd);
+
+            seq = seqNextFirst;
+            seq1 = seqNextSecond;
+        }
+#else
+        // Baseline 2x-unrolled pair loop (default, all non-NVIDIA vendors): preload only the first
+        // sequence of the next pair. The deeper pair-carry prefetch above regresses AMD RDNA3, so it is
+        // gated to NVIDIA via the ExecuteSequences64_PairCarryPrefetch kernel entry.
+        zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
+
         ZSTDGPU_LOOP for (; seqIdx + 1u < seqEnd; seqIdx += 2u)
         {
             const uint32_t nextSeqIdx = seqIdx + 1u;
@@ -4253,6 +4310,7 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
 
             seq = seqNext;
         }
+#endif
 
         // Tail: handle the final sequence when the sequence count in this frame is odd.
         ZSTDGPU_BRANCH if (seqIdx < seqEnd)

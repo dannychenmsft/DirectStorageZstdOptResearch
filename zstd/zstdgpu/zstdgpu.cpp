@@ -64,6 +64,7 @@
 #include "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h"
 #include "ZstdGpuExecuteSequences128.h"
 #include "ZstdGpuExecuteSequences64.h"
+#include "ZstdGpuExecuteSequences64_PairCarryPrefetch.h"
 #include "ZstdGpuExecuteSequences32.h"
 #include "ZstdGpuFinaliseSequenceOffsets.h"
 #include "ZstdGpuInitFseTable.h"
@@ -727,6 +728,7 @@ static void zstdgpu_ReCreate_SRTs(zstdgpu_SRTs & srts, ID3D12Device *device, con
     ZSTDGPU_KERNEL(DecompressSequences_MultiStream_16_LdsOutCache_32,   L"Decompress Sequences (Multi-Stream, Streams=16, LDS Out Cache= 32 Sequences)")    \
     ZSTDGPU_KERNEL(ExecuteSequences128                              ,   L"Execute Sequences 128")                                               \
     ZSTDGPU_KERNEL(ExecuteSequences64                               ,   L"Execute Sequences 64")                                                \
+    ZSTDGPU_KERNEL(ExecuteSequences64_PairCarryPrefetch            ,   L"Execute Sequences 64 (NVIDIA Pair-Carry Prefetch)")                   \
     ZSTDGPU_KERNEL(ExecuteSequences32                               ,   L"Execute Sequences 32")                                                \
     ZSTDGPU_KERNEL(FinaliseSequenceOffsets                          ,   L"Finalise Sequence Offsets")                                           \
     ZSTDGPU_KERNEL(InitFseTable                                     ,   L"Init Fse Table")                                                      \
@@ -1034,7 +1036,9 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
             context->DecompressLiterals_LdsStoreCache_StreamsPerGroup = 16;
             ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
             context->DecompressSequences_StreamsPerGroup = 1;
-            ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64);
+            // NVIDIA-only deeper per-pair metadata prefetch (regresses AMD; see
+            // ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH). All other vendors use ExecuteSequences64.
+            ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64_PairCarryPrefetch);
         }
         else if (featureOptions1.WaveLaneCountMax == 128)
         {

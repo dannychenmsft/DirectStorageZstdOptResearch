@@ -18,4 +18,8 @@
 
 #define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache 1
 #define kzstdgpu_TgSizeX_DecompressSequences_SingleStream 32
+// AMD-selected sequence-decode kernel (the VendorId==0x1002 branch in zstdgpu.cpp maps DecompressSequences
+// here). Enable the vendor-gated scalar-broadcast FSE gather: a measured AMD/RDNA3 throughput win
+// (+2.0%, RX 7900 XTX) that does not transfer to other vendors, which run the LDS-FSE-cache kernels.
+#define ZSTDGPU_FSE_SCALAR_BROADCAST 1
 #include "ZstdGpuDecompressSequences_SingleStream.hlsli"

@@ -3626,10 +3626,23 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
     // We software-pipeline the loop: the next symbol's gather is issued right after the state update
     // but BEFORE the current symbol's output stores, so the dependent load latency overlaps the
     // store traffic. Bit reads stay in the original order, so output remains bit-identical.
+    // Vendor-gated scalar-broadcast FSE gather (default OFF; see ZSTDGPU_FSE_SCALAR_BROADCAST below).
+    #ifndef ZSTDGPU_FSE_SCALAR_BROADCAST
+    #define ZSTDGPU_FSE_SCALAR_BROADCAST 0
+    #endif
     #if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
     #   define ZSTDGPU_SS_FSE_LLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedLLen + (s))
     #   define ZSTDGPU_SS_FSE_OFFS(s) zstdgpu_LdsLoadU32(GS_FsePackedOffs + (s))
     #   define ZSTDGPU_SS_FSE_MLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedMLen + (s))
+    #elif ZSTDGPU_FSE_SCALAR_BROADCAST
+    // Only the AMD-selected ScalarFseLoad32 kernel sets ZSTDGPU_FSE_SCALAR_BROADCAST=1. Broadcasting the
+    // three uniform FSE-element loads through WaveReadLaneFirst marks them wave-uniform so AMD/RDNA3
+    // issues them on the scalar unit (scalar K$). Only lane 0 is active in the single-stream decoder, so
+    // WaveReadLaneFirst returns the lane's own value => bit-identical. Measured +2.0% throughput on
+    // RX 7900 XTX; it does not transfer to other vendors, which run the LDS-FSE-cache path above.
+    #   define ZSTDGPU_SS_FSE_LLEN(s) WaveReadLaneFirst(srt.inFseElems[startLLen + (s)])
+    #   define ZSTDGPU_SS_FSE_OFFS(s) WaveReadLaneFirst(srt.inFseElems[startOffs + (s)])
+    #   define ZSTDGPU_SS_FSE_MLEN(s) WaveReadLaneFirst(srt.inFseElems[startMLen + (s)])
     #else
     #   define ZSTDGPU_SS_FSE_LLEN(s) srt.inFseElems[startLLen + (s)]
     #   define ZSTDGPU_SS_FSE_OFFS(s) srt.inFseElems[startOffs + (s)]

@@ -4124,29 +4124,31 @@ static void zstdgpu_ExecuteSequencePair_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32
     {
         ZSTDGPU_BRANCH if (laneId < combined)
         {
+            // NOTE(ex0): Flatten the per-lane source selection from a 2-level branch nest
+            // (seq0-vs-seq1, then literal-vs-match) into a single literal-vs-match branch, by
+            // resolving which sequence a lane belongs to with branchless selects. The original
+            // nesting made the wave execute up to FOUR serialized divergent regions per fused-pair
+            // store -- {seq0.lit, seq0.match, seq1.lit, seq1.match} -- because the outer
+            // (laneId < total0) split is itself a divergent branch. Merging the two literal regions
+            // and the two match regions collapses this to just TWO divergent paths (all literal lanes,
+            // then all match lanes), directly cutting wave divergence / serialized tail regions on the
+            // hottest small-input path (the capture flags divergence/tail effects as a latency lever).
+            // Bit-identical: for laneId in [0,total0) inSeq0 picks seq0's llen/offs and litIdx ==
+            // litOfs+laneId; for laneId in [total0,combined) it picks seq1's llen/offs and litIdx ==
+            // litOfs+seq0.llen+(laneId-total0), so every lane reads the exact same byte and stores to
+            // the same address dstOfs+laneId as before.
+            const bool     inSeq0 = laneId < total0;
+            const uint32_t local  = inSeq0 ? laneId : (laneId - total0);
+            const uint32_t llenL  = inSeq0 ? seq0.llen : seq1.llen;
             uint32_t value;
-            ZSTDGPU_BRANCH if (laneId < total0)
+            ZSTDGPU_BRANCH if (local < llenL)
             {
-                ZSTDGPU_BRANCH if (laneId < seq0.llen)
-                {
-                    value = litBuf[litOfs + laneId];
-                }
-                else
-                {
-                    value = dstData[dstOfs + laneId - seq0.offs];
-                }
+                value = litBuf[inSeq0 ? (litOfs + laneId) : (litOfs + seq0.llen + local)];
             }
             else
             {
-                const uint32_t p = laneId - total0;
-                ZSTDGPU_BRANCH if (p < seq1.llen)
-                {
-                    value = litBuf[litOfs + seq0.llen + p];
-                }
-                else
-                {
-                    value = dstData[dstOfs + laneId - seq1.offs];
-                }
+                const uint32_t off = inSeq0 ? seq0.offs : seq1.offs;
+                value = dstData[dstOfs + laneId - off];
             }
             zstdgpu_TypedStoreU8(dstData, dstOfs + laneId, value);
         }

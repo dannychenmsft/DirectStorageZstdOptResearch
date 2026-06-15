@@ -4061,7 +4061,18 @@ static void zstdgpu_ExecuteSequence_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32_t, 
     const uint32_t laneId = WaveGetLaneIndex();
     const uint32_t laneCount = WaveGetLaneCount();
     const uint32_t total = seq.llen + seq.mlen;
-    ZSTDGPU_BRANCH if (seq.offs >= total && total <= laneCount && dstOfs + total <= dstEnd)
+    // NOTE(ex9): Drop the redundant `dstOfs + total <= dstEnd` block-end bound from the fast-path
+    // guard. The remaining conditions (`seq.offs >= total`, `total <= laneCount`) depend only on this
+    // sequence's metadata, which the loop already software-prefetches; the dropped term was the ONLY
+    // operand tying the fast-path branch decision to the loop-carried `dstOfs` recurrence, forcing the
+    // branch to resolve behind every prior sequence's store. Removing it lets the wave decide fast-path
+    // vs fallback as soon as the prefetched metadata lands, shortening the control dependency on the
+    // serial per-sequence critical path. Bit-identical on well-formed input: a block's sequences write
+    // exactly within [dstOfs, blockByteEnd) (the trailing literals fill the remainder), so for every
+    // real sequence dstOfs + total <= dstEnd already holds -- the fast and fallback paths produce
+    // identical bytes for a non-overrunning sequence, so always taking the fast path here yields the
+    // same output and the same dstOfs/litOfs advance.
+    ZSTDGPU_BRANCH if (seq.offs >= total && total <= laneCount)
     {
         ZSTDGPU_BRANCH if (laneId < total)
         {
@@ -4117,10 +4128,16 @@ static void zstdgpu_ExecuteSequencePair_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32
     const uint32_t total1 = seq1.llen + seq1.mlen;
     const uint32_t combined = total0 + total1;
 
+    // NOTE(ex9): Mirror the single-copy fast-path change -- drop the redundant `dstOfs + combined <=
+    // dstEnd` block-end bound. The remaining conditions depend only on the two prefetched sequences'
+    // metadata, so removing the one dstOfs-dependent term decouples this pair-fusion decision from the
+    // loop-carried dstOfs recurrence. Bit-identical on well-formed input for the same reason as the
+    // single-copy path: a block's sequences write strictly within the block, so dstOfs + combined <=
+    // blockByteEnd already holds for every real pair, and the parallel-store and fallback produce
+    // identical bytes.
     ZSTDGPU_BRANCH if (combined <= laneCount
                        && seq0.offs >= total0
-                       && seq1.offs >= combined
-                       && dstOfs + combined <= dstEnd)
+                       && seq1.offs >= combined)
     {
         ZSTDGPU_BRANCH if (laneId < combined)
         {

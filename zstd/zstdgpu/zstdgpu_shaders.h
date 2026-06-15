@@ -4172,6 +4172,47 @@ static void zstdgpu_ExecuteSequencePair_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32
         dstOfs += combined;
         litOfs += seq0.llen + seq1.llen;
     }
+    // NOTE(ex-wide2): Widen the pair-fusion window from one to TWO bytes per lane so a pair whose
+    // combined span is (laneCount, 2*laneCount] still collapses into ONE fused store region instead of
+    // two SERIAL dependent stores. The single-byte tier above only fires when combined <= laneCount; for
+    // combined in (laneCount, 2*laneCount] the previous code fell to the else-branch and issued two
+    // back-to-back zstdgpu_ExecuteSequence_FusedCopy stores -- and those two stores are RAW-serialised on
+    // the dstOfs recurrence (seq1's match may read seq0's just-written bytes), so each contributes a full
+    // store->load latency link on the single-wave critical path. Under the SAME non-aliasing guard the
+    // existing tier already requires (seq1.offs >= combined), we instead cover the whole [base, combined)
+    // span with one region: lane laneId handles byte b=laneId and, when combined > laneCount, also byte
+    // b=laneId+laneCount. Crucially BOTH store iterations read strictly BELOW the region base
+    // (off >= combined > b => dstOfs + b - off < dstOfs), so neither reads the other iteration's output:
+    // the two stores are INDEPENDENT and the hardware can keep them in flight together, replacing two
+    // dependent wave-stores with one independent-store region on the dstOfs recurrence. This also rescues
+    // pairs where a single sequence's total exceeds laneCount (which the per-sequence fused fast path
+    // cannot take and would push onto the slow MemCpy+MatchCopy loops). The common combined <= laneCount
+    // path above is left bit-for-bit unchanged, so the accepted single-byte pair fusion is untouched.
+    //
+    // Bit-identical & robust-buffer safe for the same reasons as the single-byte tier: each byte's value
+    // is the branchless literal-vs-match select; every off-path read lands strictly below the region
+    // (match) or harmlessly past this pair's literals (literal, discarded / typed-buffer OOB-reads-0), and
+    // never touches [dstOfs, dstOfs+combined). The dstOfs/litOfs advance is identical to the two-store
+    // fallback it replaces.
+    else if (combined <= (laneCount << 1u)
+             && seq0.offs >= total0
+             && seq1.offs >= combined)
+    {
+        ZSTDGPU_LOOP for (uint32_t b = laneId; b < combined; b += laneCount)
+        {
+            const bool     inSeq0 = b < total0;
+            const uint32_t local  = inSeq0 ? b : (b - total0);
+            const uint32_t llenL  = inSeq0 ? seq0.llen : seq1.llen;
+            const uint32_t litIdx = inSeq0 ? (litOfs + b) : (litOfs + seq0.llen + local);
+            const uint32_t off    = inSeq0 ? seq0.offs : seq1.offs;
+            const uint32_t litVal   = litBuf[litIdx];
+            const uint32_t matchVal = dstData[dstOfs + b - off];
+            const uint32_t value    = (local < llenL) ? litVal : matchVal;
+            zstdgpu_TypedStoreU8(dstData, dstOfs + b, value);
+        }
+        dstOfs += combined;
+        litOfs += seq0.llen + seq1.llen;
+    }
     else
     {
         zstdgpu_ExecuteSequence_FusedCopy(dstData, dstOfs, litBuf, litOfs, seq0, dstEnd);

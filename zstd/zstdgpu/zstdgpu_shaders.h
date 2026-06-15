@@ -4076,15 +4076,20 @@ static void zstdgpu_ExecuteSequence_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32_t, 
     {
         ZSTDGPU_BRANCH if (laneId < total)
         {
-            uint32_t value;
-            ZSTDGPU_BRANCH if (laneId < seq.llen)
-            {
-                value = litBuf[litOfs + laneId];
-            }
-            else
-            {
-                value = dstData[dstOfs + laneId - seq.offs];
-            }
+            // NOTE(ex5): Branchless literal-vs-match value select. The original divergent
+            // `if (laneId < seq.llen)` split this single fused store into two EXEC-masked regions --
+            // a litBuf load for the literal lanes, then a dstData load for the match lanes -- which
+            // serialises them and adds a divergent branch + s_delay_alu on the hottest per-sequence
+            // store of the ExecuteSequences64 critical path. Issuing BOTH reads unconditionally and
+            // picking with a predicate keeps control flow wave-uniform and lets the two loads sit in
+            // flight together (cheap on this latency-bound, L1-hot phase where SMs/CUs stall on
+            // dependent chains, not bandwidth). Bit-identical: literal lanes (laneId < seq.llen) keep
+            // litBuf[litOfs+laneId] and match lanes keep dstData[dstOfs+laneId-seq.offs], exactly as
+            // before; the unused read of the other buffer is discarded and is OOB-safe (typed-buffer
+            // out-of-bounds reads return 0 with no side effects, and a read never alters UAV contents).
+            const uint32_t litVal   = litBuf[litOfs + laneId];
+            const uint32_t matchVal = dstData[dstOfs + laneId - seq.offs];
+            const uint32_t value    = (laneId < seq.llen) ? litVal : matchVal;
             zstdgpu_TypedStoreU8(dstData, dstOfs + laneId, value);
         }
         dstOfs += total;
@@ -4157,16 +4162,18 @@ static void zstdgpu_ExecuteSequencePair_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32
             const bool     inSeq0 = laneId < total0;
             const uint32_t local  = inSeq0 ? laneId : (laneId - total0);
             const uint32_t llenL  = inSeq0 ? seq0.llen : seq1.llen;
-            uint32_t value;
-            ZSTDGPU_BRANCH if (local < llenL)
-            {
-                value = litBuf[inSeq0 ? (litOfs + laneId) : (litOfs + seq0.llen + local)];
-            }
-            else
-            {
-                const uint32_t off = inSeq0 ? seq0.offs : seq1.offs;
-                value = dstData[dstOfs + laneId - off];
-            }
+            // NOTE(ex5): Branchless literal-vs-match value select (mirrors the single-copy fast path).
+            // The remaining `if (local < llenL)` was the last divergent branch inside the fused-pair
+            // store; issuing the literal and match reads unconditionally and selecting with a predicate
+            // removes it, keeping control flow wave-uniform and overlapping the two loads on the
+            // ExecuteSequences64 critical path. Bit-identical: literal lanes keep their litBuf byte and
+            // match lanes keep dstData[dstOfs+laneId-off], exactly as before; the discarded read of the
+            // other buffer is OOB-safe (typed-buffer out-of-bounds reads return 0, no side effects).
+            const uint32_t litIdx   = inSeq0 ? (litOfs + laneId) : (litOfs + seq0.llen + local);
+            const uint32_t off      = inSeq0 ? seq0.offs : seq1.offs;
+            const uint32_t litVal   = litBuf[litIdx];
+            const uint32_t matchVal = dstData[dstOfs + laneId - off];
+            const uint32_t value    = (local < llenL) ? litVal : matchVal;
             zstdgpu_TypedStoreU8(dstData, dstOfs + laneId, value);
         }
         dstOfs += combined;

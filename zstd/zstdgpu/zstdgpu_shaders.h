@@ -4247,6 +4247,75 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
     zstdgpu_MemCpy_DstSrc(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, litEnd - litOfs, dstEnd);
 }
 
+// Per-CMP-block decoded setup: block byte range, literal descriptor and sequence-stream range.
+// All fields are derived from read-only buffers indexed by the (uniform) cmp-block index, so a block's
+// setup can be fetched ahead of executing the previous block to overlap its dependent load latency.
+struct zstdgpu_BlockSetup
+{
+    uint32_t blockByteBeg;
+    uint32_t blockByteEnd;
+    uint32_t litType;
+    uint32_t litOffs;
+    uint32_t litSize;
+    uint32_t seqOfs;
+    uint32_t seqEnd;
+};
+
+static zstdgpu_BlockSetup zstdgpu_LoadBlockSetup(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt,
+                                                 uint32_t cmpBlockIdx,
+                                                 uint32_t dstFrameOffs,
+                                                 uint32_t firstFrameBlockOfs,
+                                                 uint32_t seqStreamCnt)
+{
+    zstdgpu_BlockSetup s;
+
+    const uint32_t blockIdx = srt.inGlobalBlockIndexPerCmpBlock[cmpBlockIdx];
+
+    uint32_t blockOfs = 0;
+    // NOTE(pamartis): Without `ZSTDGPU_BRANCH`, there's out-of-bounds `ZstdInBlockSizePrefix` access detected by validation layer when
+    // DXC used: "Version: dxcompiler.dll: 1.6 - 1.6.2112.16 (e8295973c); dxil.dll: 1.6(101.6.2112.13)"
+    ZSTDGPU_BRANCH if (blockIdx > 0)
+    {
+        blockOfs = srt.inBlockSizePrefix[blockIdx - 1];
+    }
+
+    s.blockByteBeg = dstFrameOffs + (blockOfs - firstFrameBlockOfs);
+    s.blockByteEnd = dstFrameOffs + (srt.inBlockSizePrefix[blockIdx] - firstFrameBlockOfs);
+
+    const zstdgpu_OffsetAndSize literal = srt.inCompressedBlocks[cmpBlockIdx].literal;
+
+    const uint32_t seqStreamIdx = srt.inCompressedBlocks[cmpBlockIdx].seqStreamIndex;
+
+    uint32_t seqOfs = 0;
+    uint32_t seqEnd = 0;
+    // NOTE(pamartis): BRANCH is used to make sure validation layer doesn't complain about accessing `inPerSeqStreamSeqStart`
+    ZSTDGPU_BRANCH if (seqStreamIdx != ~0u)
+    {
+        // NOTE(pamartis): Because `PerSeqStreamSeqStart` contains a prefix, we load the element corresponding to the current stream
+        // to get sequence offset and then load either the offset of the next stream or the total number of sequences.
+        // and take the difference to calculate the actual number of sequences.
+        seqOfs = srt.inPerSeqStreamSeqStart[seqStreamIdx];
+
+        ZSTDGPU_BRANCH if (seqStreamIdx + 1u == seqStreamCnt)
+        {
+            seqEnd = srt.inoutCounters[0].Seq_Streams_DecodedItems;
+        }
+        else
+        {
+            seqEnd = srt.inPerSeqStreamSeqStart[seqStreamIdx + 1u];
+        }
+    }
+
+    s.seqOfs = seqOfs;
+    s.seqEnd = seqEnd;
+
+    s.litType = WaveReadLaneFirst(zstdgpu_DecodeLitOffsetType(literal.offs));
+    s.litOffs = zstdgpu_DecodeLitOffset(literal.offs);
+    s.litSize = literal.size;
+
+    return s;
+}
+
 static void zstdgpu_ShaderEntry_ExecuteSequences(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt, uint32_t groupId)
 {
     const uint32_t seqStreamCnt = srt.inoutCounters[0].Seq_Streams;
@@ -4281,91 +4350,67 @@ static void zstdgpu_ShaderEntry_ExecuteSequences(ZSTDGPU_PARAM_INOUT(zstdgpu_Exe
     }
 
     const zstdgpu_OffsetAndSize dstFrameOffsAndSize = srt.inUnCompressedFramesRefs[frameIdx];
+    const uint32_t dstFrameOffs = dstFrameOffsAndSize.offs;
 
-    for (uint32_t cmpBlockIdx = cmpBlockBeg; cmpBlockIdx < cmpBlockEnd; ++cmpBlockIdx)
+    // NOTE(ex6): Software-pipeline the per-CMP-block setup across the block loop. Each block's geometry
+    // and literal/sequence descriptors come from a dependent chain of read-only global loads
+    // (cmpBlockIdx -> blockIdx -> inBlockSizePrefix[]; inCompressedBlocks[].literal/seqStreamIndex ->
+    // inPerSeqStreamSeqStart[]) that the original code resolved immediately before that block's copies,
+    // stalling the serial per-block critical path on load latency. The next block's setup depends only on
+    // the loop counter, not on the current block's output writes, so we issue its loads before executing
+    // the current block; that latency then overlaps the current block's literal/match copies instead of
+    // being exposed at the block boundary. Bit-identical: every output write keeps its original order and
+    // value; only the read-only setup loads are hoisted, and each block's setup is fetched exactly once
+    // and only when its cmp-block index is in range.
+    ZSTDGPU_BRANCH if (cmpBlockBeg < cmpBlockEnd)
     {
-        const uint32_t blockIdx = srt.inGlobalBlockIndexPerCmpBlock[cmpBlockIdx];
+        zstdgpu_BlockSetup cur = zstdgpu_LoadBlockSetup(srt, cmpBlockBeg, dstFrameOffs, firstFrameBlockOfs, seqStreamCnt);
 
-        uint32_t blockOfs = 0;
-        // NOTE(pamartis): Without `ZSTDGPU_BRANCH`, there's out-of-bounds `ZstdInBlockSizePrefix` access detected by validation layer when
-        // DXC used: "Version: dxcompiler.dll: 1.6 - 1.6.2112.16 (e8295973c); dxil.dll: 1.6(101.6.2112.13)"
-        ZSTDGPU_BRANCH if (blockIdx > 0)
+        for (uint32_t cmpBlockIdx = cmpBlockBeg; cmpBlockIdx < cmpBlockEnd; ++cmpBlockIdx)
         {
-            blockOfs = srt.inBlockSizePrefix[blockIdx - 1];
-        }
-
-        const uint32_t blockByteBeg = dstFrameOffsAndSize.offs + (blockOfs - firstFrameBlockOfs);
-        const uint32_t blockByteEnd = dstFrameOffsAndSize.offs + (srt.inBlockSizePrefix[blockIdx] - firstFrameBlockOfs);
-
-#if 0
-        for (uint32_t blockByteIdx = blockByteBeg + i; blockByteIdx < blockByteEnd; blockByteIdx += maxCopySize)
-        {
-            srt.inoutUnCompressedFramesData[blockByteIdx] = cmpBlockIdx & 255;
-        }
-
-#else
-        const zstdgpu_OffsetAndSize literal = srt.inCompressedBlocks[cmpBlockIdx].literal;
-
-        const uint32_t seqStreamIdx = srt.inCompressedBlocks[cmpBlockIdx].seqStreamIndex;
-
-        uint32_t seqOfs = 0;
-        uint32_t seqEnd = 0;
-        // NOTE(pamartis): BRANCH is used to make sure validation layer doesn't complain about accessing `inPerSeqStreamSeqStart`
-        ZSTDGPU_BRANCH if (seqStreamIdx != ~0u)
-        {
-            // NOTE(pamartis): Because `PerSeqStreamSeqStart` contains a prefix, we load the element corresponding to the current stream
-            // to get sequence offset and then load either the offset of the next stream or the total number of sequences.
-            // and take the difference to calculate the actual number of sequences.
-            seqOfs = srt.inPerSeqStreamSeqStart[seqStreamIdx];
-
-            ZSTDGPU_BRANCH if (seqStreamIdx + 1u == seqStreamCnt)
+            // Prefetch the next block's setup so its load latency hides behind the current block's copies.
+            const uint32_t nextCmpBlockIdx = cmpBlockIdx + 1u;
+            zstdgpu_BlockSetup nxt = cur;
+            ZSTDGPU_BRANCH if (nextCmpBlockIdx < cmpBlockEnd)
             {
-                seqEnd = srt.inoutCounters[0].Seq_Streams_DecodedItems;
-            }
-            else
-            {
-                seqEnd = srt.inPerSeqStreamSeqStart[seqStreamIdx + 1u];
-            }
-        }
-
-        const uint32_t litType = WaveReadLaneFirst(zstdgpu_DecodeLitOffsetType(literal.offs));
-        const uint32_t litOffs = zstdgpu_DecodeLitOffset(literal.offs);
-        const uint32_t litSize = literal.size;
-
-        if (zstdgpu_CheckLitOffsetTypeCmp(litType))
-        {
-            zstdgpu_ExecuteSequences_Lit(srt, srt.inDecompressedLiterals, litOffs, litOffs + litSize, blockByteBeg, blockByteEnd, seqOfs, seqEnd);
-        }
-        else if (zstdgpu_CheckLitOffsetTypeRaw(litType))
-        {
-            zstdgpu_ExecuteSequences_Lit(srt, srt.inCompressedData, litOffs, litOffs + litSize, blockByteBeg, blockByteEnd, seqOfs, seqEnd);
-        }
-        else if (zstdgpu_CheckLitOffsetTypeRle(litType))
-        {
-            // NOTE(pamartis): RLE literals contain actual symbol instead of offset, so we set the offsets to zero.
-            const uint32_t symbol = litOffs;
-            uint32_t blockByteCur = blockByteBeg;
-            uint32_t litCur = 0;
-
-            // NOTE(pamartis): LOOP is used to make sure validation layer doesn't complain about accessing `inDecompressedSequence*`
-            ZSTDGPU_LOOP for (uint32_t seqIdx = seqOfs; seqIdx < seqEnd; ++seqIdx)
-            {
-                // NOTE(pamartis): these are still uniform variables HLSL has no way of enforcing....
-                zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
-
-                zstdgpu_MemSet(srt.inoutUnCompressedFramesData, blockByteCur, symbol, seq.llen, blockByteEnd);
-                litCur += seq.llen;
-                zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, blockByteCur, seq, blockByteEnd);
+                nxt = zstdgpu_LoadBlockSetup(srt, nextCmpBlockIdx, dstFrameOffs, firstFrameBlockOfs, seqStreamCnt);
             }
 
-            // NOTE(pamartis): copy remaining literals. If above condtion `seqStreamIdx == ~0u` is true,
-            // it means meaning there's no sequences, we copy the entire literal block.
-            ZSTDGPU_ASSERT(litSize - litCur == blockByteEnd - blockByteCur);
+            if (zstdgpu_CheckLitOffsetTypeCmp(cur.litType))
+            {
+                zstdgpu_ExecuteSequences_Lit(srt, srt.inDecompressedLiterals, cur.litOffs, cur.litOffs + cur.litSize, cur.blockByteBeg, cur.blockByteEnd, cur.seqOfs, cur.seqEnd);
+            }
+            else if (zstdgpu_CheckLitOffsetTypeRaw(cur.litType))
+            {
+                zstdgpu_ExecuteSequences_Lit(srt, srt.inCompressedData, cur.litOffs, cur.litOffs + cur.litSize, cur.blockByteBeg, cur.blockByteEnd, cur.seqOfs, cur.seqEnd);
+            }
+            else if (zstdgpu_CheckLitOffsetTypeRle(cur.litType))
+            {
+                // NOTE(pamartis): RLE literals contain actual symbol instead of offset, so we set the offsets to zero.
+                const uint32_t symbol = cur.litOffs;
+                uint32_t blockByteCur = cur.blockByteBeg;
+                uint32_t litCur = 0;
 
-            zstdgpu_MemSet(srt.inoutUnCompressedFramesData, blockByteCur, symbol, litSize - litCur, blockByteEnd);
+                // NOTE(pamartis): LOOP is used to make sure validation layer doesn't complain about accessing `inDecompressedSequence*`
+                ZSTDGPU_LOOP for (uint32_t seqIdx = cur.seqOfs; seqIdx < cur.seqEnd; ++seqIdx)
+                {
+                    // NOTE(pamartis): these are still uniform variables HLSL has no way of enforcing....
+                    zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
+
+                    zstdgpu_MemSet(srt.inoutUnCompressedFramesData, blockByteCur, symbol, seq.llen, cur.blockByteEnd);
+                    litCur += seq.llen;
+                    zstdgpu_MatchCopy(srt.inoutUnCompressedFramesData, blockByteCur, seq, cur.blockByteEnd);
+                }
+
+                // NOTE(pamartis): copy remaining literals. If above condtion `seqStreamIdx == ~0u` is true,
+                // it means meaning there's no sequences, we copy the entire literal block.
+                ZSTDGPU_ASSERT(cur.litSize - litCur == cur.blockByteEnd - blockByteCur);
+
+                zstdgpu_MemSet(srt.inoutUnCompressedFramesData, blockByteCur, symbol, cur.litSize - litCur, cur.blockByteEnd);
+            }
+
+            cur = nxt;
         }
-#endif
-
     }
 }
 

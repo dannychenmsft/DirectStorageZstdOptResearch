@@ -1489,7 +1489,35 @@ static void zstdgpu_ShaderEntry_ParseCompressedBlocks(ZSTDGPU_PARAM_INOUT(zstdgp
     ZSTDGPU_LDS_REGION(SymbolShuffleScratch                     , kzstdgpu_MaxCount_FseElems)               \
     ZSTDGPU_LDS_REGION(SymbolBitMasks                           , kzstdgpu_MaxCount_FseElemsOneDigitBits * 2)
 
+// TEMP(fse-repro): master toggle for the multi-wave FSE-table LDS-handoff fix.
+//   0 = original (buggy) baseline -- every site below falls back to the cross-wave UAV symbol handoff, which
+//       reproduces the flaky NVIDIA Pascal rank / FSE `nstate` corruption. Use this to measure the repro rate.
+//   1 = apply the LDS-handoff fix (hand spread symbols off through LDS, ordered by a reliable LDS-scope barrier).
+// Flip to 1 (or delete these guards) to re-apply the fix. DO NOT SHIP with 0.
+#ifndef ZSTDGPU_FSE_LDS_HANDOFF_FIX
+#define ZSTDGPU_FSE_LDS_HANDOFF_FIX 1
+#endif
+
 // LDS partitioning macro list tail for FSE Table Initialisation (when threadgroup contains multiple waves)
+//
+// NOTE: `SpreadSymbols` holds the spread FSE-table symbols (one per dword) in LDS. When a threadgroup spans
+// multiple waves the symbol-spread phase and the nstate/rank transpose phase run on different waves, so handing the
+// symbols off through the `inoutFseElems` UAV requires cross-wave *device-memory* ordering. Only a group-shared
+// (LDS-scope) barrier separates those phases, which does NOT order UAV writes, so on weaker GPU memory models
+// (observed flakily on NVIDIA Pascal) the transpose can read a stale symbol and corrupt the per-symbol rank / FSE
+// `nstate`. Keeping the handoff in LDS (ordered correctly by GroupMemoryBarrierWithGroupSync on every GPU) avoids
+// that race. This is only allocated for multi-wave threadgroups; single-wave targets (e.g. Scarlett/Xbox) keep the
+// occupancy-optimal direct-to-UAV path unchanged. (SpreadSymbols only allocated when ZSTDGPU_FSE_LDS_HANDOFF_FIX == 1.)
+#if ZSTDGPU_FSE_LDS_HANDOFF_FIX
+#define ZSTDGPU_INIT_FSE_TABLE_LDS_MULTI_WAVE()                                                             \
+    ZSTDGPU_LDS_REGION(PerWaveDword0                            , kzstdgpu_WaveCountMax_InitFseTable)       \
+    ZSTDGPU_LDS_REGION(PerWaveDword1                            , kzstdgpu_WaveCountMax_InitFseTable)       \
+    ZSTDGPU_LDS_REGION(PerWaveDword2                            , kzstdgpu_WaveCountMax_InitFseTable)       \
+    ZSTDGPU_LDS_REGION(PerGroupDword0                           , 1)                                        \
+    ZSTDGPU_LDS_REGION(PerGroupDword1                           , 1)                                        \
+    ZSTDGPU_LDS_REGION(PerGroupDword2                           , 1)                                        \
+    ZSTDGPU_LDS_REGION(SpreadSymbols                            , kzstdgpu_MaxCount_FseElems)
+#else
 #define ZSTDGPU_INIT_FSE_TABLE_LDS_MULTI_WAVE()                                                             \
     ZSTDGPU_LDS_REGION(PerWaveDword0                            , kzstdgpu_WaveCountMax_InitFseTable)       \
     ZSTDGPU_LDS_REGION(PerWaveDword1                            , kzstdgpu_WaveCountMax_InitFseTable)       \
@@ -1497,6 +1525,7 @@ static void zstdgpu_ShaderEntry_ParseCompressedBlocks(ZSTDGPU_PARAM_INOUT(zstdgp
     ZSTDGPU_LDS_REGION(PerGroupDword0                           , 1)                                        \
     ZSTDGPU_LDS_REGION(PerGroupDword1                           , 1)                                        \
     ZSTDGPU_LDS_REGION(PerGroupDword2                           , 1)
+#endif
 
 #ifndef IS_MULTI_WAVE
 #define IS_MULTI_WAVE 0
@@ -1717,9 +1746,11 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
             // This is to avoid temporary LDS memory use (up to 512 bytes or, rather, 512 dwords because HLSL doesn't have 8-bit types and we don't want to use atomics)
             // So on Scarlett it increases the occupancy which helps the performance
             srt.inoutFseElems[tblDataOffset + negativeFrqSymIndex] = zstdgpu_PackFseElem(symbol, 0, 0);
-
-            // NOTE: below is mainly to make sure `frqDataCount` elements are valid
-            //GS_CompactedPositiveFrqPrefixSumAndSymbols[negativeFrqSymIndex] = (symbol << 24) | 0xffffff;
+#if IS_MULTI_WAVE && ZSTDGPU_FSE_LDS_HANDOFF_FIX
+            // Also hand the symbol off through LDS so the multi-wave nstate/rank transpose reads it via a reliable
+            // LDS-scope barrier instead of a cross-wave UAV read (see ZSTDGPU_INIT_FSE_TABLE_LDS_MULTI_WAVE note).
+            zstdgpu_LdsStoreU32(GS_SpreadSymbols + negativeFrqSymIndex, symbol);
+#endif
         }
 
         if (isPositiveFrq) // we don't check for `symbol < frqDataCount` because alignment tail contains` frq == 0`
@@ -1822,6 +1853,11 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
             //const uint32_t prefix = prefixAndSymbol & 0x00ffffff;
 
             srt.inoutFseElems[tblDataOffset + positiveFrqSymIndex] = zstdgpu_PackFseElem(symbol, 0, 0);
+#if IS_MULTI_WAVE && ZSTDGPU_FSE_LDS_HANDOFF_FIX
+            // Also hand the symbol off through LDS for the multi-wave transpose (see the negative-frequency store
+            // above and the ZSTDGPU_INIT_FSE_TABLE_LDS_MULTI_WAVE note).
+            zstdgpu_LdsStoreU32(GS_SpreadSymbols + positiveFrqSymIndex, symbol);
+#endif
         }
     }
 
@@ -2125,7 +2161,14 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
     uint32_t waveOfs = waveIdx;
     ZSTDGPU_FOR_WORK_ITEMS(workItemId, tblAllDataCount, i, kzstdgpu_TgSizeX_InitFseTable)
     {
+#if IS_MULTI_WAVE && ZSTDGPU_FSE_LDS_HANDOFF_FIX
+        // Read the spread symbol from the LDS handoff (ordered by a reliable LDS-scope barrier) instead of through a
+        // cross-wave UAV read that a weaker GPU memory model may leave stale and corrupt the rank / FSE `nstate`
+        // (see the ZSTDGPU_INIT_FSE_TABLE_LDS_MULTI_WAVE note).
+        const uint32_t symbol = zstdgpu_LdsLoadU32(GS_SpreadSymbols + workItemId);
+#else
         const uint32_t symbol = zstdgpu_FseElem_Symbol(srt.inoutFseElems[tblDataOffset + workItemId]);
+#endif
 
         zstdgpu_GroupBallotLdsStore(laneCnt, symbol, GS_SymbolBitMasks, kzstdgpu_MaxCount_FseElemsOneDigitBits, waveOfs, 0);
         zstdgpu_GroupBallotLdsStore(laneCnt, symbol, GS_SymbolBitMasks, kzstdgpu_MaxCount_FseElemsOneDigitBits, waveOfs, 1);
@@ -2145,7 +2188,12 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
         const uint32_t uintIdx = workItemId >> 5;
         const uint32_t uintOfs = workItemId & 0x1fu;
 
+#if IS_MULTI_WAVE && ZSTDGPU_FSE_LDS_HANDOFF_FIX
+        // See LOOP A above: source the symbol from the LDS handoff for multi-wave threadgroups.
+        const uint32_t symbol = zstdgpu_LdsLoadU32(GS_SpreadSymbols + workItemId);
+#else
         const uint32_t symbol = zstdgpu_FseElem_Symbol(srt.inoutFseElems[tblDataOffset + workItemId]);
+#endif
 
         #define FetchBitsAndAccumulateMask(mask, bits, storage, bitIdx, uintId) \
             bits = zstdgpu_LdsLoadU32(storage + kzstdgpu_MaxCount_FseElemsOneDigitBits * bitIdx + uintId);\

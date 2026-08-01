@@ -1069,20 +1069,282 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_DecompressedSequen
     const zstdgpu_ResourceDataCpu *tstData = resourceDataCpu;
     const zstdgpu_ResourceDataCpu *refData = &GZstd;
 
+    /**
+     *  NOTE(instrumentation): On a mismatch, report exactly which sub-check + index failed (and the ref/tst
+     *  values) so the responsible GPU phase/shader can be localized from the CI/lab log. The original control
+     *  flow is preserved: `SEQVAL_FAIL` still returns `Validate_Failed`, and in instrumented builds it also
+     *  emits a descriptive message through the assert report callback before returning/unwinding.
+     */
+    #define SEQVAL_FAIL(fmt, ...) \
+        do { \
+            ZSTDGPU_ASSERT_MSG(0, "Validate_DecompressedSequences: " fmt, __VA_ARGS__); \
+            return ZSTDGPU_ENUM_CONST(Validate_Failed); \
+        } while (0)
+
     for (uint32_t i = 0; i < GBlockCountCMP; ++i)
     {
         if (refData->GlobalBlockIndexPerCmpBlock[i] != tstData->GlobalBlockIndexPerCmpBlock[i])
-            return ZSTDGPU_ENUM_CONST(Validate_Failed);
+            SEQVAL_FAIL("GlobalBlockIndexPerCmpBlock mismatch (block classification/compaction) cmpBlock=%u ref=%u tst=%u",
+                        i, refData->GlobalBlockIndexPerCmpBlock[i], tstData->GlobalBlockIndexPerCmpBlock[i]);
 
         const uint32_t cmpBlockIndex = refData->GlobalBlockIndexPerCmpBlock[i];
 
         if (refData->BlockSizePrefix[cmpBlockIndex] != tstData->BlockSizePrefix[cmpBlockIndex])
-            return ZSTDGPU_ENUM_CONST(Validate_Failed);
+        {
+            /**
+             *  Decompose this block's regenerated size (size = literalSize + SUM(mlen)) for ref vs tst so the
+             *  inflating sub-component is identifiable straight from the log:
+             *    - tstSeqCnt > refSeqCnt            -> decode over-ran: bad per-stream sequence count (dst.size
+             *                                          from PerSeqStreamSeqStart look-back prefix)
+             *    - seqCnt equal, tstMLen > refMLen  -> match-length FSE decode inflated (DecompressSequences_MultiStream)
+             *    - seqCnt & mlen equal              -> literal size inflated (ParseCompressedBlocks literal size)
+             *  ref is the CPU reference and is correct, so refLit is recovered as refSize - SUM(ref mlen).
+             *  All look-ups are bounds-guarded because tst may be corrupt at the point of failure.
+             */
+            const uint32_t refPfx = refData->BlockSizePrefix[cmpBlockIndex];
+            const uint32_t tstPfx = tstData->BlockSizePrefix[cmpBlockIndex];
+            const uint32_t refPrev = (cmpBlockIndex > 0) ? refData->BlockSizePrefix[cmpBlockIndex - 1] : 0;
+            const uint32_t tstPrev = (cmpBlockIndex > 0) ? tstData->BlockSizePrefix[cmpBlockIndex - 1] : 0;
+            const uint32_t refSize = refPfx - refPrev;
+            const uint32_t tstSize = tstPfx - tstPrev;
+
+            uint32_t refSeqCnt = 0, tstSeqCnt = 0;
+            uint32_t refMLen = 0, tstMLen = 0, refLLen = 0, tstLLen = 0;
+            uint32_t rOffs = 0, tOffs = 0;
+
+            const uint32_t rIdx = refData->CompressedBlocks[i].seqStreamIndex;
+            if (rIdx != ~0u)
+            {
+                rOffs = refData->PerSeqStreamSeqStart[rIdx];
+                const uint32_t rNext = (rIdx + 1u == GSequenceStreamCount) ? GSequenceCount : refData->PerSeqStreamSeqStart[rIdx + 1];
+                if (rNext > rOffs && rNext <= GSequenceCount)
+                {
+                    refSeqCnt = rNext - rOffs;
+                    for (uint32_t s = 0; s < refSeqCnt; ++s)
+                    {
+                        refMLen += refData->DecompressedSequenceMLen[rOffs + s];
+                        refLLen += refData->DecompressedSequenceLLen[rOffs + s];
+                    }
+                }
+            }
+
+            const uint32_t tIdx = tstData->CompressedBlocks[i].seqStreamIndex;
+            if (tIdx != ~0u)
+            {
+                const uint32_t tTotal = tstData->Counters->Seq_Streams_DecodedItems;
+                tOffs = tstData->PerSeqStreamSeqStart[tIdx];
+                const uint32_t tNext = (tIdx + 1u == tstData->Counters->Seq_Streams) ? tTotal : tstData->PerSeqStreamSeqStart[tIdx + 1];
+                if (tNext > tOffs && tNext <= tTotal)
+                {
+                    tstSeqCnt = tNext - tOffs;
+                    for (uint32_t s = 0; s < tstSeqCnt; ++s)
+                    {
+                        tstMLen += tstData->DecompressedSequenceMLen[tOffs + s];
+                        tstLLen += tstData->DecompressedSequenceLLen[tOffs + s];
+                    }
+                }
+            }
+
+            /**
+             *  Per-sequence first divergence for MLen/LLen/Offs (only meaningful when the two streams have
+             *  equal counts). This distinguishes an isolated match-length error (only 1stM set, LLen/Offs
+             *  identical -> MLen symbol/value decode) from a full-stream bit desync (1stL / 1stO also set ->
+             *  wrong FSE state/table or bit-buffer for the whole stream).
+             */
+            int      dM = -1, dL = -1, dO = -1;
+            uint32_t dMr = 0, dMt = 0, dLr = 0, dLt = 0, dOr = 0, dOt = 0;
+            if (rIdx != ~0u && tIdx != ~0u && refSeqCnt == tstSeqCnt)
+            {
+                for (uint32_t s = 0; s < refSeqCnt; ++s)
+                {
+                    if (dM < 0 && refData->DecompressedSequenceMLen[rOffs + s] != tstData->DecompressedSequenceMLen[tOffs + s])
+                    { dM = (int)s; dMr = refData->DecompressedSequenceMLen[rOffs + s]; dMt = tstData->DecompressedSequenceMLen[tOffs + s]; }
+                    if (dL < 0 && refData->DecompressedSequenceLLen[rOffs + s] != tstData->DecompressedSequenceLLen[tOffs + s])
+                    { dL = (int)s; dLr = refData->DecompressedSequenceLLen[rOffs + s]; dLt = tstData->DecompressedSequenceLLen[tOffs + s]; }
+                    if (dO < 0 && refData->DecompressedSequenceOffs[rOffs + s] != tstData->DecompressedSequenceOffs[tOffs + s])
+                    { dO = (int)s; dOr = refData->DecompressedSequenceOffs[rOffs + s]; dOt = tstData->DecompressedSequenceOffs[tOffs + s]; }
+                    if (dM >= 0 && dL >= 0 && dO >= 0)
+                        break;
+                }
+            }
+
+            /**
+             *  Decisive check: does the GPU (tst) decode using the SAME FSE table CONTENTS as the reference for
+             *  this block's sequence stream? Table *index numbers* may legitimately differ between ref and tst,
+             *  so we compare the decoded table CONTENTS (FseInfos accuracy/symbol-count + FseProbs + FseElems)
+             *  at each side's own propagated index (fse{LL,OF,ML} = 1 match, 0 differ, -1 not evaluated).
+             *    - table DIFFERS on the channel that desyncs first -> wrong FSE table index/contents, implicating
+             *      [Propagate FSE Index] (repeat-mode index propagation) or parse.
+             *    - all tables MATCH but sequences desync                -> bit decode / bit-buffer / FSE state.
+             */
+            int      fseLL = -1, fseOF = -1, fseML = -1;
+            uint32_t refIdLL = ~0u, refIdOF = ~0u, refIdML = ~0u;
+            uint32_t tstIdLL = ~0u, tstIdOF = ~0u, tstIdML = ~0u;
+            if (rIdx != ~0u && tIdx != ~0u)
+            {
+                refIdLL = refData->SeqStreamToLLenFseId[rIdx]; tstIdLL = tstData->SeqStreamToLLenFseId[tIdx];
+                refIdOF = refData->SeqStreamToOffsFseId[rIdx]; tstIdOF = tstData->SeqStreamToOffsFseId[tIdx];
+                refIdML = refData->SeqStreamToMLenFseId[rIdx]; tstIdML = tstData->SeqStreamToMLenFseId[tIdx];
+
+                fseLL = (ZSTDGPU_ENUM_CONST(Validate_Success) == izstdgpu_ReferenceStore_Validate_FseTable(
+                            refIdLL, tstIdLL, 0, GBlockCountCMP, zstdgpu_ComputeFseDataStartFromFseIndexLLen,
+                            refData->FseInfos, tstData->FseInfos, refData->FseProbs, tstData->FseProbs,
+                            refData->FseElems, tstData->FseElems)) ? 1 : 0;
+                fseOF = (ZSTDGPU_ENUM_CONST(Validate_Success) == izstdgpu_ReferenceStore_Validate_FseTable(
+                            refIdOF, tstIdOF, 0, GBlockCountCMP, zstdgpu_ComputeFseDataStartFromFseIndexOffs,
+                            refData->FseInfos, tstData->FseInfos, refData->FseProbs, tstData->FseProbs,
+                            refData->FseElems, tstData->FseElems)) ? 1 : 0;
+                fseML = (ZSTDGPU_ENUM_CONST(Validate_Success) == izstdgpu_ReferenceStore_Validate_FseTable(
+                            refIdML, tstIdML, 0, GBlockCountCMP, zstdgpu_ComputeFseDataStartFromFseIndexMLen,
+                            refData->FseInfos, tstData->FseInfos, refData->FseProbs, tstData->FseProbs,
+                            refData->FseElems, tstData->FseElems)) ? 1 : 0;
+            }
+
+            /**
+             *  Two-way discriminator for the channel whose table CONTENT differs (fse*==0):
+             *
+             *   scan1 "is the CORRECT table present in the GPU output?"  -> search the tables tst's streams use
+             *         for one matching ref@refId (the table this block SHOULD have used).
+             *   scan2 "is the GPU's ACTUALLY-USED (wrong) table a VALID reference table, or garbage?" -> search
+             *         the reference tables for one matching tst@tstId (the table this block DID use).
+             *
+             *   wrongIsRef >= 0 : tst's table is a REAL, valid reference table -> the block was handed the WRONG
+             *                     (but well-formed) table -> wrong INDEX selected -> [Propagate FSE Index]/parse.
+             *   wrongIsRef == -1: tst's table matches NO reference table -> GARBAGE contents -> wrong CONTENTS ->
+             *                     [Init FSE Table] / FSE-prob decode / UAV coherence.
+             *   corrInTst is a secondary signal (>=0 correct table still exists somewhere in tst's output).
+             */
+            int      scanCh = -1;
+            int      corrInTst = -2;  uint32_t corrTstIdx = ~0u;   // scan1: correct table found among tst's used tables
+            int      wrongIsRef = -2; uint32_t wrongRefIdx = ~0u;  // scan2: tst's used table found among ref's tables
+            int      cmpInfo = -1, cmpProb = -1, cmpElem = -1;     // component breakdown at (refId,tstId) of failing channel
+            int      elemFirst = -1, symMiss = -1, stMiss = -1;   // per-cell FseElems breakdown (symbol vs bitcnt/nstate)
+            uint32_t elemR = 0, elemT = 0;                        // first differing packed FseElem (ref/tst)
+            {
+                uint32_t chRefId = ~0u, chTstId = ~0u;
+                const uint32_t *tstIds = NULL, *refIds = NULL;
+                zstdgpu_FseElemOffsetFn chFn = NULL;
+                if      (fseLL == 0) { scanCh = 0; chRefId = refIdLL; chTstId = tstIdLL; tstIds = tstData->SeqStreamToLLenFseId; refIds = refData->SeqStreamToLLenFseId; chFn = zstdgpu_ComputeFseDataStartFromFseIndexLLen; }
+                else if (fseOF == 0) { scanCh = 1; chRefId = refIdOF; chTstId = tstIdOF; tstIds = tstData->SeqStreamToOffsFseId; refIds = refData->SeqStreamToOffsFseId; chFn = zstdgpu_ComputeFseDataStartFromFseIndexOffs; }
+                else if (fseML == 0) { scanCh = 2; chRefId = refIdML; chTstId = tstIdML; tstIds = tstData->SeqStreamToMLenFseId; refIds = refData->SeqStreamToMLenFseId; chFn = zstdgpu_ComputeFseDataStartFromFseIndexMLen; }
+
+                /**
+                 *  Component-level breakdown of the failing channel's table at (chRefId, chTstId). Decisive when
+                 *  the two indices are equal (ref/tst chose the SAME table slot but its data differs):
+                 *    info=1               -> FseInfos accuracyLog2/probCount differ  -> FSE-header parse.
+                 *    info=0, prob=1       -> FseProbs distribution differs            -> FSE-probability parse.
+                 *    info=0, prob=0, elem=1 -> only FseElems differ (identical probs) -> [Init FSE Table] build/spread.
+                 */
+                if (scanCh >= 0 && chRefId < kzstdgpu_FseProbTableIndex_Repeat && chTstId < kzstdgpu_FseProbTableIndex_Repeat)
+                {
+                    const zstdgpu_FseInfo *ri = &refData->FseInfos[chRefId];
+                    const zstdgpu_FseInfo *ti = &tstData->FseInfos[chTstId];
+                    cmpInfo = (ri->fseProbCountAndAccuracyLog2 != ti->fseProbCountAndAccuracyLog2) ? 1 : 0;
+                    if (cmpInfo == 0)
+                    {
+                        const uint32_t probCount   = ri->fseProbCountAndAccuracyLog2 & 0xffu;
+                        const uint32_t symbolCount = 1u << (ri->fseProbCountAndAccuracyLog2 >> 8u);
+                        if (probCount > 0)
+                        {
+                            const uint32_t rp = (chRefId - kzstdgpu_FseRleTableCount) * kzstdgpu_MaxCount_FseProbs;
+                            const uint32_t tp = (chTstId - kzstdgpu_FseRleTableCount) * kzstdgpu_MaxCount_FseProbs;
+                            cmpProb = (0 != memcmp(&refData->FseProbs[rp], &tstData->FseProbs[tp], probCount * sizeof(refData->FseProbs[0]))) ? 1 : 0;
+                        }
+                        else
+                            cmpProb = 0;
+                        const uint32_t re = chFn(chRefId, GBlockCountCMP);
+                        const uint32_t te = chFn(chTstId, GBlockCountCMP);
+                        cmpElem = (0 != memcmp(&refData->FseElems[re], &tstData->FseElems[te], symbolCount * sizeof(refData->FseElems[0]))) ? 1 : 0;
+
+                        /**
+                         *  Split InitFseTable into its two halves by comparing each decoded FSE cell:
+                         *    symMiss>0            -> some cell's SYMBOL differs        -> symbol-SPREAD phase.
+                         *    symMiss==0 & stMiss>0-> symbols match, bitcnt/nstate differ-> nbBits/nState COMPUTE phase.
+                         *  elemFirst/elemR/elemT capture the first differing packed cell (symbol=[0:8) bitcnt=[8:16) nstate=[16:32)).
+                         */
+                        if (cmpElem == 1)
+                        {
+                            symMiss = 0;
+                            stMiss  = 0;
+                            for (uint32_t c = 0; c < symbolCount; ++c)
+                            {
+                                const uint32_t rc = refData->FseElems[re + c];
+                                const uint32_t tc = tstData->FseElems[te + c];
+                                if (rc == tc)
+                                    continue;
+                                if (elemFirst < 0) { elemFirst = (int)c; elemR = rc; elemT = tc; }
+                                if (zstdgpu_FseElem_Symbol(rc) != zstdgpu_FseElem_Symbol(tc))
+                                    ++symMiss;
+                                else
+                                    ++stMiss;
+                            }
+                        }
+                    }
+                }
+
+                if (scanCh >= 0 && tstIds != NULL && chRefId < kzstdgpu_FseProbTableIndex_Repeat)
+                {
+                    corrInTst = -1;
+                    const uint32_t streamCnt = tstData->Counters->Seq_Streams;
+                    for (uint32_t s = 0; s < streamCnt; ++s)
+                    {
+                        const uint32_t cand = tstIds[s];
+                        if (cand >= kzstdgpu_FseProbTableIndex_Repeat)
+                            continue;
+                        if (ZSTDGPU_ENUM_CONST(Validate_Success) == izstdgpu_ReferenceStore_Validate_FseTable(
+                                chRefId, cand, 0, GBlockCountCMP, chFn,
+                                refData->FseInfos, tstData->FseInfos, refData->FseProbs, tstData->FseProbs,
+                                refData->FseElems, tstData->FseElems))
+                        {
+                            corrInTst = (int)s;
+                            corrTstIdx = cand;
+                            break;
+                        }
+                    }
+                }
+
+                if (scanCh >= 0 && refIds != NULL && chTstId < kzstdgpu_FseProbTableIndex_Repeat)
+                {
+                    wrongIsRef = -1;
+                    const uint32_t rStreamCnt = refData->Counters->Seq_Streams;
+                    for (uint32_t s = 0; s < rStreamCnt; ++s)
+                    {
+                        const uint32_t rcand = refIds[s];
+                        if (rcand >= kzstdgpu_FseProbTableIndex_Repeat)
+                            continue;
+                        if (ZSTDGPU_ENUM_CONST(Validate_Success) == izstdgpu_ReferenceStore_Validate_FseTable(
+                                rcand, chTstId, 0, GBlockCountCMP, chFn,
+                                refData->FseInfos, tstData->FseInfos, refData->FseProbs, tstData->FseProbs,
+                                refData->FseElems, tstData->FseElems))
+                        {
+                            wrongIsRef = (int)s;
+                            wrongRefIdx = rcand;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const uint32_t refLit = refSize - refMLen;
+            const uint32_t tstLit = tstSize - tstMLen;
+
+            SEQVAL_FAIL("BlockSizePrefix mismatch (block-size prefix-sum stage) cmpBlock=%u globalBlock=%u dPfx=%d | blockSize ref=%u tst=%u dSize=%d | litSize ref=%u tst=%u | seqCnt ref=%u tst=%u | mlenSum ref=%u tst=%u | llenSum ref=%u tst=%u | 1stM s=%d r=%u t=%u | 1stL s=%d r=%u t=%u | 1stO s=%d r=%u t=%u             | fseTbl LL=%d OF=%d ML=%d | refId LL=%u OF=%u ML=%u | tstId LL=%u OF=%u ML=%u             | comp info=%d prob=%d elem=%d | elemCells 1st=%d r=%08x t=%08x symMiss=%d stMiss=%d | scan ch=%d corrInTst=%d@%u wrongIsRef=%d@%u",
+                        i, cmpBlockIndex, (int)(tstPfx - refPfx),
+                        refSize, tstSize, (int)(tstSize - refSize),
+                        refLit, tstLit, refSeqCnt, tstSeqCnt,
+                        refMLen, tstMLen, refLLen, tstLLen,
+                        dM, dMr, dMt, dL, dLr, dLt, dO, dOr, dOt,
+                        fseLL, fseOF, fseML, refIdLL, refIdOF, refIdML, tstIdLL, tstIdOF, tstIdML,
+                                   cmpInfo, cmpProb, cmpElem,
+                                   elemFirst, elemR, elemT, symMiss, stMiss,
+                                   scanCh, corrInTst, corrTstIdx, wrongIsRef, wrongRefIdx);
+        }
 
         if (refData->CompressedBlocks[i].seqStreamIndex == ~0u)
         {
             if (tstData->CompressedBlocks[i].seqStreamIndex != ~0u)
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                SEQVAL_FAIL("seqStreamIndex mismatch (block classification) cmpBlock=%u ref=no-stream tst=%u",
+                            i, tstData->CompressedBlocks[i].seqStreamIndex);
         }
         else
         {
@@ -1090,22 +1352,27 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_DecompressedSequen
             const uint32_t tstSeqSteamIndex = tstData->CompressedBlocks[i].seqStreamIndex;
 
             if (tstSeqSteamIndex == ~0u)
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                SEQVAL_FAIL("seqStreamIndex mismatch (block classification) cmpBlock=%u ref=%u tst=no-stream",
+                            i, refSeqSteamIndex);
 
             if (refData->PerSeqStreamFinalOffset1[refSeqSteamIndex] != tstData->PerSeqStreamFinalOffset1[tstSeqSteamIndex])
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                SEQVAL_FAIL("PerSeqStreamFinalOffset1 mismatch (PrefixSequenceOffsets scan) cmpBlock=%u seqStream(tst)=%u seqStream(ref)=%u ref=%u tst=%u",
+                            i, tstSeqSteamIndex, refSeqSteamIndex, refData->PerSeqStreamFinalOffset1[refSeqSteamIndex], tstData->PerSeqStreamFinalOffset1[tstSeqSteamIndex]);
 
             if (refData->PerSeqStreamFinalOffset2[refSeqSteamIndex] != tstData->PerSeqStreamFinalOffset2[tstSeqSteamIndex])
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                SEQVAL_FAIL("PerSeqStreamFinalOffset2 mismatch (PrefixSequenceOffsets scan) cmpBlock=%u seqStream(tst)=%u seqStream(ref)=%u ref=%u tst=%u",
+                            i, tstSeqSteamIndex, refSeqSteamIndex, refData->PerSeqStreamFinalOffset2[refSeqSteamIndex], tstData->PerSeqStreamFinalOffset2[tstSeqSteamIndex]);
 
             if (refData->PerSeqStreamFinalOffset3[refSeqSteamIndex] != tstData->PerSeqStreamFinalOffset3[tstSeqSteamIndex])
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                SEQVAL_FAIL("PerSeqStreamFinalOffset3 mismatch (PrefixSequenceOffsets scan) cmpBlock=%u seqStream(tst)=%u seqStream(ref)=%u ref=%u tst=%u",
+                            i, tstSeqSteamIndex, refSeqSteamIndex, refData->PerSeqStreamFinalOffset3[refSeqSteamIndex], tstData->PerSeqStreamFinalOffset3[tstSeqSteamIndex]);
 
             const uint32_t refSeqOffs = refData->PerSeqStreamSeqStart[refSeqSteamIndex];
             const uint32_t tstSeqOffs = tstData->PerSeqStreamSeqStart[tstSeqSteamIndex];
 
             if (tstSeqOffs != refSeqOffs)
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                SEQVAL_FAIL("PerSeqStreamSeqStart mismatch (per-stream seq-start prefix) cmpBlock=%u seqStream(tst)=%u ref=%u tst=%u",
+                            i, tstSeqSteamIndex, refSeqOffs, tstSeqOffs);
 
             // NOTE: dst.offs can't be the same due to non-deterministic allocation
             //izstdgpu_ReferenceStore_Validate_OffsetAndSize(&refSeqRefs[refSeqSteamIndex].dst, &tstSeqRefs[tstSeqSteamIndex].dst);
@@ -1116,19 +1383,44 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_DecompressedSequen
                 const uint32_t tstSeqCount = tstSeqOffsNext - tstSeqOffs;
 
                 if (refSeqCount != tstSeqCount)
-                    return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                    SEQVAL_FAIL("sequence-count mismatch (per-stream seq-start prefix) cmpBlock=%u seqStream(tst)=%u refCount=%u tstCount=%u",
+                                i, tstSeqSteamIndex, refSeqCount, tstSeqCount);
 
                 if (0 != memcmp(&refData->DecompressedSequenceLLen[refSeqOffs], &tstData->DecompressedSequenceLLen[tstSeqOffs], refSeqCount * sizeof(refData->DecompressedSequenceLLen[0])))
-                    return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                {
+                    for (uint32_t s = 0; s < refSeqCount; ++s)
+                        if (refData->DecompressedSequenceLLen[refSeqOffs + s] != tstData->DecompressedSequenceLLen[tstSeqOffs + s])
+                            SEQVAL_FAIL("DecompressedSequenceLLen mismatch (DecompressSequences_MultiStream FSE decode) cmpBlock=%u seqStream(tst)=%u seq=%u/%u ref=%u tst=%u",
+                                        i, tstSeqSteamIndex, s, refSeqCount, refData->DecompressedSequenceLLen[refSeqOffs + s], tstData->DecompressedSequenceLLen[tstSeqOffs + s]);
+                    SEQVAL_FAIL("DecompressedSequenceLLen mismatch (DecompressSequences_MultiStream FSE decode) cmpBlock=%u seqStream(tst)=%u count=%u",
+                                i, tstSeqSteamIndex, refSeqCount);
+                }
 
                 if (0 != memcmp(&refData->DecompressedSequenceMLen[refSeqOffs], &tstData->DecompressedSequenceMLen[tstSeqOffs], refSeqCount * sizeof(refData->DecompressedSequenceMLen[0])))
-                    return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                {
+                    for (uint32_t s = 0; s < refSeqCount; ++s)
+                        if (refData->DecompressedSequenceMLen[refSeqOffs + s] != tstData->DecompressedSequenceMLen[tstSeqOffs + s])
+                            SEQVAL_FAIL("DecompressedSequenceMLen mismatch (DecompressSequences_MultiStream FSE decode) cmpBlock=%u seqStream(tst)=%u seq=%u/%u ref=%u tst=%u",
+                                        i, tstSeqSteamIndex, s, refSeqCount, refData->DecompressedSequenceMLen[refSeqOffs + s], tstData->DecompressedSequenceMLen[tstSeqOffs + s]);
+                    SEQVAL_FAIL("DecompressedSequenceMLen mismatch (DecompressSequences_MultiStream FSE decode) cmpBlock=%u seqStream(tst)=%u count=%u",
+                                i, tstSeqSteamIndex, refSeqCount);
+                }
 
                 if (0 != memcmp(&refData->DecompressedSequenceOffs[refSeqOffs], &tstData->DecompressedSequenceOffs[tstSeqOffs], refSeqCount * sizeof(refData->DecompressedSequenceOffs[0])))
-                    return ZSTDGPU_ENUM_CONST(Validate_Failed);
+                {
+                    for (uint32_t s = 0; s < refSeqCount; ++s)
+                        if (refData->DecompressedSequenceOffs[refSeqOffs + s] != tstData->DecompressedSequenceOffs[tstSeqOffs + s])
+                            SEQVAL_FAIL("DecompressedSequenceOffs mismatch (DecompressSequences_MultiStream + FinaliseSequenceOffsets) cmpBlock=%u seqStream(tst)=%u seq=%u/%u ref=%u tst=%u",
+                                        i, tstSeqSteamIndex, s, refSeqCount, refData->DecompressedSequenceOffs[refSeqOffs + s], tstData->DecompressedSequenceOffs[tstSeqOffs + s]);
+                    SEQVAL_FAIL("DecompressedSequenceOffs mismatch (DecompressSequences_MultiStream + FinaliseSequenceOffsets) cmpBlock=%u seqStream(tst)=%u count=%u",
+                                i, tstSeqSteamIndex, refSeqCount);
+                }
             }
 
         }
     }
+
+    #undef SEQVAL_FAIL
+
     return ZSTDGPU_ENUM_CONST(Validate_Success);
 }

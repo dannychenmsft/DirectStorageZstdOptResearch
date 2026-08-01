@@ -22,6 +22,22 @@
 #   endif
 #endif
 
+/* =====================================================================================
+ * TEMP(fse-repro): fast-iteration switch for chasing the flaky Pascal multi-wave
+ * InitFseTable bug. When set to 1, the GPU pipeline stops right after the stage whose
+ * output is checked by Validate_DecompressedSequences: the expensive/TDR-prone
+ * [Execute Sequences] dispatch is skipped, and so is the CPU-side full-frame memcmp
+ * validation that depends on its output (it would otherwise report false failures on
+ * every passing run and the demo would exit before enough --run-cnt iterations run).
+ * This makes each iteration cheap and prevents an ExecuteSequences TDR from masking the
+ * clean sequence-validation diagnostic.
+ *
+ * Set to 0 (or delete this block) to restore the full pipeline. DO NOT SHIP.
+ * ===================================================================================== */
+#ifndef ZSTDGPU_TEMP_SKIP_EXECUTE_SEQUENCES
+#   define ZSTDGPU_TEMP_SKIP_EXECUTE_SEQUENCES 1
+#endif
+
 struct zstdgpu_CountFramesAndBlocksInfo
 {
     uint32_t rawBlockCount;

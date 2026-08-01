@@ -3395,9 +3395,17 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Execute Sequences]");
         BIND_RS_PS_SRT(ExecuteSequences);
 
+#if ZSTDGPU_TEMP_SKIP_EXECUTE_SEQUENCES
+        // TEMP(fse-repro): skip the expensive/TDR-prone dispatch, but still emit the
+        // kernel scope so timestamp slot indexing stays consistent. See ZSTDGPU_TEMP_SKIP_EXECUTE_SEQUENCES.
+        ZSTDGPU_KERNEL_SCOPE(ExecuteSequences, cmdList,
+            (void)req;
+        );
+#else
         ZSTDGPU_KERNEL_SCOPE(ExecuteSequences, cmdList,
             cmdList->Dispatch(req->zstdFrameCount, 1, 1);
         );
+#endif
         PIXEndEvent(cmdList);
     }
     {

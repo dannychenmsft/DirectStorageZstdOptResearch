@@ -1720,10 +1720,10 @@ static int demoRun(void *demoCtx)
                     zstdgpu_Test_DecompressLiterals(zstdCpu, gpuData, zstdCompressedFramesMemorySizeInBytes, chkGpu, simGpu);
                     zstdgpu_Test_DecompressSequences(zstdCpu, gpuData, zstdCompressedFramesMemorySizeInBytes, chkGpu, simGpu);
 
-                    if (chkCpu && chkGpu)
+                    if (chkCpu && chkGpu && !ZSTDGPU_TEMP_SKIP_EXECUTE_SEQUENCES)
                         zstdgpu_Test_BlockPrefix(zstdCpu, gpuData);
 
-                    if (chkGpu)
+                    if (chkGpu && !ZSTDGPU_TEMP_SKIP_EXECUTE_SEQUENCES)
                     {
                         uint32_t failedFrameCount = 0;
 

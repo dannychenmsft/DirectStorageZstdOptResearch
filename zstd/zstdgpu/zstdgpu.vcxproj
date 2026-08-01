@@ -261,7 +261,10 @@
     <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets'))" />
   </Target>
   <!-- The CompileShaders target compiles all the shaders to ShaderDirectory -->
-  <Target Name="CompileShaders" BeforeTargets="PrepareForBuild" DependsOnTargets="CollectShaders;MakeShaderDirectory" Inputs="%(Shader.FullPath)" Outputs="$(ShaderDirectory)%(Shader.Filename).h">
+  <!-- NOTE: Inputs lists the shared shader headers in addition to each .hlsl so that editing shader logic in
+       those headers (which the .hlsl files #include) correctly retriggers shader recompilation. Without them
+       MSBuild's up-to-date check only compares the .hlsl timestamp and would silently ship a stale shader blob. -->
+  <Target Name="CompileShaders" BeforeTargets="PrepareForBuild" DependsOnTargets="CollectShaders;MakeShaderDirectory" Inputs="%(Shader.FullPath);$(MSBuildThisFileDirectory)zstdgpu_shaders.h;$(MSBuildThisFileDirectory)zstdgpu_structs.h" Outputs="$(ShaderDirectory)%(Shader.Filename).h">
     <Message Importance="High" Text="Compiling %(Shader.FullPath) to %(Shader.Filename)" />
     <Exec Command="&quot;$(MSBuildBinPath)\Tracker.exe&quot; /d &quot;$(MSBuildBinPath)\FileTracker64.dll&quot; /i $(TLogLocation) /r &quot;%(Shader.FullPath)&quot; /c dxc.exe --version" />
     <Exec Command="&quot;$(MSBuildBinPath)\Tracker.exe&quot; /d &quot;$(MSBuildBinPath)\FileTracker64.dll&quot; /i $(TLogLocation) /r &quot;%(Shader.FullPath)&quot; /c dxc.exe %(Shader.FullPath) $(DxcOpts) /T%(Shader.ShaderModel) %(Shader.Opts) /Emain /Fh$(ShaderDirectory)%(Shader.Filename).h /Fd$(ShaderDirectory)%(Shader.Filename).pdb /Vn g_%(Shader.Filename)" />

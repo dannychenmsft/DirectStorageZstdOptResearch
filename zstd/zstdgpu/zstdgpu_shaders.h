@@ -3571,10 +3571,21 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
 
     // NOTE: The single-stream decoder runs the entire FSE recurrence on one thread,
     // prefetching the next FSE elements before storing the current ones to overlap load latency.
+    #ifndef ZSTDGPU_FSE_SCALAR_BROADCAST
+    #define ZSTDGPU_FSE_SCALAR_BROADCAST 0
+    #endif
     #if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
     #   define ZSTDGPU_SS_FSE_LLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedLLen + (s))
     #   define ZSTDGPU_SS_FSE_OFFS(s) zstdgpu_LdsLoadU32(GS_FsePackedOffs + (s))
     #   define ZSTDGPU_SS_FSE_MLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedMLen + (s))
+    #elif ZSTDGPU_FSE_SCALAR_BROADCAST
+    // Vendor-gated (AMD only, set by the AMD-selected ScalarFseLoad32 kernel). In the single-stream decoder
+    // only lane 0 is active, so the three FSE-element loads are wave-uniform; wrapping them in
+    // WaveReadLaneFirst marks them uniform for the compiler so AMD/RDNA issues them on the scalar unit.
+    // WaveReadLaneFirst returns lane 0's own value here, so the result is bit-identical to a plain load.
+    #   define ZSTDGPU_SS_FSE_LLEN(s) WaveReadLaneFirst(srt.inFseElems[startLLen + (s)])
+    #   define ZSTDGPU_SS_FSE_OFFS(s) WaveReadLaneFirst(srt.inFseElems[startOffs + (s)])
+    #   define ZSTDGPU_SS_FSE_MLEN(s) WaveReadLaneFirst(srt.inFseElems[startMLen + (s)])
     #else
     #   define ZSTDGPU_SS_FSE_LLEN(s) srt.inFseElems[startLLen + (s)]
     #   define ZSTDGPU_SS_FSE_OFFS(s) srt.inFseElems[startOffs + (s)]
@@ -4122,6 +4133,9 @@ static void zstdgpu_ExecuteSequencePair_FusedCopy(ZSTDGPU_RW_TYPED_BUFFER(uint32
  *          function( WaveReadLaneFirst(conditionA) != 0 ? bufferA : bufferB );
  *      }
  */
+#ifndef ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH
+#define ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH 0
+#endif
 static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt,
                                          ZSTDGPU_RO_TYPED_BUFFER(uint32_t, uint8_t) litBuf,
                                          uint32_t litOfs,
@@ -4133,6 +4147,39 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
 {
     ZSTDGPU_BRANCH if (seqIdx < seqEnd)
     {
+#if ZSTDGPU_EXECSEQ_PAIR_CARRY_PREFETCH
+        // Vendor-gated (NVIDIA only, via the ExecuteSequences64_PairCarryPrefetch kernel). Deeper
+        // prefetch: carry BOTH sequences of the current pair across the loop backedge and prefetch the
+        // entire next pair up front, so all of the next pair's metadata loads overlap this pair's copies.
+        // Measured a throughput win on NVIDIA but a regression on AMD RDNA3, hence it is NVIDIA-gated.
+        zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
+        zstdgpu_Sequence seq1 = seq;
+        ZSTDGPU_BRANCH if (seqIdx + 1u < seqEnd)
+        {
+            seq1 = zstdgpu_LoadSequence(srt, seqIdx + 1u);
+        }
+
+        ZSTDGPU_LOOP for (; seqIdx + 1u < seqEnd; seqIdx += 2u)
+        {
+            const uint32_t nextFirstIdx  = seqIdx + 2u;
+            const uint32_t nextSecondIdx = seqIdx + 3u;
+            zstdgpu_Sequence seqNextFirst  = seq1;
+            zstdgpu_Sequence seqNextSecond = seq1;
+            ZSTDGPU_BRANCH if (nextFirstIdx < seqEnd)
+            {
+                seqNextFirst = zstdgpu_LoadSequence(srt, nextFirstIdx);
+            }
+            ZSTDGPU_BRANCH if (nextSecondIdx < seqEnd)
+            {
+                seqNextSecond = zstdgpu_LoadSequence(srt, nextSecondIdx);
+            }
+
+            zstdgpu_ExecuteSequencePair_FusedCopy(srt.inoutUnCompressedFramesData, dstOfs, litBuf, litOfs, seq, seq1, dstEnd);
+
+            seq  = seqNextFirst;
+            seq1 = seqNextSecond;
+        }
+#else
         // NOTE(pamartis): these are still uniform variables HLSL has no way of enforcing....
         zstdgpu_Sequence seq = zstdgpu_LoadSequence(srt, seqIdx);
 
@@ -4155,6 +4202,7 @@ static void zstdgpu_ExecuteSequences_Lit(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequ
 
             seq = seqNext;
         }
+#endif
 
         // Tail: handle the final sequence when the sequence count in this frame is odd.
         ZSTDGPU_BRANCH if (seqIdx < seqEnd)

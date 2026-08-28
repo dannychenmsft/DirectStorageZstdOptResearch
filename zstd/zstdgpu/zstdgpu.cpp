@@ -85,6 +85,7 @@ ZSTDGPU_WARN_POP_MSVC()
 #include "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h"
 #include "ZstdGpuExecuteSequences128.h"
 #include "ZstdGpuExecuteSequences64.h"
+#include "ZstdGpuExecuteSequences64_PairCarryPrefetch.h"
 #include "ZstdGpuExecuteSequences32.h"
 #include "ZstdGpuFinaliseSequenceOffsets.h"
 #include "ZstdGpuInitFseTable.h"
@@ -616,6 +617,7 @@ static uint32_t zstdgpu_Count_SRTs_Stage(uint32_t stageIndex)
     ZSTDGPU_KERNEL(DecompressSequences_MultiStream_2_LdsOutCache_32 ,   L"Decompress Sequences (Multi-Stream, Threads Per Stream=2, LDS Out Cache= 32 Sequences)")    \
     ZSTDGPU_KERNEL(ExecuteSequences128                              ,   L"Execute Sequences 128")                                               \
     ZSTDGPU_KERNEL(ExecuteSequences64                               ,   L"Execute Sequences 64")                                                \
+    ZSTDGPU_KERNEL(ExecuteSequences64_PairCarryPrefetch            ,   L"Execute Sequences 64 (Pair-Carry Prefetch)")                          \
     ZSTDGPU_KERNEL(ExecuteSequences32                               ,   L"Execute Sequences 32")                                                \
     ZSTDGPU_KERNEL(FinaliseSequenceOffsets                          ,   L"Finalise Sequence Offsets")                                           \
     ZSTDGPU_KERNEL(InitFseTable                                     ,   L"Init Fse Table")                                                      \
@@ -963,7 +965,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
             ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_MultiStream_4_LdsOutCache_32);
             context->DecompressSequences_StreamsPerGroup = kzstdgpu_TgSizeX_DecompressSequences / 4u;
 
-            ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64);
+            ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64_PairCarryPrefetch);
         }
         else if (featureOptions1.WaveLaneCountMax == 128)
         {

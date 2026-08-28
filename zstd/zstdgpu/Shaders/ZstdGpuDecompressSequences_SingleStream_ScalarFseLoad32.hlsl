@@ -18,4 +18,7 @@
 
 #define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache 1
 #define kzstdgpu_TgSizeX_DecompressSequences_SingleStream 32
+// Vendor-gated (AMD): issue the uniform FSE-element gather on the scalar unit. See ZSTDGPU_SS_FSE_* in
+// zstdgpu_shaders.h. Bit-identical to the plain load (only lane 0 is active in the single-stream decoder).
+#define ZSTDGPU_FSE_SCALAR_BROADCAST 1
 #include "ZstdGpuDecompressSequences_SingleStream.hlsli"

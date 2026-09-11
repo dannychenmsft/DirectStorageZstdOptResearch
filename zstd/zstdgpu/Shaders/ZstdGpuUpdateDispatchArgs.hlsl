@@ -60,7 +60,9 @@ void main()
                                      | (rleBlockCount > srt.rleBlockCountMax ? (1u << 2u) : 0u);
 
         srt.inoutPredicate[0] = predicateMask; // lower 32-bits of Stage 1 predicate
+        srt.inoutPredicate[1] = 0;             // upper 32-bits of Stage 1 predicate
         srt.inoutPredicate[2] = predicateMask; // lower 32-bits of Stage 2 predicate
+        srt.inoutPredicate[3] = 0;             // upper 32-bits of Stage 2 predicate
     }
     else if (srt.stage == 1)
     {

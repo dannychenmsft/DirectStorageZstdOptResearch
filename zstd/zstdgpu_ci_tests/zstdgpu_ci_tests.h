@@ -54,7 +54,7 @@ struct TestConfig
     // -- a bandwidth-vs-window curve. Smallest 64, top 1024, with x1.5 midpoints
     // (192/384/768) as extra rungs beyond straight doubling. A fixed CI constant.
     std::vector<int> perfThroughputFrameCounts = { 64, 128, 192, 256, 384, 512, 768, 1024 };
-    int perfRunCount = 20;                       // Measured sweeps over the whole set (a fixed CI constant), forwarded to the demo as --run-cnt.
+    int perfRunCount = 5;                        // Measured sweeps over the whole set (a fixed CI constant), forwarded to the demo as --run-cnt.  A compromise value that keeps the pooled P50/median stable while bounding CI execution time.
 
     // Cached list of .zst files discovered under contentPath. Populated once
     // in main() after validation; consumed by GetTestFiles() at fixture

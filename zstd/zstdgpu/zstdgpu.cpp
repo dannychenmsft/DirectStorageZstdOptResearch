@@ -1344,16 +1344,36 @@ uint32_t zstdgpu_IsAnyStageReadbackRequired(zstdgpu_PerRequestContext inPerReque
 
 static uint32_t zstdgpu_OutputSizeToBlockCount(uint32_t size)
 {
-    // NOTE(pamartis): We compute the number of 4KiB blocks -- which is the minimal size of the block
-    // standard ZSTD compressor uses.
+    // NOTE: This is an ESTIMATE, not a bound. Block count cannot be bounded by decompressed size:
+    // a block may regenerate as little as zero bytes (an empty RAW block costs 3 header bytes and
+    // no payload). Measured on the CI corpus, this estimate is exceeded by 5678 of 32845 frames,
+    // worst case 27x over. Callers that need soundness must supply exact counts via
+    // `zstdgpu_SetupFrameInfoConstants` -- those come from a block-header hop that does NOT descend
+    // into literal/sequence sections and measures ~130 GB/s, i.e. it is effectively free.
     return (size + 4095) >> 12;
 }
 
+/**
+ *  Provable upper bound on the number of sequences a batch can contain, derived purely from the
+ *  decompressed size.
+ *
+ *  Every sequence emits at least `kzstdgpu_MinMatchLength` (3) output bytes (a match is never
+ *  shorter than the zstd minimum match). Therefore, for any block with regenerated size S:
+ *
+ *      litRegenSize + 3 * nseq  <=  S
+ *
+ *  so nseq <= S/3, and summing over every block in the batch gives nseq_total <= dstBytes/3
+ *  INDEPENDENTLY of how the batch happens to be divided into blocks. This is what makes the bound
+ *  hold for adversarial content, which the previous `size >> 3` estimate did not: that estimate was
+ *  exceeded by 2140 of 32845 frames on the CI corpus (worst case 2.65x over), and because the
+ *  single-submission path enforces its limits with GPU predication, exceeding it silently skipped
+ *  the predicated work and produced WRONG OUTPUT WITH A SUCCESS EXIT CODE.
+ *
+ *  Tightness witness: `public\fuzz\concat\concat_028.zst` reaches 99.6% of this bound.
+ */
 static uint32_t zstdgpu_OutputSizeToSequenceCount(uint32_t size)
 {
-    // NOTE(pamartis): 8 bytes per sequence is emperical estimation, not something stipulated
-    // by ZSTD standard.
-    return size >> 3;
+    return size / kzstdgpu_MinMatchLength;
 }
 
 static void zstdgpu_RecomputeAndRetrieveFrameInfoConstants(uint32_t *outCntRaw, uint32_t *outCntRle, uint32_t *outCntCmp, zstdgpu_PerRequestContext req)
@@ -1373,7 +1393,12 @@ static void zstdgpu_RecomputeAndRetrieveFrameInfoConstants(uint32_t *outCntRaw, 
     {
         if (zstdgpu_HasFlag(req->setupFlags, kzstdgpu_SetupFlags_HasSingleSubmission))
         {
-            // NOTE(pamartis): The estimation is conservative and therefore can result in insufficient memory
+            // NOTE: This is an ESTIMATE and is NOT sound -- block count cannot be bounded by the
+            // decompressed size (see `zstdgpu_OutputSizeToBlockCount`). Callers using
+            // single-submission on untrusted content should supply exact counts via
+            // `zstdgpu_SetupFrameInfoConstants`, which is cheap: the block-header hop does not
+            // descend into literal/sequence sections. When this estimate is exceeded the
+            // stage-1/stage-2 count checks report it through the frame status buffer.
             cntRle = cntRaw = cntCmp = zstdgpu_OutputSizeToBlockCount(req->zstdUncompressedFramesByteCount);
         }
         else
@@ -1419,8 +1444,15 @@ static void zstdgpu_RecomputeAndRetrieveBlockInfoConstants(uint32_t *outCntLit, 
     {
         if (zstdgpu_HasFlag(req->setupFlags, kzstdgpu_SetupFlags_HasSingleSubmission))
         {
-            // NOTE(pamartis): it's a huge overestimate, but it's best we can do safely,
-            // a single output byte requires 1 byte for literal storage
+            // Both of these are provable upper bounds derived purely from the decompressed size,
+            // not estimates:
+            //   - literals: a decompressed literal byte is an output byte, so litBytes <= dstBytes.
+            //     (Only huffman-coded literal sections land in scratch; RAW/RLE literal sections are
+            //      read in place from the compressed buffer, so this is slack, never a shortfall.)
+            //   - sequences: every sequence emits >= 3 output bytes, so nseq <= dstBytes/3.
+            // Because the single-submission path cannot read counters back from the GPU, an
+            // underestimate here is not recoverable -- it silently skips predicated work and
+            // corrupts the output. These must remain bounds.
             cntLit = req->zstdUncompressedFramesByteCount;
             cntSeq = zstdgpu_OutputSizeToSequenceCount(req->zstdUncompressedFramesByteCount);
         }

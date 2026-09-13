@@ -59,7 +59,6 @@ ZSTDGPU_WARN_STOP_MSVC(4505) /**< warning C4505: 'function name': unreferenced f
 ZSTDGPU_WARN_POP_MSVC()
 
 #include "ZstdGpuComputeDestBlockOffsets.h"
-#include "ZstdGpuComputeDestSequenceOffsets.h"
 #include "ZstdGpuComputePrefixSum.h"
 #include "ZstdGpuDecodeHuffmanWeights.h"
 #include "ZstdGpuDecompressHuffmanWeights.h"
@@ -590,7 +589,6 @@ static uint32_t zstdgpu_Count_SRTs_Stage(uint32_t stageIndex)
 
 #define ZSTDGPU_KERNEL_LIST()                                                                                                           \
     ZSTDGPU_KERNEL(ComputeDestBlockOffsets                          ,   L"Compute Destination Block Offsets")                                   \
-    ZSTDGPU_KERNEL(ComputeDestSequenceOffsets                       ,   L"Compute Destination Sequence Offsets")                                \
     ZSTDGPU_KERNEL(ComputePrefixSum                                 ,   L"Compute Prefix of Literal and TG Count for Literal Decompression")    \
     ZSTDGPU_KERNEL(DecodeHuffmanWeights                             ,   L"Decode (from nibbles) Uncompressed Huffman Weights")                  \
     ZSTDGPU_KERNEL(DecompressHuffmanWeights                         ,   L"Decompress FSE-compressed Huffman Weights")                           \
@@ -674,7 +672,6 @@ static const zstdgpu_CompiledShader kzstdgpu_CompiledShaders [] =
 
 #define ZSTDGPU_RUNTIME_KERNEL_LIST_SHARED()        \
     ZSTDGPU_KERNEL(ComputeDestBlockOffsets)         \
-    ZSTDGPU_KERNEL(ComputeDestSequenceOffsets)      \
     ZSTDGPU_KERNEL(ComputePrefixSum)                \
     ZSTDGPU_KERNEL(DecodeHuffmanWeights)            \
     ZSTDGPU_KERNEL(DecompressHuffmanWeights)        \
@@ -2207,6 +2204,12 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitAllStagesWithInteralMemory(zstdgpu_PerRequest
 
 #endif
 
+// NOTE: currently unreferenced - the only direct (non-indirect) 32-bit dispatch was the dead
+// [Compute Dest Sequence Offsets] pass. Kept because the generated SRT headers document this as
+// the entry point to use for direct dispatches (see "Pass this to ZSTDGPU_DISPATCH32_CMD_SIG or
+// zstdgpu_Dispatch32Bit" in zstdgpu_srt_bind.h).
+#pragma warning(push)
+#pragma warning(disable : 4505) // warning C4505: 'name': unreferenced function with internal linkage has been removed
 static void zstdgpu_Dispatch32Bit(ID3D12GraphicsCommandList *cmdList, uint32_t tgCount, uint32_t rootParameterIndex, uint32_t rootParameterOffset)
 {
 #ifdef _GAMING_XBOX
@@ -2231,6 +2234,7 @@ static void zstdgpu_Dispatch32Bit(ID3D12GraphicsCommandList *cmdList, uint32_t t
     cmdList->Dispatch(tgCountX, 1, 1);
 #endif
 }
+#pragma warning(pop)
 
 #define zstdgpu_DispatchIndirect(cmdList, kernelName, counterName) \
     cmdList->ExecuteIndirect(req->kernelName##_CmdSig, kzstdgpu_DispatchSlot_CmdsPerSlot, req->resData.gpuOnly.DispatchArgs, kzstdgpu_DispatchSlot_##counterName * kzstdgpu_DispatchSlot_StrideInUInt32 * sizeof(uint32_t), req->resData.gpuOnly.DispatchCnts, kzstdgpu_DispatchSlot_##counterName * sizeof(uint32_t));
@@ -3252,15 +3256,6 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         ZSTDGPU_KERNEL_SCOPE(ExecuteSequences, cmdList,
             cmdList->Dispatch(req->zstdFrameCount, 1, 1);
         );
-        PIXEndEvent(cmdList);
-    }
-    if (0) /** IMPORTANT: requires DecompressedSequencesMLen to contain inclusive prefix of total sequence sizes */
-    {
-        PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Compute Dest Sequence Offsets]");
-        zstdgpu_Bind_ComputeDestSequenceOffsets(cmdList, req->srts, req->resData.gpuOnly, /*tgOffset */0, /* workItemCount */req->zstdUncompressedSeqElemCountMax);
-
-        zstdgpu_Dispatch32Bit(cmdList, ZSTDGPU_TG_COUNT(req->zstdUncompressedSeqElemCountMax, 256), kzstdgpu_SrtConstsRootSlot_ComputeDestSequenceOffsets, 0);
-
         PIXEndEvent(cmdList);
     }
     /* Read back the final Counters accumulated by the block-parse and decompression passes */

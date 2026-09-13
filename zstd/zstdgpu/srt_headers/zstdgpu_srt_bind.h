@@ -88,8 +88,7 @@ enum
     kzstdgpu_SrtRes_DispatchCnts                        = 67,
     kzstdgpu_SrtRes_Predicate                           = 68,
     kzstdgpu_SrtRes_UnCompressedFramesRefs              = 69,
-    kzstdgpu_SrtRes_DestSequenceOffsets                 = 70,
-    kzstdgpu_SrtRes_Count                               = 71
+    kzstdgpu_SrtRes_Count                               = 70
 };
 
 /**
@@ -112,7 +111,6 @@ static const uint32_t kzstdgpu_SrtConstsRootSlot_DecompressSequences      = 11;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_FinaliseSequenceOffsets  = 9;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_InitFseTable             = 4;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_ComputeDestBlockOffsets  = 4;
-static const uint32_t kzstdgpu_SrtConstsRootSlot_ComputeDestSequenceOffsets = 6;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_MemsetMemcpy             = 7;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_InitResources            = 2;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_ParseCompressedBlocks    = 5;
@@ -179,7 +177,6 @@ struct zstdgpu_Srts
     d3d12aid_ComputeRsPs          InitFseTable;
     d3d12aid_ComputeRsPs          ComputeDestBlockOffsets;
     d3d12aid_ComputeRsPs          ExecuteSequences;
-    d3d12aid_ComputeRsPs          ComputeDestSequenceOffsets;
     d3d12aid_ComputeRsPs          MemsetMemcpy;
     d3d12aid_ComputeRsPs          InitResources;
     d3d12aid_ComputeRsPs          ParseCompressedBlocks;
@@ -1018,19 +1015,6 @@ static void zstdgpu_Bind_ExecuteSequences_Stage2(ID3D12GraphicsCommandList *cmdL
     cmdList->SetComputeRootShaderResourceView(9 /* GlobalBlockIndexPerCmpBlock */, b.GlobalBlockIndexPerCmpBlock->GetGPUVirtualAddress());
     cmdList->SetComputeRootShaderResourceView(10 /* PerSeqStreamSeqStart */, b.PerSeqStreamSeqStart->GetGPUVirtualAddress());
     cmdList->SetComputeRootShaderResourceView(11 /* CompressedBlocks */, b.CompressedBlocks->GetGPUVirtualAddress());
-}
-
-static void zstdgpu_Bind_ComputeDestSequenceOffsets(ID3D12GraphicsCommandList *cmdList, const zstdgpu_Srts &srts, const zstdgpu_GpuOnlyBuffers &b, uint32_t tgOffset, uint32_t workItemCount)
-{
-    d3d12aid_ComputeRsPs_Set(&srts.ComputeDestSequenceOffsets, cmdList);
-    cmdList->SetComputeRootUnorderedAccessView(0 /* DestSequenceOffsets */, b.DestSequenceOffsets->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(1 /* Counters */, b.Counters->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(2 /* BlockDestOffs */, b.BlockDestOffs->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(3 /* DecompressedSequenceMLen */, b.DecompressedSequenceMLen->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(4 /* PerSeqStreamSeqStart */, b.PerSeqStreamSeqStart->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(5 /* SeqStreamToBlockId */, b.SeqStreamToBlockId->GetGPUVirtualAddress());
-    cmdList->SetComputeRoot32BitConstant(6 /* Consts */, tgOffset, 0 /* tgOffset */);
-    cmdList->SetComputeRoot32BitConstant(6 /* Consts */, workItemCount, 1 /* workItemCount */);
 }
 
 static void zstdgpu_Bind_InitResources_Stage0(ID3D12GraphicsCommandList *cmdList, const zstdgpu_Srts &srts, const zstdgpu_GpuOnlyBuffers &b, uint32_t initResourcesStage)

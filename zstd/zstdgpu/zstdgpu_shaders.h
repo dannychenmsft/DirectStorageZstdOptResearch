@@ -3429,9 +3429,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream(ZSTDGPU_PARAM_IN
                 ZSTDGPU_BACKWARD_BITBUF(Refill)(bitBuffer, 32u);
             }
 
-            srt.inoutDecompressedSequenceLLen[i] = llen;
-            srt.inoutDecompressedSequenceMLen[i] = mlen;
-            srt.inoutDecompressedSequenceOffs[i] = offs;
+            srt.inoutDecompressedSequences[zstdgpu_SeqRecordLLen(i)] = llen;
+            srt.inoutDecompressedSequences[zstdgpu_SeqRecordMLen(i)] = mlen;
+            srt.inoutDecompressedSequences[zstdgpu_SeqRecordOffs(i)] = offs;
         }
 
         // Now handle the final (or only) sequence in the current block.
@@ -3450,9 +3450,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream(ZSTDGPU_PARAM_IN
             totalSize += llen + mlen;
             totalMLen += mlen;
 
-            srt.inoutDecompressedSequenceLLen[i] = llen;
-            srt.inoutDecompressedSequenceMLen[i] = mlen;
-            srt.inoutDecompressedSequenceOffs[i] = offs;
+            srt.inoutDecompressedSequences[zstdgpu_SeqRecordLLen(i)] = llen;
+            srt.inoutDecompressedSequences[zstdgpu_SeqRecordMLen(i)] = mlen;
+            srt.inoutDecompressedSequences[zstdgpu_SeqRecordOffs(i)] = offs;
         }
     }
 
@@ -3609,9 +3609,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
             packedFseElemMLen = ZSTDGPU_SS_FSE_MLEN(stateMLen);
         }
 
-        srt.inoutDecompressedSequenceLLen[i] = llen;
-        srt.inoutDecompressedSequenceMLen[i] = mlen;
-        srt.inoutDecompressedSequenceOffs[i] = offs;
+        srt.inoutDecompressedSequences[zstdgpu_SeqRecordLLen(i)] = llen;
+        srt.inoutDecompressedSequences[zstdgpu_SeqRecordMLen(i)] = mlen;
+        srt.inoutDecompressedSequences[zstdgpu_SeqRecordOffs(i)] = offs;
 
         if (isLastSeq)
         {
@@ -3806,9 +3806,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream_LdsOutCache(ZSTD
                     const uint32_t mlen = zstdgpu_LdsLoadU32(GS_MLenCache + srcOffset);
                     const uint32_t offs = zstdgpu_LdsLoadU32(GS_OffsCache + srcOffset);
 
-                    srt.inoutDecompressedSequenceLLen[dstSeqIdx + seqIdxToStore] = llen;
-                    srt.inoutDecompressedSequenceMLen[dstSeqIdx + seqIdxToStore] = mlen;
-                    srt.inoutDecompressedSequenceOffs[dstSeqIdx + seqIdxToStore] = offs;
+                    srt.inoutDecompressedSequences[zstdgpu_SeqRecordLLen(dstSeqIdx + seqIdxToStore)] = llen;
+                    srt.inoutDecompressedSequences[zstdgpu_SeqRecordMLen(dstSeqIdx + seqIdxToStore)] = mlen;
+                    srt.inoutDecompressedSequences[zstdgpu_SeqRecordOffs(dstSeqIdx + seqIdxToStore)] = offs;
                 }
             }
         }
@@ -3852,7 +3852,7 @@ static void zstdgpu_ShaderEntry_FinaliseSequenceOffsets(ZSTDGPU_PARAM_INOUT(zstd
     if (seqIdx >= seqCnt)
         return;
 
-    uint32_t offset = srt.inoutDecompressedSequenceOffs[seqIdx];
+    uint32_t offset = srt.inoutDecompressedSequences[zstdgpu_SeqRecordOffs(seqIdx)];
 
     // NOTE(pamartis): during "Sequence Decoding" we encode offsets so that they are either:
     //      - actual relative offsets (offset "N" means "-N" bytes relative to the current position in the output stream) with extra "+3" encoding.
@@ -3881,7 +3881,7 @@ static void zstdgpu_ShaderEntry_FinaliseSequenceOffsets(ZSTDGPU_PARAM_INOUT(zstd
         offset = zstdgpu_DecodeSeqRepeatOffsetAndApplyPreviousOffsets(offset, offset1, offset2, offset3);
     }
     offset -= 3u;
-    srt.inoutDecompressedSequenceOffs[seqIdx] = offset;
+    srt.inoutDecompressedSequences[zstdgpu_SeqRecordOffs(seqIdx)] = offset;
 }
 
 struct zstdgpu_Sequence
@@ -3894,9 +3894,9 @@ struct zstdgpu_Sequence
 static zstdgpu_Sequence zstdgpu_LoadSequence(ZSTDGPU_PARAM_INOUT(zstdgpu_ExecuteSequences_SRT) srt, uint32_t seqIdx)
 {
     zstdgpu_Sequence seq;
-    seq.mlen = srt.inDecompressedSequenceMLen[seqIdx];
-    seq.llen = srt.inDecompressedSequenceLLen[seqIdx];
-    seq.offs = srt.inDecompressedSequenceOffs[seqIdx];
+    seq.mlen = srt.inDecompressedSequences[zstdgpu_SeqRecordMLen(seqIdx)];
+    seq.llen = srt.inDecompressedSequences[zstdgpu_SeqRecordLLen(seqIdx)];
+    seq.offs = srt.inDecompressedSequences[zstdgpu_SeqRecordOffs(seqIdx)];
     return seq;
 }
 

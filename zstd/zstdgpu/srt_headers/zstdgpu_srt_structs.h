@@ -179,7 +179,7 @@ typedef struct zstdgpu_InitHuffmanTable_SRT
 
 typedef struct zstdgpu_DecompressSequences_SRT
 {
-    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutDecompressedSequences;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutDecompressedLiterals_Seqs;
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutBlockSizePrefix;
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutPerSeqStreamFinalOffset1;
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutPerSeqStreamFinalOffset2;
@@ -196,11 +196,12 @@ typedef struct zstdgpu_DecompressSequences_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inFseElems;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
+    uint32_t                                                ArenaTopDwords;
 } zstdgpu_DecompressSequences_SRT;
 
 typedef struct zstdgpu_FinaliseSequenceOffsets_SRT
 {
-    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutDecompressedSequences;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutDecompressedLiterals_Seqs;
     ZSTDGPU_RO_BUFFER(zstdgpu_Counters)                     inCounters;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamFinalOffset1;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamFinalOffset2;
@@ -211,6 +212,7 @@ typedef struct zstdgpu_FinaliseSequenceOffsets_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inSeqStreamToBlockId;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
+    uint32_t                                                ArenaTopDwords;
 } zstdgpu_FinaliseSequenceOffsets_SRT;
 
 typedef struct zstdgpu_InitFseTable_SRT
@@ -247,10 +249,11 @@ typedef struct zstdgpu_ExecuteSequences_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameBlockCountCMP;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inBlockSizePrefix;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inBlockDestOffs;
-    ZSTDGPU_RO_BUFFER(uint32_t)                             inDecompressedSequences;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inDecompressedLiterals_Seqs;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inGlobalBlockIndexPerCmpBlock;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamSeqStart;
     ZSTDGPU_RO_BUFFER(zstdgpu_CompressedBlockData)          inCompressedBlocks;
+    uint32_t                                                ArenaTopDwords;
 } zstdgpu_ExecuteSequences_SRT;
 
 typedef struct zstdgpu_MemsetMemcpy_SRT

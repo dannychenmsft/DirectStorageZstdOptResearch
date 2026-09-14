@@ -34,11 +34,12 @@ typedef struct zstdgpu_DecompressSequences_Consts
 {
     uint32_t    tgOffset;
     uint32_t    workItemCount;
+    uint32_t    ArenaTopDwords;
 } zstdgpu_DecompressSequences_Consts;
 
 ConstantBuffer<zstdgpu_DecompressSequences_Consts> ZstdConstants_DecompressSequences : register(b0);
 
-#define ZSTDGPU_SRT_RS_DecompressSequences ZSTDGPU_SRT_RS_BIND_GROUP_SequenceOutputs ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", SRV(t5)" ", SRV(t6)" ", SRV(t7)" ", SRV(t8)" ", SRV(t9)" ", RootConstants(b0, num32BitConstants=2)"
+#define ZSTDGPU_SRT_RS_DecompressSequences ZSTDGPU_SRT_RS_BIND_GROUP_SequenceOutputs ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", SRV(t5)" ", SRV(t6)" ", SRV(t7)" ", SRV(t8)" ", SRV(t9)" ", RootConstants(b0, num32BitConstants=3)"
 
 static void zstdgpu_Srt_Fill(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressSequences_SRT) srt)
 {
@@ -56,13 +57,15 @@ static void zstdgpu_Srt_Fill(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressSequences_SRT
     srt.inFseElems              = ZstdInFseElems;
     srt.tgOffset                = ZstdConstants_DecompressSequences.tgOffset;
     srt.workItemCount           = ZstdConstants_DecompressSequences.workItemCount;
+    srt.ArenaTopDwords          = ZstdConstants_DecompressSequences.ArenaTopDwords;
 }
 
 #else
 
 static void zstdgpu_Srt_Fill(zstdgpu_DecompressSequences_SRT &srt, const zstdgpu_ResourceDataCpu &cpuRes,
                              uint32_t     tgOffset,
-                             uint32_t     workItemCount)
+                             uint32_t     workItemCount,
+                             uint32_t     ArenaTopDwords)
 {
     zstdgpu_Srt_FillBindGroup_SequenceOutputs(srt, cpuRes);
 
@@ -78,6 +81,7 @@ static void zstdgpu_Srt_Fill(zstdgpu_DecompressSequences_SRT &srt, const zstdgpu
     srt.inFseElems              = cpuRes.FseElems;
     srt.tgOffset                = tgOffset;
     srt.workItemCount           = workItemCount;
+    srt.ArenaTopDwords          = ArenaTopDwords;
 }
 
 #endif

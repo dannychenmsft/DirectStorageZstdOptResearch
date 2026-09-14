@@ -916,7 +916,16 @@ static void emitHLSLResourceAssignment(StrBuilder *b, const Entry *e, int c, con
     else
     {
         for (int i = 0; i < c; ++i)
-            sb_Fmt(b, "    srt.%-*s= %s.%s;\n", memberTextLen, nameToCStr(e[i].memberText), structName, nameToCStr(e[i].name));
+        {
+            /** An alias views a resource through a different element type than the one the resource
+             *  is declared with (for example the literal byte buffer viewed as dwords), so the CPU
+             *  side needs an explicit cast - unlike the HLSL side, where each view is its own
+             *  declared object. */
+            if (0 != strcmp("", nameToCStr(e[i].asfx)))
+                sb_Fmt(b, "    srt.%-*s= (%s *)%s.%s;\n", memberTextLen, nameToCStr(e[i].memberText), nameToCStr(e[i].dataType), structName, nameToCStr(e[i].name));
+            else
+                sb_Fmt(b, "    srt.%-*s= %s.%s;\n", memberTextLen, nameToCStr(e[i].memberText), structName, nameToCStr(e[i].name));
+        }
     }
 }
 
@@ -1165,7 +1174,11 @@ static void emitSrtHeader(const char *dir, int srtIdx)
         }
         else
         {
-            sb_Fmt(b, "cpuRes.%s", nameToCStr(points[i].name));
+            /** See emitHLSLResourceAssignment: an aliased view needs a cast on the CPU side. */
+            if (0 != strcmp("", nameToCStr(points[i].asfx)))
+                sb_Fmt(b, "(%s *)cpuRes.%s", nameToCStr(points[i].dataType), nameToCStr(points[i].name));
+            else
+                sb_Fmt(b, "cpuRes.%s", nameToCStr(points[i].name));
         }
         sb_StrLitEoL(b, ";");
     }

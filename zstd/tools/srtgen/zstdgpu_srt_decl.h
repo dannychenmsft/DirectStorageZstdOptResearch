@@ -101,7 +101,7 @@ ZSTDGPU_SRT_BIND_GROUP_BEGIN(HuffmanTableWrite, Stage2)
 ZSTDGPU_SRT_BIND_GROUP_END()
 
 ZSTDGPU_SRT_BIND_GROUP_BEGIN(SequenceOutputs, Stage2)
-    ZSTDGPU_SRT_BUF_RW_STRUCT(uint32_t                      , DecompressedSequences         )
+    ZSTDGPU_SRT_BUF_RW_STRUCT_ALIAS(uint32_t                , DecompressedLiterals, Seqs    )
     ZSTDGPU_SRT_BUF_RW_STRUCT(uint32_t                      , BlockSizePrefix               )
     ZSTDGPU_SRT_BUF_RW_STRUCT(uint32_t                      , PerSeqStreamFinalOffset1      )
     ZSTDGPU_SRT_BUF_RW_STRUCT(uint32_t                      , PerSeqStreamFinalOffset2      )
@@ -301,10 +301,11 @@ ZSTDGPU_SRT_BEGIN(DecompressSequences, Indirect)
 
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , tgOffset                      )
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , workItemCount                 )
+    ZSTDGPU_SRT_CONST(uint32_t                              , ArenaTopDwords                )
 ZSTDGPU_SRT_END()
 
 ZSTDGPU_SRT_BEGIN(FinaliseSequenceOffsets, Indirect)
-    ZSTDGPU_SRT_BUF_RW_STRUCT(uint32_t                      , DecompressedSequences         )
+    ZSTDGPU_SRT_BUF_RW_STRUCT_ALIAS(uint32_t                , DecompressedLiterals, Seqs    )
 
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_Counters              , Counters                      )
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , PerSeqStreamFinalOffset1      )
@@ -317,6 +318,7 @@ ZSTDGPU_SRT_BEGIN(FinaliseSequenceOffsets, Indirect)
 
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , tgOffset                      )
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , workItemCount                 )
+    ZSTDGPU_SRT_CONST(uint32_t                              , ArenaTopDwords                )
 ZSTDGPU_SRT_END()
 
 ZSTDGPU_SRT_BEGIN(InitFseTable, Indirect)
@@ -357,10 +359,12 @@ ZSTDGPU_SRT_BEGIN(ExecuteSequences, Direct)
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , PerFrameBlockCountCMP         )
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , BlockSizePrefix               )
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , BlockDestOffs                 )
-    ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , DecompressedSequences         )
+    ZSTDGPU_SRT_BUF_RO_STRUCT_ALIAS(uint32_t                , DecompressedLiterals, Seqs    )
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , GlobalBlockIndexPerCmpBlock   )
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , PerSeqStreamSeqStart          )
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_CompressedBlockData   , CompressedBlocks              )
+
+    ZSTDGPU_SRT_CONST(uint32_t                              , ArenaTopDwords                )
 ZSTDGPU_SRT_END()
 
 ZSTDGPU_SRT_BEGIN(MemsetMemcpy, Indirect)

@@ -121,6 +121,7 @@ typedef struct zstdgpu_PrefixSequenceOffsets_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameBlockCountAll;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inSeqStreamToBlockId;
     ZSTDGPU_RO_BUFFER(zstdgpu_Counters)                     inCounters;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutFrameResumeState;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
     uint32_t                                                frameCount;
@@ -213,6 +214,7 @@ typedef struct zstdgpu_FinaliseSequenceOffsets_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameBlockCountAll;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameSeqStreamMinIdx;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inSeqStreamToBlockId;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutFrameResumeState;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
     uint32_t                                                ArenaTopDwords;
@@ -238,10 +240,25 @@ typedef struct zstdgpu_ComputeDestBlockOffsets_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inBlockSizePrefix;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameBlockCountAll;
     ZSTDGPU_RO_BUFFER(zstdgpu_OffsetAndSize)                inUnCompressedFramesRefs;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutFrameResumeState;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
     uint32_t                                                frameCount;
 } zstdgpu_ComputeDestBlockOffsets_SRT;
+
+typedef struct zstdgpu_WriteFrameResume_SRT
+{
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutFrameResumeState;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inBlockSizePrefix;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameBlockCountAll;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameSeqStreamMinIdx;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inPerFrameSeqStreamMaxIdx;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamFinalOffset1;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamFinalOffset2;
+    ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamFinalOffset3;
+    ZSTDGPU_RO_BUFFER(zstdgpu_Counters)                     inCounters;
+    uint32_t                                                frameCount;
+} zstdgpu_WriteFrameResume_SRT;
 
 typedef struct zstdgpu_ExecuteSequences_SRT
 {
@@ -297,6 +314,7 @@ typedef struct zstdgpu_ParseCompressedBlocks_SRT
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutSeqStreamToBlockId;
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutBlockSizePrefix;
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutPerFrameSeqStreamMinIdx;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutPerFrameSeqStreamMaxIdx;
     ZSTDGPU_RW_BUFFER(uint32_t)                             inoutPerSeqStreamSeqStart;
     ZSTDGPU_RW_BUFFER_GLC(uint32_t)                         inoutSeqCountPrefixLookback;
     ZSTDGPU_RW_BUFFER_GLC(uint32_t)                         inoutBlockSeqCountPrefixLookback;

@@ -833,6 +833,7 @@ struct zstdgpu_PerRequestContextImpl
      *  carried state, because its output cursor and repcodes are the frame's initial ones.
      *  Resuming at a later block additionally requires those to be carried in, which is separate.
      */
+    uint32_t                zstdBlockStartPerFrame;
     uint32_t                zstdBlockLimitPerFrame;
     uint32_t                zstdUncompressedFrameCount;
     uint32_t                zstdUncompressedFramesByteCount;
@@ -1098,6 +1099,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePerRequestContext(zstdgpu_PerRequestContext *
 
         context->zstdFrameCount                     = 0;
         context->zstdCompressedFramesByteCount      = 0;
+    context->zstdBlockStartPerFrame            = 0;
     context->zstdBlockLimitPerFrame            = 0;
 
         context->zstdUncompressedFrameCount         = 0;
@@ -1280,7 +1282,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_SetupAllStageSubmission(zstdgpu_PerRequestContext r
     return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
 }
 
-ZSTDGPU_ENUM(Status) zstdgpu_SetupBlockLimitPerFrame(zstdgpu_PerRequestContext req, uint32_t blockLimitPerFrame)
+ZSTDGPU_ENUM(Status) zstdgpu_SetupBlockLimitPerFrame(zstdgpu_PerRequestContext req, uint32_t blockStartPerFrame, uint32_t blockLimitPerFrame)
 {
     uint32_t proceed = 1;
     proceed = proceed && (NULL != req);
@@ -1289,6 +1291,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_SetupBlockLimitPerFrame(zstdgpu_PerRequestContext r
 
     if (proceed)
     {
+        req->zstdBlockStartPerFrame = blockStartPerFrame;
         req->zstdBlockLimitPerFrame = blockLimitPerFrame;
         return ZSTDGPU_ENUM_CONST(StatusSuccess);
     }
@@ -2419,7 +2422,7 @@ void zstdgpu_SubmitStage0(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         const uint32_t countBlocksOnly = 1;
         PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Parse Frames :: Count Blocks]");
 
-        zstdgpu_Bind_ParseFrames_Stage0(cmdList, req->srts, req->resData.gpuOnly, req->zstdFrameCount, req->resInfo.CompressedData_ByteSize, countBlocksOnly, req->zstdBlockLimitPerFrame);
+        zstdgpu_Bind_ParseFrames_Stage0(cmdList, req->srts, req->resData.gpuOnly, req->zstdFrameCount, req->resInfo.CompressedData_ByteSize, countBlocksOnly, req->zstdBlockStartPerFrame, req->zstdBlockLimitPerFrame);
         ZSTDGPU_KERNEL_SCOPE(ParseFrames_CountBlocks, cmdList,
             cmdList->Dispatch(ZSTDGPU_TG_COUNT(req->zstdFrameCount, kzstdgpu_TgSizeX_ParseCompressedBlocks), 1, 1);
         );
@@ -2643,7 +2646,7 @@ void zstdgpu_SubmitStage1(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         const uint32_t countBlocksOnly = 0;
         PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Parse Frames :: Collect Blocks]");
 
-        zstdgpu_Bind_ParseFrames_Stage1(cmdList, req->srts, req->resData.gpuOnly, req->zstdFrameCount, req->resInfo.CompressedData_ByteSize, countBlocksOnly, req->zstdBlockLimitPerFrame);
+        zstdgpu_Bind_ParseFrames_Stage1(cmdList, req->srts, req->resData.gpuOnly, req->zstdFrameCount, req->resInfo.CompressedData_ByteSize, countBlocksOnly, req->zstdBlockStartPerFrame, req->zstdBlockLimitPerFrame);
         ZSTDGPU_KERNEL_SCOPE(ParseFrames, cmdList,
             cmdList->Dispatch(ZSTDGPU_TG_COUNT(req->zstdFrameCount, kzstdgpu_TgSizeX_ParseCompressedBlocks), 1, 1);
         );

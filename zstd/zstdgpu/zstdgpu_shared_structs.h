@@ -53,3 +53,20 @@ static const uint32_t kzstdgpu_FrameStatus_ReservedBitSet        = 0xA07A0002u; 
 static const uint32_t kzstdgpu_FrameStatus_DictionaryUnsupported = 0xA07A0003u; // frame requires a dictionary (unsupported by the GPU decoder)
 static const uint32_t kzstdgpu_FrameStatus_WindowTooLarge        = 0xA07A0004u; // window size exceeds the decoder maximum
 static const uint32_t kzstdgpu_FrameStatus_MissingContentSize    = 0xA07A0005u; // frame declares no content size (the GPU decoder needs it to size output)
+
+// -----------------------------------------------------------------------------
+// Scratch-exhaustion status.
+//
+// Unlike the codes above, these do NOT describe anything wrong with the frame.
+// They report that the scratch memory sized for the batch was too small, so the
+// decode was abandoned. The condition is detected per DISPATCH, from batch-global
+// counters, and cannot be attributed to an individual frame -- so every frame in
+// the batch that had not already failed for its own reason is marked, because no
+// frame's output can be trusted once predicated work has been skipped.
+//
+// Without these, exceeding the scratch bound skips the predicated work SILENTLY
+// and the decode returns wrong output with a success status. That is the exact
+// failure mode the per-frame status buffer exists to make impossible.
+// -----------------------------------------------------------------------------
+static const uint32_t kzstdgpu_FrameStatus_BlockCountExceeded    = 0xA07A0006u; // more blocks than the scratch was sized for (host pre-scan disagreed with the GPU parse, or block counts were estimated)
+static const uint32_t kzstdgpu_FrameStatus_ScratchExceeded       = 0xA07A0007u; // literal/sequence arena too small for the decoded content

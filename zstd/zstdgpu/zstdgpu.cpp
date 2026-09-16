@@ -827,6 +827,7 @@ struct zstdgpu_PerRequestContextImpl
     ID3D12Resource         *frameResumeState;
     uint32_t                frameResumeStateNeedsClear;
     ID3D12Resource         *blockWindowPerFrame;
+    ID3D12Resource         *frameStatus;
 
     d3d12aid_Timestamps     timestamps;
 
@@ -1104,6 +1105,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePerRequestContext(zstdgpu_PerRequestContext *
         context->uncompressedFramesRefs             = NULL;
         context->frameResumeState                   = NULL;
         context->frameResumeStateNeedsClear         = 1;
+        context->frameStatus                        = NULL;
 
         d3d12aid_Timestamps_Create(&context->timestamps, context->device, kzstdgpu_KernelScope_Count * 2, 1);
 
@@ -1150,6 +1152,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_DestroyPerRequestContext(void **outMemoryBlock, uin
         D3D12AID_SAFE_RELEASE(inPerRequestContext->uncompressedFramesRefs);
         D3D12AID_SAFE_RELEASE(inPerRequestContext->frameResumeState);
         D3D12AID_SAFE_RELEASE(inPerRequestContext->blockWindowPerFrame);
+        D3D12AID_SAFE_RELEASE(inPerRequestContext->frameStatus);
 
         D3D12AID_SAFE_RELEASE(inPerRequestContext->srts.heap);
 
@@ -1250,7 +1253,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_SetupInputsAsFramesInGpuMemory(uint32_t *outStageCo
     return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
 }
 
-ZSTDGPU_API ZSTDGPU_ENUM(Status) zstdgpu_SetupOutputs(zstdgpu_PerRequestContext inPerRequestContext, struct ID3D12Resource *framesMemory, uint32_t framesMemorySizeInBytes, struct ID3D12Resource *frames, uint32_t frameCount)
+ZSTDGPU_API ZSTDGPU_ENUM(Status) zstdgpu_SetupOutputs(zstdgpu_PerRequestContext inPerRequestContext, struct ID3D12Resource *framesMemory, uint32_t framesMemorySizeInBytes, struct ID3D12Resource *frames, uint32_t frameCount, struct ID3D12Resource *frameStatus)
 {
     uint32_t proceed = 1;
     proceed = proceed && (inPerRequestContext->thisMemoryBlock == (void *)inPerRequestContext);
@@ -1258,6 +1261,7 @@ ZSTDGPU_API ZSTDGPU_ENUM(Status) zstdgpu_SetupOutputs(zstdgpu_PerRequestContext 
     proceed = proceed && (framesMemorySizeInBytes > 0);
     proceed = proceed && (NULL != framesMemory);
     proceed = proceed && (NULL != frames);
+    proceed = proceed && (NULL != frameStatus);
     ZSTDGPU_ASSERT(proceed > 0);
     if (proceed)
     {
@@ -1266,12 +1270,16 @@ ZSTDGPU_API ZSTDGPU_ENUM(Status) zstdgpu_SetupOutputs(zstdgpu_PerRequestContext 
         // which is going to be executed either by one of Submit functions or by destroying PerRequest context
         D3D12AID_SAFE_RELEASE(inPerRequestContext->uncompressedFramesData);
         D3D12AID_SAFE_RELEASE(inPerRequestContext->uncompressedFramesRefs);
+        D3D12AID_SAFE_RELEASE(inPerRequestContext->frameStatus);
 
         inPerRequestContext->uncompressedFramesData = framesMemory;
         inPerRequestContext->uncompressedFramesData->AddRef();
 
         inPerRequestContext->uncompressedFramesRefs = frames;
         inPerRequestContext->uncompressedFramesRefs->AddRef();
+
+        inPerRequestContext->frameStatus = frameStatus;
+        inPerRequestContext->frameStatus->AddRef();
 
         inPerRequestContext->zstdUncompressedFrameCount         = frameCount;
         inPerRequestContext->zstdUncompressedFramesByteCount    = framesMemorySizeInBytes;
@@ -1875,10 +1883,12 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitWithExternalMemory(zstdgpu_PerRequestContext 
         }
 
         // The per-frame block window lives in stage 0's allocation, so it has to be re-substituted
-        // after that stage's Init re-creates it from the heap.
+        // after that stage's Init re-creates it from the heap. The caller's external FrameStatus is
+        // swapped in at the same point (that UAV persists across stage-0/1).
         if (stageIndex == 0u)
         {
             zstdgpu_ResourceDataGpu_ReInitBlockWindowExternal(&req->resData, req->blockWindowPerFrame);
+            zstdgpu_ResourceDataGpu_ReInitFrameStatusExternal(&req->resData, req->frameStatus);
         }
 
         if (stageIndex == 2u)
@@ -2003,6 +2013,8 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitAllStagesWithExternalMemory(zstdgpu_PerReques
         zstdgpu_ResourceDataGpu_ReInitOutputsExternal(&req->resData, req->uncompressedFramesData, req->uncompressedFramesRefs);
             zstdgpu_ResourceDataGpu_ReInitResumeExternal(&req->resData, req->frameResumeState);
 
+        zstdgpu_ResourceDataGpu_ReInitFrameStatusExternal(&req->resData, req->frameStatus);
+
         // NOTE(pamartis): we need to do call upload callback right after initialising resources of stage == 0
         if (zstdgpu_HasFlag(req->setupFlags, kzstdgpu_SetupFlags_InputsCpuMemory))
         {
@@ -2096,10 +2108,12 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitWithInteralMemory(zstdgpu_PerRequestContext r
         }
 
         // The per-frame block window lives in stage 0's allocation, so it has to be re-substituted
-        // after that stage's Init re-creates it from the heap.
+        // after that stage's Init re-creates it from the heap. The caller's external FrameStatus is
+        // swapped in at the same point (that UAV persists across stage-0/1).
         if (stageIndex == 0u)
         {
             zstdgpu_ResourceDataGpu_ReInitBlockWindowExternal(&req->resData, req->blockWindowPerFrame);
+            zstdgpu_ResourceDataGpu_ReInitFrameStatusExternal(&req->resData, req->frameStatus);
         }
 
         if (stageIndex == 2u)
@@ -2318,6 +2332,8 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitAllStagesWithInteralMemory(zstdgpu_PerRequest
 
         zstdgpu_ResourceDataGpu_ReInitOutputsExternal(&req->resData, req->uncompressedFramesData, req->uncompressedFramesRefs);
             zstdgpu_ResourceDataGpu_ReInitResumeExternal(&req->resData, req->frameResumeState);
+
+        zstdgpu_ResourceDataGpu_ReInitFrameStatusExternal(&req->resData, req->frameStatus);
 
         if (zstdgpu_HasFlag(req->setupFlags, kzstdgpu_SetupFlags_InputsCpuMemory))
         {

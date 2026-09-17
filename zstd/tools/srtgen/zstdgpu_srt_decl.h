@@ -259,6 +259,7 @@ ZSTDGPU_SRT_END()
 
 ZSTDGPU_SRT_BEGIN(DecompressSequences, Indirect)
     ZSTDGPU_SRT_USE_BIND_GROUP(SequenceOutputs)
+    ZSTDGPU_SRT_USE_BIND_GROUP(FseProbsRead)
 
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_Counters              , Counters                      )
     ZSTDGPU_SRT_BUF_RO_BYTE(CompressedData)

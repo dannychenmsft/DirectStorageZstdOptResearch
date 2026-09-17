@@ -16,6 +16,7 @@
 #define ZSTDGPU_SRT_GENERATED_DecompressSequences_H
 
 #include "ZstdGpuSrt_BindGroup_SequenceOutputs.h"
+#include "ZstdGpuSrt_BindGroup_FseProbsRead.h"
 
 #ifdef __hlsl_dx_compiler
 
@@ -38,11 +39,12 @@ typedef struct zstdgpu_DecompressSequences_Consts
 
 ConstantBuffer<zstdgpu_DecompressSequences_Consts> ZstdConstants_DecompressSequences : register(b0);
 
-#define ZSTDGPU_SRT_RS_DecompressSequences ZSTDGPU_SRT_RS_BIND_GROUP_SequenceOutputs ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", SRV(t5)" ", SRV(t6)" ", SRV(t7)" ", SRV(t8)" ", SRV(t9)" ", RootConstants(b0, num32BitConstants=2)"
+#define ZSTDGPU_SRT_RS_DecompressSequences ZSTDGPU_SRT_RS_BIND_GROUP_SequenceOutputs ", " ZSTDGPU_SRT_RS_BIND_GROUP_FseProbsRead ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", SRV(t5)" ", SRV(t6)" ", SRV(t7)" ", SRV(t8)" ", SRV(t9)" ", RootConstants(b0, num32BitConstants=2)"
 
 static void zstdgpu_Srt_Fill(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressSequences_SRT) srt)
 {
     zstdgpu_Srt_FillBindGroup_SequenceOutputs(srt);
+    zstdgpu_Srt_FillBindGroup_FseProbsRead(srt);
 
     srt.inCounters              = ZstdInCounters;
     srt.inCompressedData        = ZstdInCompressedData;
@@ -65,6 +67,7 @@ static void zstdgpu_Srt_Fill(zstdgpu_DecompressSequences_SRT &srt, const zstdgpu
                              uint32_t     workItemCount)
 {
     zstdgpu_Srt_FillBindGroup_SequenceOutputs(srt, cpuRes);
+    zstdgpu_Srt_FillBindGroup_FseProbsRead(srt, cpuRes);
 
     srt.inCounters              = cpuRes.Counters;
     srt.inCompressedData        = cpuRes.CompressedData;

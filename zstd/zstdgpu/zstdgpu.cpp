@@ -920,15 +920,11 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
         else if (desc.VendorId == 0x10de)
         {
             // Nvidia
-            // NOTE(pamartis): Enable multi-stream variant by default. This variant outperforms single-stream
-            // variant in cases when the number of sequence streams large enough so GPU becomes fully saturated
-            // with threadgroups/waves running single-stream shader. On the other side, because single-stream
-            // variant waves/threadgroups are shorter individually, workloads not saturating GPU would perform
-            // faster with single-stream variant and multi-stream version would be a pessimisation.
-            //
-            // But we choose "throughput" maximising kernel.
-            ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_MultiStream_4_LdsOutCache_32);
-            context->DecompressSequences_StreamsPerGroup = kzstdgpu_TgSizeX_DecompressSequences / 4u;
+            // NOTE: converged onto the single-stream LdsFseCache variant so this path exercises
+            // the FSE table regeneration (build-into-LDS from FseProbs) instead of reading the
+            // prebuilt global FseElems tables. Full per-GPU convergence/retune is a later step.
+            ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
+            context->DecompressSequences_StreamsPerGroup = 1;
 
             ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64);
         }

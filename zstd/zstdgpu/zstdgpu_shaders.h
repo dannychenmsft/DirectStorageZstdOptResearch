@@ -3431,13 +3431,29 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream(ZSTDGPU_PARAM_IN
 #define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache_UNDEF 1
 #endif
 
+// ZSTDGPU_FSE_REGEN: when 1, the SingleStream LdsFseCache path rebuilds the LL/OF/ML FSE
+// decode tables directly into LDS from the persisted normalized distributions (FseProbs),
+// instead of copying the prebuilt tables from the global FseElems scratch. This removes the
+// need to persist the large built tables (the dominant per-block scratch cost). The build
+// follows the canonical zstd construction and is bit-identical to zstdgpu_ShaderEntry_InitFseTable.
+#ifndef ZSTDGPU_FSE_REGEN
+#define ZSTDGPU_FSE_REGEN 1
+#endif
+
+#if ZSTDGPU_FSE_REGEN
+#define ZSTDGPU_FSE_REGEN_LDS_REGION ZSTDGPU_LDS_REGION(FseSymbolNext, kzstdgpu_MaxCount_FseProbs)
+#else
+#define ZSTDGPU_FSE_REGEN_LDS_REGION
+#endif
+
 #if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
 #define ZSTDGPU_DECOMPRESS_SEQUENCES_SINGLE_STREAM_LDS_FSE_CACHE_LDS(base, size) \
     ZSTDGPU_LDS_SIZE(size)                                              \
     ZSTDGPU_LDS_BASE(base)                                              \
     ZSTDGPU_LDS_REGION(FsePackedLLen   , kzstdgpu_FseElemMaxCount_LLen) \
     ZSTDGPU_LDS_REGION(FsePackedMLen   , kzstdgpu_FseElemMaxCount_MLen) \
-    ZSTDGPU_LDS_REGION(FsePackedOffs   , kzstdgpu_FseElemMaxCount_Offs)
+    ZSTDGPU_LDS_REGION(FsePackedOffs   , kzstdgpu_FseElemMaxCount_Offs) \
+    ZSTDGPU_FSE_REGEN_LDS_REGION
 
 #include "zstdgpu_lds_decl_size.h"
 ZSTDGPU_DECOMPRESS_SEQUENCES_SINGLE_STREAM_LDS_FSE_CACHE_LDS(0, DecompressSequences_SingleStream_LdsFseCache);
@@ -3489,14 +3505,92 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
         }                                                                                                       \
     }
 
+#if ZSTDGPU_FSE_REGEN
+    ZSTDGPU_UNUSED(startLLen);
+    ZSTDGPU_UNUSED(startOffs);
+    ZSTDGPU_UNUSED(startMLen);
+    ZSTDGPU_UNUSED(tgSize);
+
+    // Rebuild the LL/OF/ML FSE decode tables into LDS from the persisted normalized
+    // distributions (FseProbs). Canonical zstd construction (spread symbols, then assign
+    // nstate/bitcnt) producing tables bit-identical to zstdgpu_ShaderEntry_InitFseTable.
+    // Thread 0 builds and is the sole consumer, so no group barrier is required.
+    #define ZSTDGPU_BUILD_FSE_INTO_LDS(name)                                                                    \
+    {                                                                                                           \
+        const uint32_t bfFseIdx = seqRef.fse##name;                                                             \
+        if (bfFseIdx < kzstdgpu_FseRleTableCount)                                                               \
+        {                                                                                                       \
+            /* RLE table: a single element whose symbol is the table index. */                                 \
+            zstdgpu_LdsStoreU32(GS_FsePacked##name + 0, zstdgpu_PackFseElem(bfFseIdx, 0, 0));                   \
+        }                                                                                                       \
+        else                                                                                                    \
+        {                                                                                                       \
+            const zstdgpu_FseInfo bfInfo   = srt.inFseInfos[bfFseIdx];                                          \
+            const uint32_t bfAccuracyLog2  = bfInfo.fseProbCountAndAccuracyLog2 >> 8u;                          \
+            const uint32_t bfFrqDataCount  = zstdgpu_MinU32(bfInfo.fseProbCountAndAccuracyLog2 & 0xffu, kzstdgpu_MaxCount_FseProbs); \
+            const uint32_t bfFrqDataOffset = (bfFseIdx - kzstdgpu_FseRleTableCount) * kzstdgpu_MaxCount_FseProbs; \
+            const uint32_t bfTblDataCount  = zstdgpu_MinU32(1u << bfAccuracyLog2, kzstdgpu_MaxCount_FseElems);  \
+            const uint32_t bfStep          = (bfTblDataCount >> 1) + (bfTblDataCount >> 3) + 3;                 \
+            const uint32_t bfMask          = bfTblDataCount - 1;                                                \
+            uint32_t bfHighThreshold       = bfTblDataCount - 1;                                                \
+            /* Phase 0: seed per-symbol state; lay low-probability (-1) symbols at the table top. */           \
+            for (uint32_t bfS = 0; bfS < bfFrqDataCount; ++bfS)                                                 \
+            {                                                                                                   \
+                const int32_t bfNc = srt.inFseProbs[bfFrqDataOffset + bfS];                                     \
+                if (bfNc == -1)                                                                                 \
+                {                                                                                               \
+                    zstdgpu_LdsStoreU32(GS_FsePacked##name + bfHighThreshold, bfS);                             \
+                    bfHighThreshold--;                                                                          \
+                    zstdgpu_LdsStoreU32(GS_FseSymbolNext + bfS, 1u);                                            \
+                }                                                                                               \
+                else                                                                                            \
+                {                                                                                               \
+                    zstdgpu_LdsStoreU32(GS_FseSymbolNext + bfS, (uint32_t)bfNc);                                \
+                }                                                                                               \
+            }                                                                                                   \
+            /* Phase 1: spread positive-count symbols across the table with the zstd step walk. */             \
+            uint32_t bfPos = 0;                                                                                 \
+            for (uint32_t bfSp = 0; bfSp < bfFrqDataCount; ++bfSp)                                              \
+            {                                                                                                   \
+                const int32_t bfCnt = srt.inFseProbs[bfFrqDataOffset + bfSp];                                   \
+                for (int32_t bfK = 0; bfK < bfCnt; ++bfK)                                                       \
+                {                                                                                               \
+                    zstdgpu_LdsStoreU32(GS_FsePacked##name + bfPos, bfSp);                                      \
+                    bfPos = (bfPos + bfStep) & bfMask;                                                          \
+                    while (bfPos > bfHighThreshold) { bfPos = (bfPos + bfStep) & bfMask; }                      \
+                }                                                                                               \
+            }                                                                                                   \
+            /* Phase 2: assign nstate/bitcnt per position and pack the final FSE element. */                   \
+            for (uint32_t bfU = 0; bfU < bfTblDataCount; ++bfU)                                                 \
+            {                                                                                                   \
+                const uint32_t bfSym = zstdgpu_LdsLoadU32(GS_FsePacked##name + bfU);                            \
+                uint32_t bfNstate    = zstdgpu_LdsLoadU32(GS_FseSymbolNext + bfSym);                            \
+                zstdgpu_LdsStoreU32(GS_FseSymbolNext + bfSym, bfNstate + 1u);                                   \
+                const uint32_t bfBitcnt = bfAccuracyLog2 - zstdgpu_FindFirstBitHiU32(bfNstate);                 \
+                bfNstate = (bfNstate << bfBitcnt) - bfTblDataCount;                                             \
+                zstdgpu_LdsStoreU32(GS_FsePacked##name + bfU, zstdgpu_PackFseElem(bfSym, bfBitcnt, bfNstate));  \
+            }                                                                                                   \
+        }                                                                                                       \
+    }
+
+    if (threadId == 0)
+    {
+        ZSTDGPU_BUILD_FSE_INTO_LDS(LLen)
+        ZSTDGPU_BUILD_FSE_INTO_LDS(Offs)
+        ZSTDGPU_BUILD_FSE_INTO_LDS(MLen)
+    }
+    #undef ZSTDGPU_BUILD_FSE_INTO_LDS
+    // No barrier: thread 0 is both the builder and the sole consumer of these LDS tables.
+#else
     ZSTDGPU_PRELOAD_FSE_INTO_LDS(LLen)
     ZSTDGPU_PRELOAD_FSE_INTO_LDS(Offs)
     ZSTDGPU_PRELOAD_FSE_INTO_LDS(MLen)
-    #undef ZSTDGPU_PRELOAD_FSE_INTO_LDS
 
     #if !defined(__XBOX_SCARLETT)
     GroupMemoryBarrierWithGroupSync();
     #endif
+#endif
+    #undef ZSTDGPU_PRELOAD_FSE_INTO_LDS
 #endif
 
     // The rest of the shader should be scalar. Ideally the compiler should emit mostly scalar instructions,

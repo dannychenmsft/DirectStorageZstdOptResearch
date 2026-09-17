@@ -104,7 +104,7 @@ static const uint32_t kzstdgpu_SrtConstsRootSlot_PrefixSequenceOffsets    = 10;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_UpdateDispatchArgs       = 4;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_DecompressHuffmanWeights = 6;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_DecodeHuffmanWeights     = 4;
-static const uint32_t kzstdgpu_SrtConstsRootSlot_DecompressSequences      = 11;
+static const uint32_t kzstdgpu_SrtConstsRootSlot_DecompressSequences      = 12;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_FinaliseSequenceOffsets  = 9;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_InitFseTable             = 4;
 static const uint32_t kzstdgpu_SrtConstsRootSlot_ComputeDestBlockOffsets  = 4;
@@ -895,16 +895,17 @@ static void zstdgpu_Bind_DecompressSequences_Stage2(ID3D12GraphicsCommandList *c
     d3d12aid_ComputeRsPs_Set(&srts.DecompressSequences, cmdList);
     cmdList->SetDescriptorHeaps(1, &srts.heap);
     cmdList->SetComputeRootDescriptorTable(0 /* SequenceOutputs */, srts.stage2.SequenceOutputs);
-    cmdList->SetComputeRootShaderResourceView(1 /* Counters */, b.Counters->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(2 /* CompressedData */, b.CompressedData->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(3 /* SeqStreamToRef */, b.SeqStreamToRef->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(4 /* SeqStreamToLLenFseId */, b.SeqStreamToLLenFseId->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(5 /* SeqStreamToOffsFseId */, b.SeqStreamToOffsFseId->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(6 /* SeqStreamToMLenFseId */, b.SeqStreamToMLenFseId->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(7 /* SeqStreamToBlockId */, b.SeqStreamToBlockId->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(8 /* FseInfos */, b.FseInfos->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(9 /* PerSeqStreamSeqStart */, b.PerSeqStreamSeqStart->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(10 /* FseElems */, b.FseElems->GetGPUVirtualAddress());
+    cmdList->SetComputeRootDescriptorTable(1 /* FseProbsRead */, srts.stage2.FseProbsRead);
+    cmdList->SetComputeRootShaderResourceView(2 /* Counters */, b.Counters->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(3 /* CompressedData */, b.CompressedData->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(4 /* SeqStreamToRef */, b.SeqStreamToRef->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(5 /* SeqStreamToLLenFseId */, b.SeqStreamToLLenFseId->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(6 /* SeqStreamToOffsFseId */, b.SeqStreamToOffsFseId->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(7 /* SeqStreamToMLenFseId */, b.SeqStreamToMLenFseId->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(8 /* SeqStreamToBlockId */, b.SeqStreamToBlockId->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(9 /* FseInfos */, b.FseInfos->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(10 /* PerSeqStreamSeqStart */, b.PerSeqStreamSeqStart->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(11 /* FseElems */, b.FseElems->GetGPUVirtualAddress());
 }
 
 static void zstdgpu_Bind_FinaliseSequenceOffsets(ID3D12GraphicsCommandList *cmdList, const zstdgpu_Srts &srts, const zstdgpu_GpuOnlyBuffers &b)

@@ -17,6 +17,5 @@
  * Author(s):   Pavel Martishevsky (pamartis@microsoft.com)
  */
 
-#define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache 0
 #define kzstdgpu_TgSizeX_DecompressSequences_SingleStream 64
 #include "ZstdGpuDecompressSequences_SingleStream.hlsli"

@@ -59,19 +59,9 @@ ZSTDGPU_WARN_POP_MSVC()
 #include "ZstdGpuComputePrefixSum.h"
 #include "ZstdGpuDecodeHuffmanWeights.h"
 #include "ZstdGpuDecompressHuffmanWeights.h"
-#include "ZstdGpuDecompressSequences_MultiStream_4.h"
-#include "ZstdGpuDecompressSequences_MultiStream_8.h"
-#include "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.h"
-#include "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.h"
-#include "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.h"
-#include "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.h"
-#include "ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.h"
 #include "ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.h"
 #include "ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.h"
 #include "ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.h"
-#include "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.h"
-#include "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.h"
-#include "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h"
 #include "ZstdGpuExecuteSequences128.h"
 #include "ZstdGpuExecuteSequences64.h"
 #include "ZstdGpuExecuteSequences32.h"
@@ -585,16 +575,6 @@ static uint32_t zstdgpu_Count_SRTs_Stage(uint32_t stageIndex)
     ZSTDGPU_KERNEL(DecompressSequences_SingleStream_LdsFseCache128  ,   L"Decompress Sequences (Single-Stream, LDS FSE Cache, TG Size=128)")    \
     ZSTDGPU_KERNEL(DecompressSequences_SingleStream_LdsFseCache64   ,   L"Decompress Sequences (Single-Stream, LDS FSE Cache, TG Size= 64)")    \
     ZSTDGPU_KERNEL(DecompressSequences_SingleStream_LdsFseCache32   ,   L"Decompress Sequences (Single-Stream, LDS FSE Cache, TG Size= 32)")    \
-    ZSTDGPU_KERNEL(DecompressSequences_SingleStream_ScalarFseLoad128,   L"Decompress Sequences (Single-Stream, Scalar FSE Load, TG Size=128)")  \
-    ZSTDGPU_KERNEL(DecompressSequences_SingleStream_ScalarFseLoad64 ,   L"Decompress Sequences (Single-Stream, Scalar FSE Load, TG Size= 64)")  \
-    ZSTDGPU_KERNEL(DecompressSequences_SingleStream_ScalarFseLoad32 ,   L"Decompress Sequences (Single-Stream, Scalar FSE Load, TG Size= 32)")  \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_4                ,   L"Decompress Sequences (Multi-Stream, Streams= 4)")                     \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_8                ,   L"Decompress Sequences (Multi-Stream, Streams= 8)")                     \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_8_LdsOutCache_128,   L"Decompress Sequences (Multi-Stream, Threads Per Stream=8, LDS Out Cache=128 Sequences)")    \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_8_LdsOutCache_64 ,   L"Decompress Sequences (Multi-Stream, Threads Per Stream=8, LDS Out Cache= 64 Sequences)")    \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_4_LdsOutCache_64 ,   L"Decompress Sequences (Multi-Stream, Threads Per Stream=4, LDS Out Cache= 64 Sequences)")    \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_4_LdsOutCache_32 ,   L"Decompress Sequences (Multi-Stream, Threads Per Stream=4, LDS Out Cache= 32 Sequences)")    \
-    ZSTDGPU_KERNEL(DecompressSequences_MultiStream_2_LdsOutCache_32 ,   L"Decompress Sequences (Multi-Stream, Threads Per Stream=2, LDS Out Cache= 32 Sequences)")    \
     ZSTDGPU_KERNEL(ExecuteSequences128                              ,   L"Execute Sequences 128")                                               \
     ZSTDGPU_KERNEL(ExecuteSequences64                               ,   L"Execute Sequences 64")                                                \
     ZSTDGPU_KERNEL(ExecuteSequences32                               ,   L"Execute Sequences 32")                                                \
@@ -914,8 +894,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
         if (desc.VendorId == 0x1002)
         {
             // Converged onto the single-stream LdsFseCache variant, which regenerates the LL/OF/ML
-            // FSE tables into LDS from FseProbs. The ScalarFseLoad/MultiStream variants read those
-            // tables from the global FseElems scratch, which no longer persists them.
+            // FSE tables into LDS from FseProbs (the global FseElems scratch no longer persists them).
             ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
             context->DecompressSequences_StreamsPerGroup = 1;
             ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64);
@@ -939,7 +918,7 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
         else //if (desc.VendorId == 0x8086 || featureOptions1.WaveLaneCountMax == 32)
         {
             // Converged onto the single-stream LdsFseCache variant (regenerates LL/OF/ML FSE tables
-            // into LDS from FseProbs); the MultiStream variant reads them from the retired FseElems.
+            // into LDS from FseProbs; the global FseElems scratch no longer persists them).
             ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
             context->DecompressSequences_StreamsPerGroup = 1;
             ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences32);

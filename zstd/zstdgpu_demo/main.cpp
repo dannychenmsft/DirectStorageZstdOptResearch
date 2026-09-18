@@ -69,7 +69,6 @@ extern "C"
 // The CPU decode-emulation runs the SingleStream sequence kernel through the LDS FSE-cache
 // (regeneration) path -- matching every GPU variant now selected -- so the LL/OF/ML tables are
 // rebuilt into LDS from FseProbs rather than read from the (shrunk) FseElems buffer.
-#define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache 0
 #include "zstdgpu_shaders.h"
 #include "zstdgpu.h"
 

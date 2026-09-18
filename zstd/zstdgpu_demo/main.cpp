@@ -66,6 +66,10 @@ extern "C"
 }
 
 #include "zstdgpu_reference_store.h"
+// The CPU decode-emulation runs the SingleStream sequence kernel through the LDS FSE-cache
+// (regeneration) path -- matching every GPU variant now selected -- so the LL/OF/ML tables are
+// rebuilt into LDS from FseProbs rather than read from the (shrunk) FseElems buffer.
+#define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache 0
 #include "zstdgpu_shaders.h"
 #include "zstdgpu.h"
 
@@ -652,7 +656,9 @@ static void zstdgpu_Test_DecompressSequences(zstdgpu_ResourceDataCpu & cpuRes, z
 
             for (uint32_t i = 0; i < gpuReadbackRes.Counters->Seq_Streams; ++i)
             {
-                zstdgpu_ShaderEntry_DecompressSequences_MultiStream(srt, /* groupId */ i, /* threadId */ 0, /* streamsPerGroup */ 1);
+                // Regenerate LL/OF/ML tables into LDS from FseProbs and decode (matches the GPU
+                // SingleStream_LdsFseCache path; no longer reads LL/OF/ML from the shrunk FseElems).
+                zstdgpu_ShaderEntry_DecompressSequences_SingleStream(srt, /* groupId */ i, /* threadId */ 0, /* tgSize */ 1);
             }
             // Compute prefix sum of block sizes
             const uint32_t allBlockCount = cpuRes.Counters->Blocks_CMP
@@ -938,38 +944,18 @@ static void zstdgpu_Validate_GpuDecompressOnCpu(zstdgpu_ResourceDataCpu & zstdCp
     zstdgpu_ResourceDataCpu_InitFromHeap(&zstdCpu, &zstdInfo);
 
     {
+        // Only the Huffman-weight (HufW) FSE tables are built up-front into FseElems here; the
+        // LL/OF/ML sequence tables are regenerated into LDS from FseProbs inside DecompressSequences
+        // (matching the GPU pipeline), so they are no longer built/persisted up front.
         zstdgpu_InitFseTable_SRT srt;
         zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(FseHufW), /* tableType */0);
 
-        uint32_t tableStartIndex = 0;
-        zstdgpu_Srt_FillInline(srt, /* tableStartIndex */ tableStartIndex, /* tableDataStart */zstdgpu_ComputeFseDataStartHufW(0, zstdCmpBlockCount), /* tableDataCount */ kzstdgpu_FseElemMaxCount_HufW);
+        zstdgpu_Srt_FillInline(srt, /* tableStartIndex */ 0, /* tableDataStart */zstdgpu_ComputeFseDataStartHufW(0, zstdCmpBlockCount), /* tableDataCount */ kzstdgpu_FseElemMaxCount_HufW);
         for (uint32_t i = 0; i < CNTRS(FseHufW); ++i)
         {
             zstdgpu_ShaderEntry_InitFseTable(srt, i, 0);
         }
 
-        tableStartIndex += zstdCmpBlockCount;
-        zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(FseLLen), /* tableType */1);
-        zstdgpu_Srt_FillInline(srt, /* tableStartIndex */ tableStartIndex, /* tableDataStart */zstdgpu_ComputeFseDataStartLLen(0, zstdCmpBlockCount), /* tableDataCount */ kzstdgpu_FseElemMaxCount_LLen);
-        for (uint32_t i = 0; i < CNTRS(FseLLen); ++i)
-        {
-            zstdgpu_ShaderEntry_InitFseTable(srt, i, 0);
-        }
-
-        tableStartIndex += zstdCmpBlockCount + 1 /* + 1 accounts for default table */;
-        zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(FseOffs), /* tableType */2);
-        zstdgpu_Srt_FillInline(srt, /* tableStartIndex */ tableStartIndex, /* tableDataStart */zstdgpu_ComputeFseDataStartOffs(0, zstdCmpBlockCount), /* tableDataCount */ kzstdgpu_FseElemMaxCount_Offs);
-        for (uint32_t i = 0; i < CNTRS(FseOffs); ++i)
-        {
-            zstdgpu_ShaderEntry_InitFseTable(srt, i, 0);
-        }
-        tableStartIndex += zstdCmpBlockCount + 1 /* + 1 accounts for default table */;
-        zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(FseMLen), /* tableType */3);
-        zstdgpu_Srt_FillInline(srt, /* tableStartIndex */ tableStartIndex, /* tableDataStart */zstdgpu_ComputeFseDataStartMLen(0, zstdCmpBlockCount), /* tableDataCount */ kzstdgpu_FseElemMaxCount_MLen);
-        for (uint32_t i = 0; i < CNTRS(FseMLen); ++i)
-        {
-            zstdgpu_ShaderEntry_InitFseTable(srt, i, 0);
-        }
         VALIDATE(FseTables, &zstdCpu);
     }
 
@@ -1021,7 +1007,9 @@ static void zstdgpu_Validate_GpuDecompressOnCpu(zstdgpu_ResourceDataCpu & zstdCp
         zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(Seq_Streams));
         for (uint32_t i = 0; i < CNTRS(Seq_Streams); ++i)
         {
-            zstdgpu_ShaderEntry_DecompressSequences_MultiStream_LdsOutCache(srt, /* groupId */ i, /* threadId */ 0, /* tgSize */ 1, /* streamsPerGroup */ 1, /* cacheDwordsPerStream */ 64);
+            // Regenerate the LL/OF/ML FSE tables into LDS from FseProbs and decode (matches the GPU
+            // SingleStream_LdsFseCache path; no longer reads LL/OF/ML from the shrunk FseElems buffer).
+            zstdgpu_ShaderEntry_DecompressSequences_SingleStream(srt, /* groupId */ i, /* threadId */ 0, /* tgSize */ 1);
         }
 
         // NOTE(pamartis): some helper passes that don't have CPU/GPU portability

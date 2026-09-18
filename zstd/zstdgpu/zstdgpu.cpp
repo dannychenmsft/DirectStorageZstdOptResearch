@@ -913,16 +913,18 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
 
         if (desc.VendorId == 0x1002)
         {
-            ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_ScalarFseLoad32);
+            // Converged onto the single-stream LdsFseCache variant, which regenerates the LL/OF/ML
+            // FSE tables into LDS from FseProbs. The ScalarFseLoad/MultiStream variants read those
+            // tables from the global FseElems scratch, which no longer persists them.
+            ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
             context->DecompressSequences_StreamsPerGroup = 1;
             ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences64);
         }
         else if (desc.VendorId == 0x10de)
         {
             // Nvidia
-            // NOTE: converged onto the single-stream LdsFseCache variant so this path exercises
-            // the FSE table regeneration (build-into-LDS from FseProbs) instead of reading the
-            // prebuilt global FseElems tables. Full per-GPU convergence/retune is a later step.
+            // NOTE: uses the single-stream LdsFseCache variant, which regenerates the LL/OF/ML FSE
+            // tables into LDS from FseProbs instead of reading the prebuilt global FseElems tables.
             ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
             context->DecompressSequences_StreamsPerGroup = 1;
 
@@ -936,8 +938,10 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
         }
         else //if (desc.VendorId == 0x8086 || featureOptions1.WaveLaneCountMax == 32)
         {
-            ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_MultiStream_4_LdsOutCache_32);
-            context->DecompressSequences_StreamsPerGroup = kzstdgpu_TgSizeX_DecompressSequences / 4u;
+            // Converged onto the single-stream LdsFseCache variant (regenerates LL/OF/ML FSE tables
+            // into LDS from FseProbs); the MultiStream variant reads them from the retired FseElems.
+            ZSTDGPU_KERNEL_MAP(DecompressSequences, DecompressSequences_SingleStream_LdsFseCache32);
+            context->DecompressSequences_StreamsPerGroup = 1;
             ZSTDGPU_KERNEL_MAP(ExecuteSequences, ExecuteSequences32);
         }
 #endif
@@ -2862,30 +2866,15 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         {
             PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Init FSE Table]");
             zstdgpu_Bind_InitFseTable_Stage2(cmdList, req->srts, req->resData.gpuOnly, 0u);
-            // NOTE: we run 4 ExecuteIndirects (per argument) in order to be able to (but we don't do this for prototype)
-            // switch PSO to more optimial (depending on maximal FSE table size) because D3D12 doesn't allow to switch PSOs in ExecuteIndirect.
 
             // NOTE: Slots 0 (tgOffset) and 1 (workItemCount) are set by command signature via indirect dispatch.
             // Slot 2 = table type (0=HufW, 1=LLen, 2=Offs, 3=MLen); the shader derives the bases from Counters.
-
+            // Only the Huffman-weight (HufW) FSE tables are still built up-front into FseElems. The LL/OF/ML
+            // sequence FSE tables are regenerated into LDS at sequence-decode time from FseProbs, so their
+            // up-front InitFseTable dispatches (types 1/2/3) are no longer needed.
             PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"FSEs for Huffman Weights");
             cmdList->SetComputeRoot32BitConstant(kzstdgpu_SrtConstsRootSlot_InitFseTable, 0u /* HufW */, 2);
             zstdgpu_DispatchIndirect(cmdList, InitFseTable, FseHufW);
-            PIXEndEvent(cmdList);
-
-            PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"FSEs for Literal Lengths");
-            cmdList->SetComputeRoot32BitConstant(kzstdgpu_SrtConstsRootSlot_InitFseTable, 1u /* LLen */, 2);
-            zstdgpu_DispatchIndirect(cmdList, InitFseTable, FseLLen);
-            PIXEndEvent(cmdList);
-
-            PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"FSEs for Offsets");
-            cmdList->SetComputeRoot32BitConstant(kzstdgpu_SrtConstsRootSlot_InitFseTable, 2u /* Offs */, 2);
-            zstdgpu_DispatchIndirect(cmdList, InitFseTable, FseOffs);
-            PIXEndEvent(cmdList);
-
-            PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"FSEs for Match Lengths");
-            cmdList->SetComputeRoot32BitConstant(kzstdgpu_SrtConstsRootSlot_InitFseTable, 3u /* MLen */, 2);
-            zstdgpu_DispatchIndirect(cmdList, InitFseTable, FseMLen);
             PIXEndEvent(cmdList);
             PIXEndEvent(cmdList);
         });

@@ -270,7 +270,6 @@ ZSTDGPU_SRT_BEGIN(DecompressSequences, Indirect)
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , SeqStreamToBlockId            )
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_FseInfo               , FseInfos                      )
     ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , PerSeqStreamSeqStart          )
-    ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , FseElems                      )
 
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , tgOffset                      )
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , workItemCount                 )

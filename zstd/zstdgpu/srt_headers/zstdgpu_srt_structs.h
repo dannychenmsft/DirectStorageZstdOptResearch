@@ -167,7 +167,6 @@ typedef struct zstdgpu_DecompressSequences_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inSeqStreamToBlockId;
     ZSTDGPU_RO_BUFFER(zstdgpu_FseInfo)                      inFseInfos;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inPerSeqStreamSeqStart;
-    ZSTDGPU_RO_BUFFER(uint32_t)                             inFseElems;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
 } zstdgpu_DecompressSequences_SRT;

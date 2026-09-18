@@ -29,7 +29,6 @@ ZSTDGPU_RO_BUFFER(uint32_t)                 ZstdInSeqStreamToMLenFseId  : regist
 ZSTDGPU_RO_BUFFER(uint32_t)                 ZstdInSeqStreamToBlockId    : register(t6);
 ZSTDGPU_RO_BUFFER(zstdgpu_FseInfo)          ZstdInFseInfos              : register(t7);
 ZSTDGPU_RO_BUFFER(uint32_t)                 ZstdInPerSeqStreamSeqStart  : register(t8);
-ZSTDGPU_RO_BUFFER(uint32_t)                 ZstdInFseElems              : register(t9);
 
 typedef struct zstdgpu_DecompressSequences_Consts
 {
@@ -39,7 +38,7 @@ typedef struct zstdgpu_DecompressSequences_Consts
 
 ConstantBuffer<zstdgpu_DecompressSequences_Consts> ZstdConstants_DecompressSequences : register(b0);
 
-#define ZSTDGPU_SRT_RS_DecompressSequences ZSTDGPU_SRT_RS_BIND_GROUP_SequenceOutputs ", " ZSTDGPU_SRT_RS_BIND_GROUP_FseProbsRead ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", SRV(t5)" ", SRV(t6)" ", SRV(t7)" ", SRV(t8)" ", SRV(t9)" ", RootConstants(b0, num32BitConstants=2)"
+#define ZSTDGPU_SRT_RS_DecompressSequences ZSTDGPU_SRT_RS_BIND_GROUP_SequenceOutputs ", " ZSTDGPU_SRT_RS_BIND_GROUP_FseProbsRead ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", SRV(t5)" ", SRV(t6)" ", SRV(t7)" ", SRV(t8)" ", RootConstants(b0, num32BitConstants=2)"
 
 static void zstdgpu_Srt_Fill(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressSequences_SRT) srt)
 {
@@ -55,7 +54,6 @@ static void zstdgpu_Srt_Fill(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressSequences_SRT
     srt.inSeqStreamToBlockId    = ZstdInSeqStreamToBlockId;
     srt.inFseInfos              = ZstdInFseInfos;
     srt.inPerSeqStreamSeqStart  = ZstdInPerSeqStreamSeqStart;
-    srt.inFseElems              = ZstdInFseElems;
     srt.tgOffset                = ZstdConstants_DecompressSequences.tgOffset;
     srt.workItemCount           = ZstdConstants_DecompressSequences.workItemCount;
 }
@@ -78,7 +76,6 @@ static void zstdgpu_Srt_Fill(zstdgpu_DecompressSequences_SRT &srt, const zstdgpu
     srt.inSeqStreamToBlockId    = cpuRes.SeqStreamToBlockId;
     srt.inFseInfos              = cpuRes.FseInfos;
     srt.inPerSeqStreamSeqStart  = cpuRes.PerSeqStreamSeqStart;
-    srt.inFseElems              = cpuRes.FseElems;
     srt.tgOffset                = tgOffset;
     srt.workItemCount           = workItemCount;
 }

@@ -36,11 +36,9 @@
 
 #include "../srt_headers/ZstdGpuSrt_DecompressSequences.h"
 
-#if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
 groupshared uint32_t Lds[kzstdgpu_DecompressSequences_SingleStream_LdsFseCache_LdsSize];
 #define ZSTDGPU_LDS Lds
 #include "../zstdgpu_lds_hlsl.h"
-#endif
 
 #ifndef kzstdgpu_TgSizeX_DecompressSequences_SingleStream
 #   error 'kzstdgpu_TgSizeX_DecompressSequences_SingleStream' must be defined before including this '.hlsli'

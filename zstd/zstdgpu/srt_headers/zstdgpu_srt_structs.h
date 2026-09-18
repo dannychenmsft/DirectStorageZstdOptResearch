@@ -56,6 +56,7 @@ typedef struct zstdgpu_InitHuffmanTableAndDecompressLiterals_SRT
     ZSTDGPU_RO_BUFFER(uint32_t)                             inHufWIdToHufLitId;
     ZSTDGPU_RO_BUFFER(uint32_t)                             inHufLitIdToLitStreamId;
     ZSTDGPU_RW_TYPED_BUFFER(uint32_t, uint8_t)              inoutDecompressedLiterals;
+    ZSTDGPU_RW_BUFFER(uint32_t)                             inoutDecompressedLiterals_Dwords;
     ZSTDGPU_RO_TYPED_BUFFER(uint32_t, uint8_t)              inDecompressedHuffmanWeights;
     ZSTDGPU_RO_TYPED_BUFFER(uint32_t, uint8_t)              inDecompressedHuffmanWeightCount;
     uint32_t                                                tgOffset;

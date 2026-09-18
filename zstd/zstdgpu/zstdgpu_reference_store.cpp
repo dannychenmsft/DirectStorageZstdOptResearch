@@ -340,10 +340,10 @@ void zstdgpu_ReferenceStore_Report_FseTable(const int16_t *probs, uint32_t symCo
     free(testBitcnt);
     #endif
 
-    // Only the Huffman-weight (HufW) FSE tables are persisted in FseElems; the LL/OF/ML sequence
-    // tables are regenerated into LDS at decode time from FseProbs, so their built elements are not
-    // stored here (FseElems is no longer sized to hold them). The FseInfos/FseProbs seeds are still
-    // captured -- they fully determine the regenerated tables.
+    // No built FSE tables are persisted in FseElems anymore: the HufW table (like the LL/OF/ML
+    // sequence tables) is regenerated into LDS at decode time from FseProbs, so its built elements
+    // are not stored here (FseElems is sized for the fixed RLE tables only). The FseInfos/FseProbs
+    // seeds are still captured -- they fully determine the regenerated tables.
 #define STORE(name, storeExpr, storeElems)                                                                  \
     if (GFseProbTableTypePending == kzstdgpu_ReferenceStore_Fse##name)                                      \
     {                                                                                                       \
@@ -361,7 +361,7 @@ void zstdgpu_ReferenceStore_Report_FseTable(const int16_t *probs, uint32_t symCo
         }                                                                                                   \
     }
 
-    STORE(HufW, localIdx, 1)
+    STORE(HufW, localIdx, 0)
     else
     STORE(LLen, fseIndex, 0)
     else
@@ -785,9 +785,9 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_FseTables(const zs
     if (tst->Counters->HufLit != GHufLitIndex)
         return ZSTDGPU_ENUM_CONST(Validate_Failed);
 
-    // Validate Referred FSE Tables. Only HufW tables still live in FseElems; LL/OF/ML sequence tables
-    // are regenerated from FseProbs in LDS, so pass NULL elems for them (the FseInfos/FseProbs seed
-    // comparison fully determines the regenerated tables).
+    // Validate Referred FSE Tables. No built tables live in FseElems anymore (the HufW and LL/OF/ML
+    // tables are all regenerated from FseProbs in LDS), so pass NULL elems for every table -- the
+    // FseInfos/FseProbs seed comparison fully determines the regenerated tables.
     #define VALIDATE_FSE_TABLE_CONTENT(refIdx, tstIdx, infoOfs, elemFn, refElems, tstElems) \
         izstdgpu_ReferenceStore_Validate_FseTable(          \
             refIdx,                                         \
@@ -812,7 +812,7 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_FseTables(const zs
             if (ZSTDGPU_ENUM_CONST(Validate_Success) != VALIDATE_FSE_TABLE_CONTENT(ref->HufLitIdToHufWId_DBG[i],
                                                                                    tst->HufLitIdToHufWId_DBG[i],
                                                                                    kzstdgpu_FseRleTableCount, zstdgpu_ComputeFseDataStartHufW,
-                                                                                   ref->FseElems, tst->FseElems)
+                                                                                   NULL, NULL)
                )
             {
                 return ZSTDGPU_ENUM_CONST(Validate_Failed);

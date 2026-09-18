@@ -872,11 +872,11 @@ static void zstdgpu_Bind_DecompressHuffmanWeights_Stage2(ID3D12GraphicsCommandLi
     d3d12aid_ComputeRsPs_Set(&srts.DecompressHuffmanWeights, cmdList);
     cmdList->SetDescriptorHeaps(1, &srts.heap);
     cmdList->SetComputeRootDescriptorTable(0 /* HuffmanWeightsWrite */, srts.stage2.HuffmanWeightsWrite);
-    cmdList->SetComputeRootShaderResourceView(1 /* Counters */, b.Counters->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(2 /* CompressedData */, b.CompressedData->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(3 /* HufRefs */, b.HufRefs->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(4 /* FseInfos */, b.FseInfos->GetGPUVirtualAddress());
-    cmdList->SetComputeRootShaderResourceView(5 /* FseElems */, b.FseElems->GetGPUVirtualAddress());
+    cmdList->SetComputeRootDescriptorTable(1 /* FseProbsRead */, srts.stage2.FseProbsRead);
+    cmdList->SetComputeRootShaderResourceView(2 /* Counters */, b.Counters->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(3 /* CompressedData */, b.CompressedData->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(4 /* HufRefs */, b.HufRefs->GetGPUVirtualAddress());
+    cmdList->SetComputeRootShaderResourceView(5 /* FseInfos */, b.FseInfos->GetGPUVirtualAddress());
 }
 
 static void zstdgpu_Bind_DecodeHuffmanWeights_Stage2(ID3D12GraphicsCommandList *cmdList, const zstdgpu_Srts &srts, const zstdgpu_GpuOnlyBuffers &b, uint32_t compressedBufferSizeInBytes)

@@ -18,6 +18,10 @@
 #include "../zstdgpu_shaders.h"
 #include "../srt_headers/ZstdGpuSrt_DecompressHuffmanWeights.h"
 
+groupshared uint32_t Lds[kzstdgpu_DecompressHuffmanWeights_LdsSize];
+#define ZSTDGPU_LDS Lds
+#include "../zstdgpu_lds_hlsl.h"
+
 #ifdef __XBOX_SCARLETT
 #define __XBOX_ENABLE_WAVE32 1
 #endif
@@ -30,7 +34,8 @@ void main(uint2 groupId : SV_GroupID, uint32_t i : SV_GroupThreadId)
 
     zstdgpu_Srt_Fill(srt);
 
+    const uint32_t localThreadId = i;
     i += zstdgpu_ConvertTo32BitGroupId(groupId, srt.tgOffset) * kzstdgpu_TgSizeX_DecompressHuffmanWeights;
 
-    zstdgpu_ShaderEntry_DecompressHuffmanWeights(srt, i);
+    zstdgpu_ShaderEntry_DecompressHuffmanWeights(srt, i, localThreadId);
 }

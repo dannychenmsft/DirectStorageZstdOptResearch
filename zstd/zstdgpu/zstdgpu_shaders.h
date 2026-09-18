@@ -2316,12 +2316,89 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
 #endif
 }
 
-static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressHuffmanWeights_SRT) srt, uint32_t threadId)
+// LDS partitioning for in-LDS Huffman-weight FSE table regeneration.
+//
+// DecompressHuffmanWeights runs one thread per FSE-compressed Huffman-weight stream (once per unique
+// HufW table, not per compressed block), so each active thread rebuilds ITS OWN small HufW FSE decode
+// table into a private LDS slice from the persisted normalized distribution (FseProbs) and then decodes
+// its weight stream from LDS -- instead of reading a prebuilt table from the global FseElems scratch.
+// The build follows the canonical zstd construction and is bit-identical to zstdgpu_ShaderEntry_InitFseTable.
+// Each thread only touches its own LDS slice, so no group barrier is required. HufW FSE indices are always
+// >= kzstdgpu_FseRleTableCount (an FSE-compressed weight stream is never an RLE table), so no RLE case.
+#define ZSTDGPU_DECOMPRESS_HUFFMAN_WEIGHTS_LDS(base, size)                                                        \
+    ZSTDGPU_LDS_SIZE(size)                                                                                        \
+    ZSTDGPU_LDS_BASE(base)                                                                                        \
+    ZSTDGPU_LDS_REGION(HufWFseTable  , kzstdgpu_TgSizeX_DecompressHuffmanWeights * kzstdgpu_FseElemMaxCount_HufW) \
+    ZSTDGPU_LDS_REGION(HufWFseScratch, kzstdgpu_TgSizeX_DecompressHuffmanWeights * kzstdgpu_MaxCount_FseProbs)
+
+#include "zstdgpu_lds_decl_size.h"
+ZSTDGPU_DECOMPRESS_HUFFMAN_WEIGHTS_LDS(0, DecompressHuffmanWeights);
+#include "zstdgpu_lds_decl_undef.h"
+
+static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressHuffmanWeights_SRT) srt, uint32_t threadId, uint32_t localThreadId)
 {
     const uint32_t cmpBlockCnt = srt.inCounters[0].Blocks_CMP;
     // NOTE(pamartis): We check the number of FSE tables for Huffman Weights, which gives us the number of FSE-compressed Huffman Weight streams
     if (threadId >= srt.inCounters[0].FseHufW)
         return;
+
+    // This thread's private LDS slice: its regenerated HufW FSE decode table + transient build scratch.
+    #include "zstdgpu_lds_decl_base.h"
+    ZSTDGPU_DECOMPRESS_HUFFMAN_WEIGHTS_LDS(0, DecompressHuffmanWeights);
+    #include "zstdgpu_lds_decl_undef.h"
+
+    const zstdgpu_lds_uintptr_t hufWTable   = GS_HufWFseTable   + localThreadId * kzstdgpu_FseElemMaxCount_HufW;
+    const zstdgpu_lds_uintptr_t hufWScratch = GS_HufWFseScratch + localThreadId * kzstdgpu_MaxCount_FseProbs;
+
+    // Rebuild the HufW FSE decode table into hufWTable[] from FseProbs (canonical zstd construction).
+    {
+        const uint32_t bfFseIdx        = zstdgpu_ComputeFseIndexHufW(threadId, cmpBlockCnt);
+        const zstdgpu_FseInfo bfInfo   = srt.inFseInfos[bfFseIdx];
+        const uint32_t bfAccuracyLog2  = bfInfo.fseProbCountAndAccuracyLog2 >> 8u;
+        const uint32_t bfFrqDataCount  = zstdgpu_MinU32(bfInfo.fseProbCountAndAccuracyLog2 & 0xffu, kzstdgpu_MaxCount_FseProbs);
+        const uint32_t bfFrqDataOffset = (bfFseIdx - kzstdgpu_FseRleTableCount) * kzstdgpu_MaxCount_FseProbs;
+        const uint32_t bfTblDataCount  = zstdgpu_MinU32(1u << bfAccuracyLog2, kzstdgpu_FseElemMaxCount_HufW);
+        const uint32_t bfStep          = (bfTblDataCount >> 1) + (bfTblDataCount >> 3) + 3;
+        const uint32_t bfMask          = bfTblDataCount - 1;
+        uint32_t bfHighThreshold       = bfTblDataCount - 1;
+        // Phase 0: seed per-symbol state; lay low-probability (-1) symbols at the table top.
+        for (uint32_t bfS = 0; bfS < bfFrqDataCount; ++bfS)
+        {
+            const int32_t bfNc = srt.inFseProbs[bfFrqDataOffset + bfS];
+            if (bfNc == -1)
+            {
+                zstdgpu_LdsStoreU32(hufWTable + bfHighThreshold, bfS);
+                bfHighThreshold--;
+                zstdgpu_LdsStoreU32(hufWScratch + bfS, 1u);
+            }
+            else
+            {
+                zstdgpu_LdsStoreU32(hufWScratch + bfS, (uint32_t)bfNc);
+            }
+        }
+        // Phase 1: spread positive-count symbols across the table with the zstd step walk.
+        uint32_t bfPos = 0;
+        for (uint32_t bfSp = 0; bfSp < bfFrqDataCount; ++bfSp)
+        {
+            const int32_t bfCnt = srt.inFseProbs[bfFrqDataOffset + bfSp];
+            for (int32_t bfK = 0; bfK < bfCnt; ++bfK)
+            {
+                zstdgpu_LdsStoreU32(hufWTable + bfPos, bfSp);
+                bfPos = (bfPos + bfStep) & bfMask;
+                while (bfPos > bfHighThreshold) { bfPos = (bfPos + bfStep) & bfMask; }
+            }
+        }
+        // Phase 2: assign nstate/bitcnt per position and pack the final FSE element.
+        for (uint32_t bfU = 0; bfU < bfTblDataCount; ++bfU)
+        {
+            const uint32_t bfSym = zstdgpu_LdsLoadU32(hufWTable + bfU);
+            uint32_t bfNstate    = zstdgpu_LdsLoadU32(hufWScratch + bfSym);
+            zstdgpu_LdsStoreU32(hufWScratch + bfSym, bfNstate + 1u);
+            const uint32_t bfBitcnt = bfAccuracyLog2 - zstdgpu_FindFirstBitHiU32(bfNstate);
+            bfNstate = (bfNstate << bfBitcnt) - bfTblDataCount;
+            zstdgpu_LdsStoreU32(hufWTable + bfU, zstdgpu_PackFseElem(bfSym, bfBitcnt, bfNstate));
+        }
+    }
 
     zstdgpu_Backward_BitBuffer_V0 buffer;
     zstdgpu_Backward_BitBuffer_V0_InitWithSegment(buffer, srt.inCompressedData, srt.inHufRefs[threadId]);
@@ -2331,25 +2408,15 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
     uint32_t state0 = zstdgpu_Backward_BitBuffer_V0_Get(buffer, initialBitcnt);
     uint32_t state1 = zstdgpu_Backward_BitBuffer_V0_Get(buffer, initialBitcnt);
 
-    uint32_t fseTableOffset = zstdgpu_ComputeFseDataStartHufW(threadId, cmpBlockCnt);
     uint32_t hufTableOffset = threadId * kzstdgpu_MaxCount_HuffmanWeights;
 
     uint32_t hufWeightIndex = hufTableOffset;
-    // TODO IMPROVEMENT TEST 2: don't store decompresed Huffman weights immediately, one byte at a time per VMEM instruction,
-    //                          but consider accumulating bytes into a single 32-bit value and store that,
-    //                          furthermore, consider storing 32-bit values into LDS first(threadgroup needs TG_Size * 256 bytes of LDS)
-    //                          to benefit from memory-coalescing on stores (read Huffman weights in 256-byte chunk from LDS and store to memory)
-    //                          which seems acceptable given that TG_Size aims to be as minimal as possible,
-    //                              TG_Size = (16-32 threads, 1 wave, potentially some lanes inactive on HW with large wave sizes)
-    //                          to not introduce extra extra execution latency due to highly divergent work (decompressing FSE-compressed Huffman weights)
-    //                          being executed, so a single lane can keep the entire group alive for a very long period of time
-    //                          Q: do we want LDS consumption? if our workload on Async in low-pri mode, the user might prefer to not use LDS at all
     while (1)
     {
-        uint32_t offsetState0 = fseTableOffset + state0;
-        uint32_t offsetState1 = fseTableOffset + state1;
+        zstdgpu_lds_uintptr_t offsetState0 = hufWTable + state0;
+        zstdgpu_lds_uintptr_t offsetState1 = hufWTable + state1;
 
-        const uint32_t fseElem0 = srt.inFseElems[offsetState0];
+        const uint32_t fseElem0 = zstdgpu_LdsLoadU32(offsetState0);
         // peek
         zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem0));
 
@@ -2362,13 +2429,13 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
         }
         else
         {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState1]));
+            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(zstdgpu_LdsLoadU32(offsetState1)));
             break;
         }
 
-        offsetState0 = fseTableOffset + state0;
+        offsetState0 = hufWTable + state0;
 
-        const uint32_t fseElem1 = srt.inFseElems[offsetState1];
+        const uint32_t fseElem1 = zstdgpu_LdsLoadU32(offsetState1);
         // peek
         zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem1));
 
@@ -2381,48 +2448,9 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
         }
         else
         {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState0]));
+            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(zstdgpu_LdsLoadU32(offsetState0)));
             break;
         }
-#if 0
-        offsetState1 = fseTableOffset + state1;
-
-        const uint32_t fseElem0 = srt.inFseElems[offsetState0];
-        // peek
-        zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem0));
-
-        // update
-        bits0 = zstdgpu_FseElem_Bitcnt(fseElem0);
-        nextstate0 = zstdgpu_FseElem_NState(fseElem0);
-        if (zstdgpu_Backward_BitBuffer_V0_CanRefill(buffer, bits0))
-        {
-            state0 = nextstate0 + zstdgpu_Backward_BitBuffer_V0Get(buffer, bits0);
-        }
-        else
-        {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState1]));
-            break;
-        }
-
-        offsetState0 = fseTableOffset + state0;
-
-        const uint32_t fseElem1 = srt.inFseElems[offsetState1];
-        // peek
-        zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem1));
-
-        // update
-        bits1 = zstdgpu_FseElem_Bitcnt(fseElem1);
-        nextstate1 = zstdgpu_FseElem_NState(fseElem1);
-        if (zstdgpu_Backward_BitBuffer_V0_CanRefill(buffer, bits1))
-        {
-            state1 = nextstate1 + zstdgpu_Backward_BitBuffer_V0Get(buffer, bits1);
-        }
-        else
-        {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState0]));
-            break;
-        }
-#endif
     }
     zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeightCount, threadId, hufWeightIndex - hufTableOffset);
 }

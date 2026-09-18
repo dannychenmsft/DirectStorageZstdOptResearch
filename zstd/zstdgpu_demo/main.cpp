@@ -471,7 +471,7 @@ static void zstdgpu_Test_DecompressHuffmanWeights(zstdgpu_ResourceDataCpu & cpuR
         srt.inoutDecompressedHuffmanWeightCount = cpuRes.DecompressedHuffmanWeightCount;
         for (uint32_t i = 0; i < gpuReadbackRes.Counters->FseHufW; ++i)
         {
-            zstdgpu_ShaderEntry_DecompressHuffmanWeights(srt, i);
+            zstdgpu_ShaderEntry_DecompressHuffmanWeights(srt, i, 0);
         }
 
         if (chkGpu)
@@ -942,28 +942,16 @@ static void zstdgpu_Validate_GpuDecompressOnCpu(zstdgpu_ResourceDataCpu & zstdCp
     zstdgpu_ResourceInfo_Stage_2_Init(&zstdInfo, literalCount, sequenceCount, 0, 0);
     zstdgpu_ResourceDataCpu_InitFromHeap(&zstdCpu, &zstdInfo);
 
-    {
-        // Only the Huffman-weight (HufW) FSE tables are built up-front into FseElems here; the
-        // LL/OF/ML sequence tables are regenerated into LDS from FseProbs inside DecompressSequences
-        // (matching the GPU pipeline), so they are no longer built/persisted up front.
-        zstdgpu_InitFseTable_SRT srt;
-        zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(FseHufW), /* tableType */0);
-
-        zstdgpu_Srt_FillInline(srt, /* tableStartIndex */ 0, /* tableDataStart */zstdgpu_ComputeFseDataStartHufW(0, zstdCmpBlockCount), /* tableDataCount */ kzstdgpu_FseElemMaxCount_HufW);
-        for (uint32_t i = 0; i < CNTRS(FseHufW); ++i)
-        {
-            zstdgpu_ShaderEntry_InitFseTable(srt, i, 0);
-        }
-
-        VALIDATE(FseTables, &zstdCpu);
-    }
+    // The Huffman-weight (HufW) FSE decode table is regenerated into LDS from FseProbs inside
+    // DecompressHuffmanWeights (matching the GPU pipeline and the LL/OF/ML sequence tables), so it is
+    // no longer built/persisted up front into FseElems here.
 
     {
         zstdgpu_DecompressHuffmanWeights_SRT srt;
         zstdgpu_Srt_Fill(srt, zstdCpu, /* tgOffset */0, /* workItemCount */CNTRS(FseHufW));
         for (uint32_t i = 0; i < CNTRS(FseHufW); ++i)
         {
-            zstdgpu_ShaderEntry_DecompressHuffmanWeights(srt, i);
+            zstdgpu_ShaderEntry_DecompressHuffmanWeights(srt, i, 0);
         }
 
         VALIDATE(DecompressedHuffmanWeights, &zstdCpu);

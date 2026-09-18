@@ -16,6 +16,7 @@
 #define ZSTDGPU_SRT_GENERATED_DecompressHuffmanWeights_H
 
 #include "ZstdGpuSrt_BindGroup_HuffmanWeightsWrite.h"
+#include "ZstdGpuSrt_BindGroup_FseProbsRead.h"
 
 #ifdef __hlsl_dx_compiler
 
@@ -23,7 +24,6 @@ ZSTDGPU_RO_BUFFER(zstdgpu_Counters)         ZstdInCounters          : register(t
 ZSTDGPU_RO_RAW_BUFFER(uint32_t)             ZstdInCompressedData    : register(t1);
 ZSTDGPU_RO_BUFFER(zstdgpu_OffsetAndSize)    ZstdInHufRefs           : register(t2);
 ZSTDGPU_RO_BUFFER(zstdgpu_FseInfo)          ZstdInFseInfos          : register(t3);
-ZSTDGPU_RO_BUFFER(uint32_t)                 ZstdInFseElems          : register(t4);
 
 typedef struct zstdgpu_DecompressHuffmanWeights_Consts
 {
@@ -33,17 +33,17 @@ typedef struct zstdgpu_DecompressHuffmanWeights_Consts
 
 ConstantBuffer<zstdgpu_DecompressHuffmanWeights_Consts> ZstdConstants_DecompressHuffmanWeights : register(b0);
 
-#define ZSTDGPU_SRT_RS_DecompressHuffmanWeights ZSTDGPU_SRT_RS_BIND_GROUP_HuffmanWeightsWrite ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", SRV(t4)" ", RootConstants(b0, num32BitConstants=2)"
+#define ZSTDGPU_SRT_RS_DecompressHuffmanWeights ZSTDGPU_SRT_RS_BIND_GROUP_HuffmanWeightsWrite ", " ZSTDGPU_SRT_RS_BIND_GROUP_FseProbsRead ", SRV(t0)" ", SRV(t1)" ", SRV(t2)" ", SRV(t3)" ", RootConstants(b0, num32BitConstants=2)"
 
 static void zstdgpu_Srt_Fill(ZSTDGPU_PARAM_INOUT(zstdgpu_DecompressHuffmanWeights_SRT) srt)
 {
     zstdgpu_Srt_FillBindGroup_HuffmanWeightsWrite(srt);
+    zstdgpu_Srt_FillBindGroup_FseProbsRead(srt);
 
     srt.inCounters          = ZstdInCounters;
     srt.inCompressedData    = ZstdInCompressedData;
     srt.inHufRefs           = ZstdInHufRefs;
     srt.inFseInfos          = ZstdInFseInfos;
-    srt.inFseElems          = ZstdInFseElems;
     srt.tgOffset            = ZstdConstants_DecompressHuffmanWeights.tgOffset;
     srt.workItemCount       = ZstdConstants_DecompressHuffmanWeights.workItemCount;
 }
@@ -55,12 +55,12 @@ static void zstdgpu_Srt_Fill(zstdgpu_DecompressHuffmanWeights_SRT &srt, const zs
                              uint32_t     workItemCount)
 {
     zstdgpu_Srt_FillBindGroup_HuffmanWeightsWrite(srt, cpuRes);
+    zstdgpu_Srt_FillBindGroup_FseProbsRead(srt, cpuRes);
 
     srt.inCounters          = cpuRes.Counters;
     srt.inCompressedData    = cpuRes.CompressedData;
     srt.inHufRefs           = cpuRes.HufRefs;
     srt.inFseInfos          = cpuRes.FseInfos;
-    srt.inFseElems          = cpuRes.FseElems;
     srt.tgOffset            = tgOffset;
     srt.workItemCount       = workItemCount;
 }

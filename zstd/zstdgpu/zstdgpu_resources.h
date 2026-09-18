@@ -325,10 +325,13 @@ static void zstdgpu_ResourceInfo_Stage_1_InitSize(zstdgpu_ResourceInfo *outInfo,
     const uint32_t NonRLE_FseTableCount = cmpBlockCount * 4 + 3; // 4 FSE tables per compressed block (Huff, LLen, Offs, MLen) + 3 default tables for (LLen, Offs, MLen);
     const uint32_t FseTable_Count = kzstdgpu_FseRleTableCount + NonRLE_FseTableCount;
     const uint32_t FseProbs_Count = NonRLE_FseTableCount * kzstdgpu_MaxCount_FseProbs;
-    // FseElems now persists only the RLE tables and the small per-block Huffman-weight (HufW) FSE
-    // tables. The LL/OF/ML sequence FSE tables are regenerated into LDS at decode time from FseProbs
-    // (see zstdgpu_ShaderEntry_DecompressSequences_SingleStream), so they are no longer stored here.
-    const uint32_t FseTableElem_Count = kzstdgpu_FseRleTableCount + cmpBlockCount * kzstdgpu_FseElemMaxCount_HufW;
+    // FseElems now persists ONLY the 256 dense RLE tables (a fixed cost, independent of block count).
+    // Every built FSE decode table -- the per-block Huffman-weight (HufW) table as well as the LL/OF/ML
+    // sequence tables -- is regenerated into LDS at decode time from FseProbs (see
+    // zstdgpu_ShaderEntry_DecompressHuffmanWeights and zstdgpu_ShaderEntry_DecompressSequences_SingleStream),
+    // so none of the per-block built tables are stored here. This removes the last
+    // O(compressed-block-count) built-table scratch.
+    const uint32_t FseTableElem_Count = kzstdgpu_FseRleTableCount;
 
     const uint32_t FseElems_Count = FseTableElem_Count;
 

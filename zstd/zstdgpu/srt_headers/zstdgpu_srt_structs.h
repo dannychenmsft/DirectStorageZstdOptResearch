@@ -127,11 +127,11 @@ typedef struct zstdgpu_DecompressHuffmanWeights_SRT
 {
     ZSTDGPU_RW_TYPED_BUFFER(uint32_t, uint8_t)              inoutDecompressedHuffmanWeights;
     ZSTDGPU_RW_TYPED_BUFFER(uint32_t, uint8_t)              inoutDecompressedHuffmanWeightCount;
+    ZSTDGPU_RO_TYPED_BUFFER(int32_t, int16_t)               inFseProbs;
     ZSTDGPU_RO_BUFFER(zstdgpu_Counters)                     inCounters;
     ZSTDGPU_RO_RAW_BUFFER(uint32_t)                         inCompressedData;
     ZSTDGPU_RO_BUFFER(zstdgpu_OffsetAndSize)                inHufRefs;
     ZSTDGPU_RO_BUFFER(zstdgpu_FseInfo)                      inFseInfos;
-    ZSTDGPU_RO_BUFFER(uint32_t)                             inFseElems;
     uint32_t                                                tgOffset;
     uint32_t                                                workItemCount;
 } zstdgpu_DecompressHuffmanWeights_SRT;

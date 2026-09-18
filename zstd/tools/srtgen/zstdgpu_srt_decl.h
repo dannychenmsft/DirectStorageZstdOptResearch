@@ -234,12 +234,12 @@ ZSTDGPU_SRT_END()
 
 ZSTDGPU_SRT_BEGIN(DecompressHuffmanWeights, Indirect)
     ZSTDGPU_SRT_USE_BIND_GROUP(HuffmanWeightsWrite)
+    ZSTDGPU_SRT_USE_BIND_GROUP(FseProbsRead)
 
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_Counters              , Counters                      )
     ZSTDGPU_SRT_BUF_RO_BYTE(CompressedData)
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_OffsetAndSize         , HufRefs                       )
     ZSTDGPU_SRT_BUF_RO_STRUCT(zstdgpu_FseInfo               , FseInfos                      )
-    ZSTDGPU_SRT_BUF_RO_STRUCT(uint32_t                      , FseElems                      )
 
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , tgOffset                      )
     ZSTDGPU_SRT_CONST_INDIRECT(uint32_t                     , workItemCount                 )

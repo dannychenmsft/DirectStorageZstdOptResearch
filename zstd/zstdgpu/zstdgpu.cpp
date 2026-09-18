@@ -2839,36 +2839,10 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         PIXEndEvent(cmdList);
     }
 
-    {
-        // Run FSE Table Initialisation
-        ZSTDGPU_KERNEL_SCOPE(InitFseTable, cmdList,
-        {
-            PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Init FSE Table]");
-            zstdgpu_Bind_InitFseTable_Stage2(cmdList, req->srts, req->resData.gpuOnly, 0u);
-
-            // NOTE: Slots 0 (tgOffset) and 1 (workItemCount) are set by command signature via indirect dispatch.
-            // Slot 2 = table type (0=HufW, 1=LLen, 2=Offs, 3=MLen); the shader derives the bases from Counters.
-            // Only the Huffman-weight (HufW) FSE tables are still built up-front into FseElems. The LL/OF/ML
-            // sequence FSE tables are regenerated into LDS at sequence-decode time from FseProbs, so their
-            // up-front InitFseTable dispatches (types 1/2/3) are no longer needed.
-            PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"FSEs for Huffman Weights");
-            cmdList->SetComputeRoot32BitConstant(kzstdgpu_SrtConstsRootSlot_InitFseTable, 0u /* HufW */, 2);
-            zstdgpu_DispatchIndirect(cmdList, InitFseTable, FseHufW);
-            PIXEndEvent(cmdList);
-            PIXEndEvent(cmdList);
-        });
-    }
-
-    // Needed by readback
-    {
-        PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"Barrier with Resources for [Huffman Weights Decompression] and [Decompress Literals]");
-        D3D12_RESOURCE_BARRIER barriers[1];
-        // last written by [Init FSE Table]
-        // next read by [Decompress Huffman Weights] and [Decompress Sequences]
-        setResourceUavToSrvSync(barriers, 0, req->resData.gpuOnly.FseElems);
-        cmdList->ResourceBarrier(_countof(barriers), barriers);
-        PIXEndEvent(cmdList);
-    }
+    // The Huffman-weight (HufW) FSE decode table is regenerated into LDS from FseProbs inside
+    // [Decompress Huffman Weights] (like the LL/OF/ML sequence tables), so the up-front
+    // InitFseTable(HufW) dispatch -- and the FseElems UAV->SRV barrier that fed it -- are gone.
+    // FseElems no longer holds any built per-block table; it retains only the fixed RLE region.
 
     // Run Decompression of FSE-compressed Huffman Weights
     {

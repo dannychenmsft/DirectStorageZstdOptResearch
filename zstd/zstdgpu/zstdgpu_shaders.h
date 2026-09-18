@@ -3431,20 +3431,14 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream(ZSTDGPU_PARAM_IN
 #define kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache_UNDEF 1
 #endif
 
-// ZSTDGPU_FSE_REGEN: when 1, the SingleStream LdsFseCache path rebuilds the LL/OF/ML FSE
-// decode tables directly into LDS from the persisted normalized distributions (FseProbs),
-// instead of copying the prebuilt tables from the global FseElems scratch. This removes the
-// need to persist the large built tables (the dominant per-block scratch cost). The build
-// follows the canonical zstd construction and is bit-identical to zstdgpu_ShaderEntry_InitFseTable.
-#ifndef ZSTDGPU_FSE_REGEN
-#define ZSTDGPU_FSE_REGEN 1
-#endif
-
-#if ZSTDGPU_FSE_REGEN
+// The SingleStream LdsFseCache path rebuilds the LL/OF/ML FSE decode tables directly into LDS
+// from the persisted normalized distributions (FseProbs) instead of copying prebuilt tables from
+// the global FseElems scratch, so FseElems no longer needs to persist the large LL/OF/ML built
+// tables (the dominant per-block scratch cost). The build follows the canonical zstd construction
+// and is bit-identical to zstdgpu_ShaderEntry_InitFseTable; thread 0 builds and is the sole
+// consumer, so no group barrier is required. (The ScalarFseLoad/MultiStream variants that read the
+// LL/OF/ML tables from FseElems are retired from runtime selection.)
 #define ZSTDGPU_FSE_REGEN_LDS_REGION ZSTDGPU_LDS_REGION(FseSymbolNext, kzstdgpu_MaxCount_FseProbs)
-#else
-#define ZSTDGPU_FSE_REGEN_LDS_REGION
-#endif
 
 #if !kzstdgpu_DecompressSequences_SingleStream_NoLdsFseCache
 #define ZSTDGPU_DECOMPRESS_SEQUENCES_SINGLE_STREAM_LDS_FSE_CACHE_LDS(base, size) \
@@ -3505,7 +3499,6 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
         }                                                                                                       \
     }
 
-#if ZSTDGPU_FSE_REGEN
     ZSTDGPU_UNUSED(startLLen);
     ZSTDGPU_UNUSED(startOffs);
     ZSTDGPU_UNUSED(startMLen);
@@ -3581,15 +3574,6 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
     }
     #undef ZSTDGPU_BUILD_FSE_INTO_LDS
     // No barrier: thread 0 is both the builder and the sole consumer of these LDS tables.
-#else
-    ZSTDGPU_PRELOAD_FSE_INTO_LDS(LLen)
-    ZSTDGPU_PRELOAD_FSE_INTO_LDS(Offs)
-    ZSTDGPU_PRELOAD_FSE_INTO_LDS(MLen)
-
-    #if !defined(__XBOX_SCARLETT)
-    GroupMemoryBarrierWithGroupSync();
-    #endif
-#endif
     #undef ZSTDGPU_PRELOAD_FSE_INTO_LDS
 #endif
 

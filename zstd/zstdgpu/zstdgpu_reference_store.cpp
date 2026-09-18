@@ -340,27 +340,34 @@ void zstdgpu_ReferenceStore_Report_FseTable(const int16_t *probs, uint32_t symCo
     free(testBitcnt);
     #endif
 
-#define STORE(name, storeExpr)                                                                              \
+    // Only the Huffman-weight (HufW) FSE tables are persisted in FseElems; the LL/OF/ML sequence
+    // tables are regenerated into LDS at decode time from FseProbs, so their built elements are not
+    // stored here (FseElems is no longer sized to hold them). The FseInfos/FseProbs seeds are still
+    // captured -- they fully determine the regenerated tables.
+#define STORE(name, storeExpr, storeElems)                                                                  \
     if (GFseProbTableTypePending == kzstdgpu_ReferenceStore_Fse##name)                                      \
     {                                                                                                       \
         const uint32_t localIdx = GFseProbTableIndex##name++;                                               \
         const uint32_t fseIndex = zstdgpu_ComputeFseIndex##name(localIdx, GBlockCountCMP);                  \
-        const uint32_t fseElemStart = zstdgpu_ComputeFseDataStart##name(localIdx, GBlockCountCMP);          \
         const uint32_t fseProbStart = (fseIndex - kzstdgpu_FseRleTableCount) * kzstdgpu_MaxCount_FseProbs;  \
         GLastTableIndex_Fse##name = storeExpr;                                                              \
         GZstd.FseInfos[fseIndex] = zstdgpu_CreateFseInfo(symCount, accuracyLog2);                           \
         memcpy(&GZstd.FseProbs[fseProbStart], probs, sizeof(probs[0]) * symCount);                          \
-        for (uint32_t e = 0; e < elemCount; ++e)                                                            \
-            GZstd.FseElems[fseElemStart + e] = zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e]);        \
+        if (storeElems)                                                                                     \
+        {                                                                                                   \
+            const uint32_t fseElemStart = zstdgpu_ComputeFseDataStart##name(localIdx, GBlockCountCMP);      \
+            for (uint32_t e = 0; e < elemCount; ++e)                                                        \
+                GZstd.FseElems[fseElemStart + e] = zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e]);    \
+        }                                                                                                   \
     }
 
-    STORE(HufW, localIdx)
+    STORE(HufW, localIdx, 1)
     else
-    STORE(LLen, fseIndex)
+    STORE(LLen, fseIndex, 0)
     else
-    STORE(Offs, fseIndex)
+    STORE(Offs, fseIndex, 0)
     else
-    STORE(MLen, fseIndex)
+    STORE(MLen, fseIndex, 0)
     else
     {
         ZSTDGPU_BREAK();
@@ -371,21 +378,22 @@ void zstdgpu_ReferenceStore_Report_FseTable(const int16_t *probs, uint32_t symCo
 void zstdgpu_ReferenceStore_Report_FseDefaultTable(const int16_t *probs, uint32_t symCount, const uint8_t *symbol, const uint8_t *bitcnt, const uint16_t *nstate, uint32_t accuracyLog2)
 {
     ZSTDGPU_ASSERT(symCount < kzstdgpu_MaxCount_FseProbs);
-    const uint32_t elemCount = 1u << accuracyLog2;
+    ZSTDGPU_UNUSED(symbol);
+    ZSTDGPU_UNUSED(bitcnt);
+    ZSTDGPU_UNUSED(nstate);
 
+    // LL/OF/ML default FSE tables are regenerated into LDS from FseProbs at decode time and are not
+    // persisted in FseElems; only their FseInfos/FseProbs seeds are captured here.
 #define STORE(name)                                                                                         \
     if (GFseProbTableTypePending == kzstdgpu_ReferenceStore_Fse##name)                                      \
     {                                                                                                       \
         const uint32_t fseIndex = zstdgpu_ComputeFseIndex##name(0, GBlockCountCMP);                         \
-        const uint32_t fseElemStart = zstdgpu_ComputeFseDataStart##name(0, GBlockCountCMP);                 \
         const uint32_t fseProbStart = (fseIndex - kzstdgpu_FseRleTableCount) * kzstdgpu_MaxCount_FseProbs;  \
         GLastTableIndex_Fse##name = fseIndex;                                                               \
         if (GFseProbDefaultTable##name##Stored == 0)                                                        \
         {                                                                                                   \
             GZstd.FseInfos[fseIndex] = zstdgpu_CreateFseInfo(symCount, accuracyLog2);                       \
             memcpy(&GZstd.FseProbs[fseProbStart], probs, sizeof(probs[0]) * symCount);                      \
-            for (uint32_t e = 0; e < elemCount; ++e)                                                        \
-                GZstd.FseElems[fseElemStart + e] = zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e]);    \
             GFseProbDefaultTable##name##Stored = 1;                                                         \
         }                                                                                                   \
     }
@@ -777,8 +785,10 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_FseTables(const zs
     if (tst->Counters->HufLit != GHufLitIndex)
         return ZSTDGPU_ENUM_CONST(Validate_Failed);
 
-    // Validate Referred FSE Tables
-    #define VALIDATE_FSE_TABLE_CONTENT(refIdx, tstIdx, infoOfs, elemFn) \
+    // Validate Referred FSE Tables. Only HufW tables still live in FseElems; LL/OF/ML sequence tables
+    // are regenerated from FseProbs in LDS, so pass NULL elems for them (the FseInfos/FseProbs seed
+    // comparison fully determines the regenerated tables).
+    #define VALIDATE_FSE_TABLE_CONTENT(refIdx, tstIdx, infoOfs, elemFn, refElems, tstElems) \
         izstdgpu_ReferenceStore_Validate_FseTable(          \
             refIdx,                                         \
             tstIdx,                                         \
@@ -787,8 +797,8 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_FseTables(const zs
             tst->FseInfos,                                  \
             ref->FseProbs,                                  \
             tst->FseProbs,                                  \
-            ref->FseElems,                                  \
-            tst->FseElems                                   \
+            refElems,                                       \
+            tstElems                                        \
         )
     for (uint32_t i = 0; i < GHufLitIndex; ++i)
     {
@@ -801,7 +811,8 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_FseTables(const zs
 
             if (ZSTDGPU_ENUM_CONST(Validate_Success) != VALIDATE_FSE_TABLE_CONTENT(ref->HufLitIdToHufWId_DBG[i],
                                                                                    tst->HufLitIdToHufWId_DBG[i],
-                                                                                   kzstdgpu_FseRleTableCount, zstdgpu_ComputeFseDataStartHufW)
+                                                                                   kzstdgpu_FseRleTableCount, zstdgpu_ComputeFseDataStartHufW,
+                                                                                   ref->FseElems, tst->FseElems)
                )
             {
                 return ZSTDGPU_ENUM_CONST(Validate_Failed);
@@ -828,19 +839,19 @@ ZSTDGPU_ENUM(Validate_Result) zstdgpu_ReferenceStore_Validate_FseTables(const zs
             if (ZSTDGPU_ENUM_CONST(Validate_Success) != VALIDATE_FSE_TABLE_CONTENT(
                     ref->SeqStreamToLLenFseId[refSeqStreamIdx],
                     tst->SeqStreamToLLenFseId[tstSeqStreamIdx],
-                    0, zstdgpu_ComputeFseDataStartFromFseIndexLLen))
+                    0, zstdgpu_ComputeFseDataStartFromFseIndexLLen, NULL, NULL))
                 return ZSTDGPU_ENUM_CONST(Validate_Failed);
 
             if (ZSTDGPU_ENUM_CONST(Validate_Success) != VALIDATE_FSE_TABLE_CONTENT(
                     ref->SeqStreamToOffsFseId[refSeqStreamIdx],
                     tst->SeqStreamToOffsFseId[tstSeqStreamIdx],
-                    0, zstdgpu_ComputeFseDataStartFromFseIndexOffs))
+                    0, zstdgpu_ComputeFseDataStartFromFseIndexOffs, NULL, NULL))
                 return ZSTDGPU_ENUM_CONST(Validate_Failed);
 
             if (ZSTDGPU_ENUM_CONST(Validate_Success) != VALIDATE_FSE_TABLE_CONTENT(
                     ref->SeqStreamToMLenFseId[refSeqStreamIdx],
                     tst->SeqStreamToMLenFseId[tstSeqStreamIdx],
-                    0, zstdgpu_ComputeFseDataStartFromFseIndexMLen))
+                    0, zstdgpu_ComputeFseDataStartFromFseIndexMLen, NULL, NULL))
                 return ZSTDGPU_ENUM_CONST(Validate_Failed);
         }
 

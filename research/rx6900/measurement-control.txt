@@ -1,0 +1,24 @@
+Measurement control
+===================
+
+Remote.ps1 checks <remote campaign root>\pause-before-perf.json before starting
+a Perf or Profile operation. If present, it throws the JSON object's reason.
+An invocation already running is unaffected. This lets the coordinator stop an
+obsolete multi-ladder schedule at its next complete-ladder boundary without
+killing a GPU process or invalidating completed observations.
+
+The evaluator remains the sole measurement owner. After reading and adopting the
+new coordinator policy, it may remove that exact pause file and resume. Do not
+interpret the intentional pause, or a missing result for a never-started RunId,
+as a product failure. Retain completed schedule rows and original raw results.
+
+Policy version 2 (user requested faster evaluation):
+- Screen candidates using one complete exact-CI ladder, with fresh baseline
+  observations bracketing the screening block.
+- Keep the original corpus, eight rungs, five sweeps and pooling unchanged.
+- Reuse completed observations; do not repeat obvious losing candidates.
+- Screening is provisional ranking, not statistical acceptance.
+- Reserve full repeated confirmation and final correctness gates for promising
+  finalists against the incumbent and fresh PR156 reference.
+
+The latest coordinator policy is in the local campaign knowledge\campaign.json.

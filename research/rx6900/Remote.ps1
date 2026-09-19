@@ -11,6 +11,13 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $root = Split-Path $PSScriptRoot -Parent
+if (($Action -eq 'Run' -and $Kind -eq 'Perf') -or $Action -eq 'Profile') {
+    $pauseFile = Join-Path $root 'pause-before-perf.json'
+    if (Test-Path -LiteralPath $pauseFile) {
+        $pause = Get-Content -LiteralPath $pauseFile -Raw | ConvertFrom-Json
+        throw "Coordinator paused new measurements at a completed-ladder boundary: $($pause.reason)"
+    }
+}
 function Save-Json($Value, $Path) { $Value | ConvertTo-Json -Depth 12 | Set-Content $Path -Encoding UTF8 }
 function Get-Corpus {
     $files = @(Get-ChildItem $Content -Recurse -File -Filter *.zst | Sort-Object FullName)

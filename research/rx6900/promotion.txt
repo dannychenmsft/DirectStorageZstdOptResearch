@@ -1,0 +1,45 @@
+RX 6900 XT campaign completion
+=============================
+
+Goal verified and winning changes promoted on research/rx6900-huffman-lds.
+The original zstdgpu-huffman-lds-regen branch remains at a8572d7, untouched.
+
+Accepted product commits:
+  a2b898d2b8bc5e0fafc2b887242212958e49bfcb
+    32 table-construction threads with 16 literal streams per group.
+    Cherry-picked from measured optimization c4b3725.
+  a1827ed312643d64c65141d10bd7b378a25e0455
+    Separate one-line fix for the inherited CPU-replay DWORD output alias.
+    Cherry-picked from measured fix 4777371.
+
+The promoted zstd Git tree is 8b5eea31de062b299245b2da09c4af84f0ebf158,
+exactly equal to the measured finalist's zstd tree at 4777371. This comparison
+includes all product, shader, project and demo source files. No unmeasured
+product edits were added during promotion.
+
+Final exact-CI throughput geomeans:
+  Starting branch plus replay-only harness fix: 8.409058682 GB/s.
+  Fresh PR156 reference:                       8.698574322 GB/s.
+  Accepted candidate:                         8.739402405 GB/s.
+  Candidate versus starting branch + fix:      +3.928426893%.
+  Candidate versus fresh PR156:                +0.469365224%.
+  Paired 95% Student-t interval versus PR156:   +0.317775377% to +0.621184138%.
+
+All eight CI rungs, five sweeps, the exact 32-file/14643-frame throughput corpus,
+and pooling/geomean semantics were retained. Three symmetric five-ladder
+sessions shared fresh controls. Full GPU correctness/debug and both CPU
+validation paths passed. See e4fixed-final-report.txt for units, all rungs,
+source provenance, confidence calculation and raw-artifact locations.
+
+The original 1076 bytes/compressed-block persistent scratch saving is retained;
+LDS remains 6456 bytes/group. The alias fix changes only CPU replay, not GPU
+programs or the timed performance path. It also fixes that validation mode on
+the original scratch-reduction branch and is intentionally a separate commit.
+
+Performance is verified only on DSTESTPC2 / RX 6900 XT. The stream-density
+constant applies to PC builds; console geometry is unchanged. Cross-GPU
+performance must be revalidated before promoting this research into the shared
+baseline. No claim is made that every rung independently exceeds PR156.
+
+Campaign stopped at the verified goal. No further candidates or GPU runs are
+scheduled; unaccepted experiments remain on their isolated research branches.

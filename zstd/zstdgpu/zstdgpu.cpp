@@ -2765,9 +2765,9 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
 
         // NOTE: Slots 0 (tgOffset) and 1 (workItemCount) are set by command signature via indirect dispatch
         // NOTE(pamartis): The fused [Init Huffman Table and Decompress Literals] kernel decodes
-        // kzstdgpu_TgSizeX_DecompressLiterals streams per group, so the per-Huffman-table group
+        // kzstdgpu_StreamsPerGroup_DecompressLiterals streams per group, so the per-Huffman-table group
         // boundaries and dispatch group count must be laid out with the same stride.
-        const uint32_t literalsPerGroup = kzstdgpu_TgSizeX_DecompressLiterals;
+        const uint32_t literalsPerGroup = kzstdgpu_StreamsPerGroup_DecompressLiterals;
         zstdgpu_Bind_ComputePrefixSum(cmdList, req->srts, req->resData.gpuOnly, literalsPerGroup);
 
         ZSTDGPU_KERNEL_SCOPE(ComputePrefixSum, cmdList,

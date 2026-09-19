@@ -435,14 +435,21 @@ static const uint32_t kzstdgpu_TgSizeX_DecodeHuffmanWeights = 32;
 
 static const uint32_t kzstdgpu_TgSizeX_DecompressSequences = 128;
 
-// NOTE(pamartis): Decompressing Literals should be as small as possible (divergent workload)
-// but not too small to make sure Huffman table initialisation isn't repeated too often
-// TODO(pamartis) Try threadgroup sizes that less than wave size to see whether reducing
-// divergency more efficient than having unfilled waves...
+// The fused kernel uses the full threadgroup for Huffman table construction.
+// Literal-stream grouping is controlled independently below.
 #if defined(_GAMING_XBOX_XBOXONE) || defined(__XBOX_ONE)
 static const uitn32_t kzstdgpu_TgSizeX_DecompressLiterals = 64;
 #else
 static const uint32_t kzstdgpu_TgSizeX_DecompressLiterals = 32;
+#endif
+
+// Smaller PC stream groups trade additional table builds for independently schedulable groups.
+// This stride must match host prefixes and both GPU/CPU literal mapping.
+#if defined(_GAMING_XBOX) || defined(_GAMING_XBOX_SCARLETT) || defined(_GAMING_XBOX_XBOXONE) \
+    || defined(__XBOX_SCARLETT) || defined(__XBOX_ONE)
+static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals = kzstdgpu_TgSizeX_DecompressLiterals;
+#else
+static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals = 16;
 #endif
 
 #if defined(_GAMING_XBOX) || defined(__XBOX_SCARLETT) || defined(__XBOX_ONE)

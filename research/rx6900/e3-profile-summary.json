@@ -1,0 +1,116 @@
+{
+  "runId": "e3-profile-1024",
+  "rung": 1024,
+  "pooled_dispatches": 70,
+  "frames": 14643,
+  "columns": {
+    "Stage 0 (us)": {
+      "mean_us": 39.285714285714285,
+      "median_us": 40.0
+    },
+    "Stage 0 :: Init Resources (us)": {
+      "mean_us": 0.0,
+      "median_us": 0.0
+    },
+    "Stage 0 :: Parse Frames (us)": {
+      "mean_us": 0.0,
+      "median_us": 0.0
+    },
+    "Stage 0 :: Prefix Sums (us)": {
+      "mean_us": 9.557142857142857,
+      "median_us": 10.0
+    },
+    "Stage 0 :: UpdateDispatchArgs:: Stage0 (us)": {
+      "mean_us": 0.0,
+      "median_us": 0.0
+    },
+    "Stage 1 (us)": {
+      "mean_us": 420.2857142857143,
+      "median_us": 421.0
+    },
+    "Stage 1 :: Init Resources (us)": {
+      "mean_us": 9.742857142857142,
+      "median_us": 10.0
+    },
+    "Stage 1 :: Parse Frames (us)": {
+      "mean_us": 23.228571428571428,
+      "median_us": 24.0
+    },
+    "Stage 1 :: Parse Compressed Blocks (us)": {
+      "mean_us": 81.34285714285714,
+      "median_us": 81.0
+    },
+    "Stage 1 :: Prefix Block Sizes (RAW/RLE) (us)": {
+      "mean_us": 22.12857142857143,
+      "median_us": 22.0
+    },
+    "Stage 1 :: Propagate FSE Index (us)": {
+      "mean_us": 44.457142857142856,
+      "median_us": 45.0
+    },
+    "Stage 1 :: UpdateDispatchArgs:: Stage1 (us)": {
+      "mean_us": 7.914285714285715,
+      "median_us": 8.0
+    },
+    "Stage 2 (us)": {
+      "mean_us": 17370.157142857144,
+      "median_us": 17296.5
+    },
+    "Stage 2 :: UpdateDispatchArgs:: Stage2 (us)": {
+      "mean_us": 2.0,
+      "median_us": 2.0
+    },
+    "Stage 2 :: Compute Prefix Sums (us)": {
+      "mean_us": 21.757142857142856,
+      "median_us": 22.0
+    },
+    "Stage 2 :: Init FSE Tables (us)": {
+      "mean_us": 156.07142857142858,
+      "median_us": 159.0
+    },
+    "Stage 2 :: Decompress Huffman Weights (us)": {
+      "mean_us": 61.714285714285715,
+      "median_us": 62.0
+    },
+    "Stage 2 :: Decode Huffman Weights (us)": {
+      "mean_us": 6.0,
+      "median_us": 6.0
+    },
+    "Stage 2 :: Decompress Literals (us)": {
+      "mean_us": 5018.942857142857,
+      "median_us": 4417.5
+    },
+    "Stage 2 :: Decompress Sequences (us)": {
+      "mean_us": 4681.428571428572,
+      "median_us": 4710.0
+    },
+    "Stage 2 :: Propagate Sequence Offsets (us)": {
+      "mean_us": 16.17142857142857,
+      "median_us": 16.0
+    },
+    "Stage 2 :: Finalise Sequence Offsets (us)": {
+      "mean_us": 132.5857142857143,
+      "median_us": 129.0
+    },
+    "Stage 2 :: Compute Dest Block Offsets (us)": {
+      "mean_us": 16.057142857142857,
+      "median_us": 16.0
+    },
+    "Stage 2 :: ExecuteSequences (us)": {
+      "mean_us": 7187.371428571429,
+      "median_us": 6960.0
+    },
+    "Stage 2 :: Memcpy Raw/Memset RLE Blocks (us)": {
+      "mean_us": 32.01428571428571,
+      "median_us": 31.0
+    },
+    "Stage 2 :: Prefix Block Sizes (us)": {
+      "mean_us": 22.642857142857142,
+      "median_us": 23.0
+    },
+    "Huffman table plus literals (us)": {
+      "mean_us": 5018.942857142857,
+      "median_us": 4417.5
+    }
+  }
+}

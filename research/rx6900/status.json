@@ -1,10 +1,10 @@
 {
-  "phase": "measuring-e1-versus-baseline",
+  "phase": "measuring-e3-versus-baseline",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
   "accepts": 0,
-  "rejects": 0,
+  "rejects": 1,
   "ready": false,
   "correctness": "both arms: ExternalMemory, ExternalMemorySeq, D3D12DebugLayerSeq all pass; no skips",
   "measurement": "bootstrap ABBA x3 complete, healthy spread",
@@ -20,8 +20,8 @@
   "in_flight_explorers": ["e1", "e2", "e3"],
   "candidate_queue_state": "authorized e1 then e3; independent branches from a8572d7; no promotion",
   "candidate_queue": [
-    {"id": "e1", "commit": "54604812649247846f4bb3f38ebc56d30c161997", "phase": "full correctness and debug passed; paired timing"},
-    {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "Release build complete; awaiting GPU slot"}
+    {"id": "e1", "commit": "54604812649247846f4bb3f38ebc56d30c161997", "phase": "rejected", "delta_percent": -0.11104700776003841, "z": -7.6928834374108614},
+    {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "full correctness and debug passed; paired timing"}
   ],
   "goal_met": false
 }

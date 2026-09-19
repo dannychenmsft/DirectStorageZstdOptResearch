@@ -69,3 +69,15 @@ e1-correctness-01:2/2 scenarios,rc0,0 skips/failures; e1-debug-01:1/1,rc0.
 e1-profile-1024(one-off):table+literals4045.43us,Stage2 16476.34us. This is only
 exploratory; no verdict from comparison to earlier baseline profiles.
 Beginning full fresh baseline/e1 ABBAx3. e3 built only; no product promotion.
+
+2026-09-19 e1 REJECT / e3 correctness complete
+e1 candidateGM8.397242817 vsfresh baselineGM8.406578070GB/s.
+Full8rung ABBAx3 delta-0.111047008%;stderr(log)0.000144430514;Z-7.692883.
+Three-SE interval[-0.154318671,-0.067756591]%;spreads0.129686%candidate,
+0.221049%baseline. Conclusive small regression; fails both acceptance conditions.
+No PR156 finalist comparison warranted; no cherry-pick/product promotion.
+e1 staticDXIL instruction lines1073 vsbaseline1114 did not translate to a gain.
+Both have6456B declared LDS,6 barrier sites; these are not ISA/occupancy results.
+e3-correctness-01:2/2 scenarios,rc0,0 skips; e3-debug-01:1/1,rc0,0 skips.
+e3 one-off R1024 profile:table+literals5018.94us,Stage2 17370.16us.
+Profile is exploratory,not acceptance. Begin fresh baseline/e3 fullABBAx3.

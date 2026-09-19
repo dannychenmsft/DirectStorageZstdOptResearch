@@ -1,0 +1,32 @@
+{
+  "baseline": {
+    "header": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+    "threads": "32,1,1",
+    "declared_lds_bytes": 6456,
+    "static_barrier_calls": 6,
+    "static_buffer_load_calls": 21,
+    "static_buffer_store_calls": 3,
+    "dxil_instruction_lines": 1114,
+    "limitation": "DXIL static counts, not AMD ISA, register pressure, dynamic frequency, or occupancy"
+  },
+  "e1": {
+    "header": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+    "threads": "32,1,1",
+    "declared_lds_bytes": 6456,
+    "static_barrier_calls": 6,
+    "static_buffer_load_calls": 21,
+    "static_buffer_store_calls": 3,
+    "dxil_instruction_lines": 1073,
+    "limitation": "DXIL static counts, not AMD ISA, register pressure, dynamic frequency, or occupancy"
+  },
+  "e3": {
+    "header": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+    "threads": "64,1,1",
+    "declared_lds_bytes": 6456,
+    "static_barrier_calls": 6,
+    "static_buffer_load_calls": 21,
+    "static_buffer_store_calls": 3,
+    "dxil_instruction_lines": 1119,
+    "limitation": "DXIL static counts, not AMD ISA, register pressure, dynamic frequency, or occupancy"
+  }
+}

@@ -1,0 +1,903 @@
+{
+  "baseline": "baseline",
+  "candidate": "e1-5460481",
+  "arms": {
+    "baseline": {
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "n": 6,
+      "geomean": 8.40657807033443,
+      "arithmetic_mean": 8.406579968525659,
+      "stdev": 0.006187068945949203,
+      "spread_percent": 0.22104858690950024,
+      "rungs": {
+        "64": 2.976766203784991,
+        "128": 5.274548736827263,
+        "192": 6.892012552473807,
+        "256": 8.185722225839955,
+        "384": 10.273044884018587,
+        "512": 11.881651059435262,
+        "768": 14.257682275627412,
+        "1024": 16.1806511047455
+      }
+    },
+    "e1-5460481": {
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "n": 6,
+      "geomean": 8.397242816932314,
+      "arithmetic_mean": 8.397243505720265,
+      "stdev": 0.003725790583370253,
+      "spread_percent": 0.12968625568920977,
+      "rungs": {
+        "64": 2.986349820969974,
+        "128": 5.2961975927712,
+        "192": 6.910929355185267,
+        "256": 8.203027103336202,
+        "384": 10.240709450618814,
+        "512": 11.866640825137617,
+        "768": 14.126440697042543,
+        "1024": 16.061556894903013
+      }
+    }
+  },
+  "sessions": 3,
+  "session_log_ratios": [
+    -0.0009159433922638627,
+    -0.0013931033126073356,
+    -0.001024214614130603
+  ],
+  "mean_log_ratio": -0.0011110871063339338,
+  "stderr_log_ratio": 0.00014443051365248353,
+  "delta_percent": -0.11104700776003841,
+  "z": -7.6928834374108614,
+  "three_sigma_delta_interval_percent": [
+    -0.1543186708268966,
+    -0.0677565913850787
+  ],
+  "healthy_spread": true,
+  "minimum_margin_percent": 0.3,
+  "accepted": false,
+  "verdict": "repeat_or_reject",
+  "inference_unit": "one complete ABBA session (not rungs or GPU submissions)",
+  "runs": [
+    {
+      "runId": "e1-vs-baseline-s1-p1-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.974,
+          "p50_us": 5539.28,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.271,
+          "p50_us": 6262.66,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8898,
+          "p50_us": 7181.42,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1914,
+          "p50_us": 8027.52,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2641,
+          "p50_us": 9691.38,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8994,
+          "p50_us": 11004.32,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.256,
+          "p50_us": 13829.6,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.2292,
+          "p50_us": 16108.48,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.408962840605238,
+      "session": 1,
+      "position": 1
+    },
+    {
+      "runId": "e1-vs-baseline-s1-p2-e1-5460481",
+      "arm": "e1-5460481",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "D64194509B7E1DE4A30B3140CBE23FFA85877E731898B0462E348977BB32AC18",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9848,
+          "p50_us": 5510.12,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.3015,
+          "p50_us": 6233.3,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9171,
+          "p50_us": 7139.6,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.198,
+          "p50_us": 8005.48,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2551,
+          "p50_us": 9681.9,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8546,
+          "p50_us": 11002.28,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.0854,
+          "p50_us": 13930.8,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.0821,
+          "p50_us": 16256.5,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.396737755630873,
+      "session": 1,
+      "position": 2
+    },
+    {
+      "runId": "e1-vs-baseline-s1-p3-e1-5460481",
+      "arm": "e1-5460481",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "D64194509B7E1DE4A30B3140CBE23FFA85877E731898B0462E348977BB32AC18",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9865,
+          "p50_us": 5506.48,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.3009,
+          "p50_us": 6243.06,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9136,
+          "p50_us": 7133.8,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1965,
+          "p50_us": 8015.0,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2419,
+          "p50_us": 9680.06,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.877,
+          "p50_us": 11011.3,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.1233,
+          "p50_us": 13918.8,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.1236,
+          "p50_us": 16215.38,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.402650285178531,
+      "session": 1,
+      "position": 3
+    },
+    {
+      "runId": "e1-vs-baseline-s1-p4-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9759,
+          "p50_us": 5535.54,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2768,
+          "p50_us": 6264.2,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8872,
+          "p50_us": 7162.4,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.183,
+          "p50_us": 8030.92,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2604,
+          "p50_us": 9668.22,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8879,
+          "p50_us": 10993.82,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2858,
+          "p50_us": 13736.12,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.163,
+          "p50_us": 16174.66,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.405818790300012,
+      "session": 1,
+      "position": 4
+    },
+    {
+      "runId": "e1-vs-baseline-s2-p1-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9792,
+          "p50_us": 5534.98,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.28,
+          "p50_us": 6261.4,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8903,
+          "p50_us": 7174.92,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1828,
+          "p50_us": 8023.6,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2682,
+          "p50_us": 9665.74,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.9298,
+          "p50_us": 10961.0,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2675,
+          "p50_us": 13776.92,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.1093,
+          "p50_us": 16228.26,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.407719423117202,
+      "session": 2,
+      "position": 1
+    },
+    {
+      "runId": "e1-vs-baseline-s2-p2-e1-5460481",
+      "arm": "e1-5460481",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "D64194509B7E1DE4A30B3140CBE23FFA85877E731898B0462E348977BB32AC18",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9851,
+          "p50_us": 5512.96,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2986,
+          "p50_us": 6233.76,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9003,
+          "p50_us": 7168.24,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1927,
+          "p50_us": 8023.6,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2292,
+          "p50_us": 9702.5,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.9256,
+          "p50_us": 11012.56,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.1363,
+          "p50_us": 13905.72,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.0279,
+          "p50_us": 16311.76,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.396893912344035,
+      "session": 2,
+      "position": 2
+    },
+    {
+      "runId": "e1-vs-baseline-s2-p3-e1-5460481",
+      "arm": "e1-5460481",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "D64194509B7E1DE4A30B3140CBE23FFA85877E731898B0462E348977BB32AC18",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.987,
+          "p50_us": 5510.2,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2965,
+          "p50_us": 6236.92,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9212,
+          "p50_us": 7144.76,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.2048,
+          "p50_us": 8011.68,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2493,
+          "p50_us": 9684.32,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8204,
+          "p50_us": 11046.84,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.1476,
+          "p50_us": 13856.52,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.029,
+          "p50_us": 16311.44,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.395540232356698,
+      "session": 2,
+      "position": 3
+    },
+    {
+      "runId": "e1-vs-baseline-s2-p4-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9778,
+          "p50_us": 5530.8,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2728,
+          "p50_us": 6274.62,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8956,
+          "p50_us": 7178.84,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1998,
+          "p50_us": 8017.72,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2759,
+          "p50_us": 9658.58,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8617,
+          "p50_us": 11019.58,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2392,
+          "p50_us": 13746.68,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.2117,
+          "p50_us": 16126.3,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.408124569877288,
+      "session": 2,
+      "position": 4
+    },
+    {
+      "runId": "e1-vs-baseline-s3-p1-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9776,
+          "p50_us": 5532.48,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2697,
+          "p50_us": 6269.82,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8827,
+          "p50_us": 7182.32,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1594,
+          "p50_us": 8023.76,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2785,
+          "p50_us": 9656.66,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8652,
+          "p50_us": 11033.0,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2015,
+          "p50_us": 13898.04,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.1666,
+          "p50_us": 16171.9,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.395148415156775,
+      "session": 3,
+      "position": 1
+    },
+    {
+      "runId": "e1-vs-baseline-s3-p2-e1-5460481",
+      "arm": "e1-5460481",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "D64194509B7E1DE4A30B3140CBE23FFA85877E731898B0462E348977BB32AC18",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9873,
+          "p50_us": 5508.7,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.287,
+          "p50_us": 6248.68,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9106,
+          "p50_us": 7164.0,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.2023,
+          "p50_us": 8030.52,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2484,
+          "p50_us": 9694.26,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8967,
+          "p50_us": 11027.92,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.1009,
+          "p50_us": 13899.76,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.1032,
+          "p50_us": 16234.84,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.399871532451659,
+      "session": 3,
+      "position": 2
+    },
+    {
+      "runId": "e1-vs-baseline-s3-p3-e1-5460481",
+      "arm": "e1-5460481",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "D64194509B7E1DE4A30B3140CBE23FFA85877E731898B0462E348977BB32AC18",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9874,
+          "p50_us": 5511.42,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2927,
+          "p50_us": 6252.36,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9028,
+          "p50_us": 7147.38,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.2239,
+          "p50_us": 8009.52,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2204,
+          "p50_us": 9716.96,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8259,
+          "p50_us": 11018.86,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.1653,
+          "p50_us": 13866.32,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.0039,
+          "p50_us": 16336.78,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.391767316359793,
+      "session": 3,
+      "position": 3
+    },
+    {
+      "runId": "e1-vs-baseline-s3-p4-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9761,
+          "p50_us": 5532.16,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.277,
+          "p50_us": 6256.48,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9065,
+          "p50_us": 7158.32,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.198,
+          "p50_us": 8030.56,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2912,
+          "p50_us": 9613.56,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8461,
+          "p50_us": 10938.56,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2963,
+          "p50_us": 13713.88,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.2044,
+          "p50_us": 16133.52,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.413705772097435,
+      "session": 3,
+      "position": 4
+    }
+  ]
+}

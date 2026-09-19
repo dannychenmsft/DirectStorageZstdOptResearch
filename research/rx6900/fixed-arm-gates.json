@@ -1,0 +1,1321 @@
+{
+  "baselineSourceDescription": "a8572d7 plus ONLY the one-line CPU-replay DWORD alias fix; not identical source to a8572d7",
+  "baselineCherryPick": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+  "candidateOptimization": "c4b372592b8da8f01a724d4159cc5348ec37bcad",
+  "candidateAndSeparateCpuFix": "477737183bc549e16fc21bdca0055f27ed247e7f",
+  "referenceUnchanged": "60fb499e311036e4d903725e3a2eaa05066b59ce",
+  "shaderIdentity": "fixed-arm-shader-identity.json: all33 programs/arm match executable and runtime chunks, only debug filename relocation differs",
+  "cpuCoverage": "7 valid CI files,956 frames per arm; standalone CPU emulation and whole-buffer GPU-readback CPU replay",
+  "arms": [
+    {
+      "arm": "baselinefixed",
+      "commit": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+      "productTree": "7a47a919cb15fe61fffdcf85dbd39a9824b5ec72",
+      "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed",
+      "configuration": "Release",
+      "platform": "x64",
+      "shaderOptions": "/nologo /WX /Ges /Zi /O3",
+      "debugLayerForPerf": false,
+      "startedUtc": "2026-09-19T21:42:41.5370001Z",
+      "completedUtc": "2026-09-19T21:43:04.3538877Z",
+      "buildCommand": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe",
+        "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\zstd.sln",
+        "-t:zstdgpu_demo:Rebuild;zstdgpu_ci_tests:Rebuild",
+        "-p:Configuration=Release",
+        "-p:Platform=x64",
+        "-m",
+        "-nr:false",
+        "-v:quiet",
+        "-fl",
+        "-flp:logfile=C:\\code\\zg_campaign\\rx6900-20260919-69e45d0f\\builds\\baselinefixed.log;verbosity=normal"
+      ],
+      "buildLog": "C:\\code\\zg_campaign\\rx6900-20260919-69e45d0f\\builds\\baselinefixed.log",
+      "buildLogSha256": "C509C940708E11A684E5226C855EA15E1BD10E5E8CF1047FB5E284BBEF95F82F",
+      "vcRuntime": "14.44.35112",
+      "files": [
+        {
+          "name": "concrt140.dll",
+          "bytes": 324208,
+          "sha256": "2405355F0A58067B258F8DF33C327E3A3D716EAAC5A3A5AEBB757842D85BD376"
+        },
+        {
+          "name": "dstorage.dll",
+          "bytes": 206904,
+          "sha256": "CAE65787F61514BEC6F012F44546E68B19E39D8854A9AB52AF813370D44B272A"
+        },
+        {
+          "name": "dstoragecore.dll",
+          "bytes": 1482784,
+          "sha256": "CF85B19A92A8276F8BACA0DB9BBCD60735BAD50768DEB303D310E84D5F4FDD11"
+        },
+        {
+          "name": "dxcompiler.dll",
+          "bytes": 17837088,
+          "sha256": "5888D3E590F5BFD8743484E7F31313996734ADEC5741506271A5C6368CBE8BA9"
+        },
+        {
+          "name": "dxil.dll",
+          "bytes": 1494048,
+          "sha256": "0CF5FA4B90F74550166108B3870C883F4A85243976B246B1DA3EA90AD5B92015"
+        },
+        {
+          "name": "msvcp140_1.dll",
+          "bytes": 35952,
+          "sha256": "BFAD5AEF4C63A669E3C140655CDFDF395B6C979B400A447BD5DCB65ED8826C3D"
+        },
+        {
+          "name": "msvcp140_2.dll",
+          "bytes": 280200,
+          "sha256": "3EA06F0EE098B4823CB79599DF3780E7F23CCE52C19AAC31D2A0D47EFE33A5E9"
+        },
+        {
+          "name": "msvcp140_atomic_wait.dll",
+          "bytes": 50304,
+          "sha256": "640B2AEFCED484D0368EEA5BDD06ADDD0658A3A70A49256E560D6923B404A479"
+        },
+        {
+          "name": "msvcp140_codecvt_ids.dll",
+          "bytes": 31872,
+          "sha256": "F2069A52880EC885EE7F0511186100EB7FADA0411A2B4948FAFEA7735B878A18"
+        },
+        {
+          "name": "msvcp140.dll",
+          "bytes": 557728,
+          "sha256": "0F885B509A685D2BBFA652FED26B5FB31D88FBDAB0A978C641D1C7B8AA460AA9"
+        },
+        {
+          "name": "vccorlib140.dll",
+          "bytes": 352384,
+          "sha256": "19839407C3FDBC824E5BCE189BF68DDF8097F12EC28B757797FFA0415C144DDD"
+        },
+        {
+          "name": "vcruntime140_1.dll",
+          "bytes": 49792,
+          "sha256": "1F2D41C4AA5DB0BC33EBF7B66D72943A817D7CE6CBE880502A9403823633093F"
+        },
+        {
+          "name": "vcruntime140_threads.dll",
+          "bytes": 38528,
+          "sha256": "219915CF20822F34D5E7C1FDD4E21AE7F3396881096C51036225FB8F84B47AFA"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "bytes": 124544,
+          "sha256": "D5E4D9A3E835FA679450145D6A7D94E36573A509317111904D9B3712C30D9066"
+        },
+        {
+          "name": "WinPixEventRuntime.dll",
+          "bytes": 58368,
+          "sha256": "81ADCFD8253C3489BE720DA7E30F16004DC9A1F02A8B418C6C3AEF4993032E6D"
+        },
+        {
+          "name": "zstdgpu_ci_tests.exe",
+          "bytes": 466944,
+          "sha256": "1C9F684F4CD27DAB000815FE3A0F8AD875CF26BFEACB86C93AB9E842BF3E5DE5"
+        },
+        {
+          "name": "zstdgpu_demo.exe",
+          "bytes": 644608,
+          "sha256": "C7A59EA35B11D73BFE1A4F48164D13E288177C6B941696BC2B0ED696C8358DC9"
+        }
+      ],
+      "shaders": [
+        {
+          "name": "ZstdGpuComputeDestBlockOffsets.h",
+          "sha256": "2CBB68E0880333E1778F48E59D4469526BB77B163E79D2B9C1F8499395DEF1CF"
+        },
+        {
+          "name": "ZstdGpuComputeDestSequenceOffsets.h",
+          "sha256": "358E166EEAB0AF522B0A1C9CD409299BD6F472920AFAEC67B89DF5BBAFE3AD51"
+        },
+        {
+          "name": "ZstdGpuComputePrefixSum.h",
+          "sha256": "894D1C98C6D8F44C87E2861ADFEA90F10A17DF722CFBAB7FD77C2B68E78312E4"
+        },
+        {
+          "name": "ZstdGpuDecodeHuffmanWeights.h",
+          "sha256": "4A4B09C926647D648AF311792B64F18A14FA49CB263D4D6CC567969A1B566CF2"
+        },
+        {
+          "name": "ZstdGpuDecompressHuffmanWeights.h",
+          "sha256": "E01587B7A41A6E465C870E52A757954746B02D3F96EF14D0A3A6AB2FE9D47845"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.h",
+          "sha256": "B635F1D16923C20922C6920E7E206BA9314E925AD5430593F327F2243AFAC2D2"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.h",
+          "sha256": "1AAC0C67CFD4F63EF84A049CABB0B254CFC364690B178143421556403D388DB2"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.h",
+          "sha256": "2269875066E8D651F1FF9CE587039E3BDB59A0DB4D01ACAD52F16BD19BB4474B"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4.h",
+          "sha256": "2F6DCB701F585F8747A4087A2D7435A2E8994D05A775CFCFDDDD380A56592E5D"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.h",
+          "sha256": "89735F084F0EDD800A5E73483506F53DD774911A42441D1F691A15D0FE757B9B"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.h",
+          "sha256": "BF9971B4D6C08CF16743EDFEA630AD20CEC5B0E20D49A4558C9A7BE088235986"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8.h",
+          "sha256": "FA5F36E9C73A26231A396050ABD55AB39338589D608AAB2DDD561F7731A5A670"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.h",
+          "sha256": "3C9EBE4D0B2AE06DC014F55BC3E56C799EC3A92A9865CA793E986A858449AB82"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.h",
+          "sha256": "DF1DC371F68661A87366EEFC1BF979ECA0191E30273D87F180094F92082485AD"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.h",
+          "sha256": "CD1EBEA3AC1E572B3FFCFA470F951E8A738084B47BDF0037C0B457801B1B9D7A"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.h",
+          "sha256": "1DD13B176E7FEFA1A2657BAF0F3697DCFE214C7E7D1C9FE50FE0C059995BE7AD"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h",
+          "sha256": "95FA3D06EFEF1638C96A78E572DEBBBDB2AE13D28597EAE3296974FE6EB015E9"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.h",
+          "sha256": "04DF214B28AE60D16ECD4CB8FC207CDC6111B7A3EFED5182B76B08189FBDECD5"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences128.h",
+          "sha256": "F88687E127A96B81F9CA758940447C7FE67E7A4E5C8E79CB20B0B08304DD9DBD"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences32.h",
+          "sha256": "A605A5AE3B1A08F780B460D9071B2D4F2EF4DF658018B40485BF9042DFDEFC96"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences64.h",
+          "sha256": "E17B5A049E3A621513DE9DC5352C38641F89FDFEA0847684C17CCCBD986BE55F"
+        },
+        {
+          "name": "ZstdGpuFinaliseSequenceOffsets.h",
+          "sha256": "C77B3BF6AEB6DE067D8934A3455A29FCD9E55F05C45ED847FC496D3F8026FB9B"
+        },
+        {
+          "name": "ZstdGpuInitFseTable.h",
+          "sha256": "E83C704A4E69057402D636D556F739CF59E7FF71F7418A6DDB87376CE8C56409"
+        },
+        {
+          "name": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+          "sha256": "E1BAFB6C5CA3357D65ADC693F3878BD0D91253D400DF12890A867DF693DBBEC5"
+        },
+        {
+          "name": "ZstdGpuInitResources.h",
+          "sha256": "C2907623F6F3CE9B9FEA3D0C747092BE9D092BB8EB06315171E078C02BF228C7"
+        },
+        {
+          "name": "ZstdGpuMemset.h",
+          "sha256": "65D4A07B645DA2474132B80589997B9AB583569B1C37526CCE6F6D9624F0FA4B"
+        },
+        {
+          "name": "ZstdGpuMemsetMemcpy.h",
+          "sha256": "5A80C8508EAC26D566D8AAED7BB57EA397905704D0CA66E95ACBCC535824533F"
+        },
+        {
+          "name": "ZstdGpuParseCompressedBlocks.h",
+          "sha256": "54B941796A07E75FABB59DEE2D450871DA8F880E7D4AD721E931D1B392FC181E"
+        },
+        {
+          "name": "ZstdGpuParseFrames.h",
+          "sha256": "DA5BAE0D6A07BA23E57F918E6C0B28DF94608F6E24CB484FA2ACE0C4FA74208C"
+        },
+        {
+          "name": "ZstdGpuPrefixSequenceOffsets.h",
+          "sha256": "18027287269627494054D8C6F987974621737EC9FC9ED41A64D673792C5243D3"
+        },
+        {
+          "name": "ZstdGpuPrefixSum.h",
+          "sha256": "CDE86CF18A1F9FA1763ED5107AC8828888CBB79381C999B3B433A9094AC312A8"
+        },
+        {
+          "name": "ZstdGpuPropagateFseIndex.h",
+          "sha256": "0D7AA98897B1824282D52112CFDDB257126B6A18238457A5F9475234CAC4E1ED"
+        },
+        {
+          "name": "ZstdGpuUpdateDispatchArgs.h",
+          "sha256": "BAECD00711B6AFFC9B80273F3916F994D66DE42F6214CC6B0DE1D8F12F4C8D71"
+        }
+      ]
+    },
+    {
+      "arm": "e4fixed-4777371",
+      "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+      "productTree": "8b5eea31de062b299245b2da09c4af84f0ebf158",
+      "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed",
+      "configuration": "Release",
+      "platform": "x64",
+      "shaderOptions": "/nologo /WX /Ges /Zi /O3",
+      "debugLayerForPerf": false,
+      "startedUtc": "2026-09-19T21:43:08.0855654Z",
+      "completedUtc": "2026-09-19T21:43:30.1791218Z",
+      "buildCommand": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe",
+        "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\zstd.sln",
+        "-t:zstdgpu_demo:Rebuild;zstdgpu_ci_tests:Rebuild",
+        "-p:Configuration=Release",
+        "-p:Platform=x64",
+        "-m",
+        "-nr:false",
+        "-v:quiet",
+        "-fl",
+        "-flp:logfile=C:\\code\\zg_campaign\\rx6900-20260919-69e45d0f\\builds\\e4fixed-4777371.log;verbosity=normal"
+      ],
+      "buildLog": "C:\\code\\zg_campaign\\rx6900-20260919-69e45d0f\\builds\\e4fixed-4777371.log",
+      "buildLogSha256": "96BAEC522345A1DB3FD43993042D8B978102391F33D4CA510BCB9DB04D2D1EBD",
+      "vcRuntime": "14.44.35112",
+      "files": [
+        {
+          "name": "concrt140.dll",
+          "bytes": 324208,
+          "sha256": "2405355F0A58067B258F8DF33C327E3A3D716EAAC5A3A5AEBB757842D85BD376"
+        },
+        {
+          "name": "dstorage.dll",
+          "bytes": 206904,
+          "sha256": "CAE65787F61514BEC6F012F44546E68B19E39D8854A9AB52AF813370D44B272A"
+        },
+        {
+          "name": "dstoragecore.dll",
+          "bytes": 1482784,
+          "sha256": "CF85B19A92A8276F8BACA0DB9BBCD60735BAD50768DEB303D310E84D5F4FDD11"
+        },
+        {
+          "name": "dxcompiler.dll",
+          "bytes": 17837088,
+          "sha256": "5888D3E590F5BFD8743484E7F31313996734ADEC5741506271A5C6368CBE8BA9"
+        },
+        {
+          "name": "dxil.dll",
+          "bytes": 1494048,
+          "sha256": "0CF5FA4B90F74550166108B3870C883F4A85243976B246B1DA3EA90AD5B92015"
+        },
+        {
+          "name": "msvcp140_1.dll",
+          "bytes": 35952,
+          "sha256": "BFAD5AEF4C63A669E3C140655CDFDF395B6C979B400A447BD5DCB65ED8826C3D"
+        },
+        {
+          "name": "msvcp140_2.dll",
+          "bytes": 280200,
+          "sha256": "3EA06F0EE098B4823CB79599DF3780E7F23CCE52C19AAC31D2A0D47EFE33A5E9"
+        },
+        {
+          "name": "msvcp140_atomic_wait.dll",
+          "bytes": 50304,
+          "sha256": "640B2AEFCED484D0368EEA5BDD06ADDD0658A3A70A49256E560D6923B404A479"
+        },
+        {
+          "name": "msvcp140_codecvt_ids.dll",
+          "bytes": 31872,
+          "sha256": "F2069A52880EC885EE7F0511186100EB7FADA0411A2B4948FAFEA7735B878A18"
+        },
+        {
+          "name": "msvcp140.dll",
+          "bytes": 557728,
+          "sha256": "0F885B509A685D2BBFA652FED26B5FB31D88FBDAB0A978C641D1C7B8AA460AA9"
+        },
+        {
+          "name": "vccorlib140.dll",
+          "bytes": 352384,
+          "sha256": "19839407C3FDBC824E5BCE189BF68DDF8097F12EC28B757797FFA0415C144DDD"
+        },
+        {
+          "name": "vcruntime140_1.dll",
+          "bytes": 49792,
+          "sha256": "1F2D41C4AA5DB0BC33EBF7B66D72943A817D7CE6CBE880502A9403823633093F"
+        },
+        {
+          "name": "vcruntime140_threads.dll",
+          "bytes": 38528,
+          "sha256": "219915CF20822F34D5E7C1FDD4E21AE7F3396881096C51036225FB8F84B47AFA"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "bytes": 124544,
+          "sha256": "D5E4D9A3E835FA679450145D6A7D94E36573A509317111904D9B3712C30D9066"
+        },
+        {
+          "name": "WinPixEventRuntime.dll",
+          "bytes": 58368,
+          "sha256": "81ADCFD8253C3489BE720DA7E30F16004DC9A1F02A8B418C6C3AEF4993032E6D"
+        },
+        {
+          "name": "zstdgpu_ci_tests.exe",
+          "bytes": 466944,
+          "sha256": "9C1AA7079FB942F9BC38383DEC70DD11F83F911CBBD6B00FDB650ECF9D1C9399"
+        },
+        {
+          "name": "zstdgpu_demo.exe",
+          "bytes": 644608,
+          "sha256": "651400A08997449676EB3381676BFBB41F408346F483596D4BDAC955AAECBE0A"
+        }
+      ],
+      "shaders": [
+        {
+          "name": "ZstdGpuComputeDestBlockOffsets.h",
+          "sha256": "D59F0B7F5BED3AE9284A8D4542B620511893E3AC58C25F610AFF911283802866"
+        },
+        {
+          "name": "ZstdGpuComputeDestSequenceOffsets.h",
+          "sha256": "5076267242B482D23B59D5F96C881E59399A2890DD2A3D32FDB1FAB62EA7F2D3"
+        },
+        {
+          "name": "ZstdGpuComputePrefixSum.h",
+          "sha256": "401F8E09F94BD89E74A132E108D2E954CBC13C7C201560A57E8A0958F82ABB51"
+        },
+        {
+          "name": "ZstdGpuDecodeHuffmanWeights.h",
+          "sha256": "F102B6F9C1F36CF10C52C06F0C00AB4722325FCFD394BAFBACF30FC5D8EF6A42"
+        },
+        {
+          "name": "ZstdGpuDecompressHuffmanWeights.h",
+          "sha256": "DBD7631042C3C1F96A92A673AA4406E17B82B8A46025C4AB10E9F81CA474FA75"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.h",
+          "sha256": "49ED8615950F091482BCB7AF76BB405C0C1E7E76B82FD3870FEABF24BDF9F882"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.h",
+          "sha256": "D56BDF74D8FA206FEDA52754B7BD0F4BEB94394103E9C1A7EAA49CF34B0A9E39"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.h",
+          "sha256": "E21E27D233F6BE8718C6EE49FD57BA055B27874D4E5FB7203BAD60BE45A5C35B"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4.h",
+          "sha256": "21CF1017A15848F43B5DA14B18B54E92331C5EEC193B8835343CD7563146847E"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.h",
+          "sha256": "E642F74E57A3C59ECA5CEB79343D88F665D2C9E7E0D1D4D75238B65C22705B99"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.h",
+          "sha256": "E05DDD262DEADDB09E54CFBD06911167F26F1F6FC56F9523E329F5864CD8F1B8"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8.h",
+          "sha256": "AA8551DB0EE44465806EFB84535234E478308597F5B0A8AE9D0A09980CEB57F2"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.h",
+          "sha256": "975AE3E5FDAB3B66059421ED98F7EE83EA6CA3DE98DD303D7CEACEFBE50CE883"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.h",
+          "sha256": "89AEF39C119AACD63FD25463B778CA5D3EF0556745C84CF9928CE7E9BDADFCF7"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.h",
+          "sha256": "6B1181123A2372B2189A6ECA345BC9F0428DE6C4AE9411124426F6BC51455E7A"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.h",
+          "sha256": "E24E060B2CF154DCDC0F238FC2739A06D268A08E8ED9EF273E5F9D4C241AAE45"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h",
+          "sha256": "EEC1A8EAA1A98CFC8150E215CDE5D946968C1223B202EBA2E090A8DBF92076B0"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.h",
+          "sha256": "9228598BC58B7A428519F59F981972B93EBF741B81A21836FEBCC64442AEC467"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences128.h",
+          "sha256": "E0E1296D48E495651275A73F798F19D1AA48EB776EA7486D4BC2A3CCDE55CA35"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences32.h",
+          "sha256": "390366C213CF10A1B4B81818543509F7A53BB9C2D1E70DFE9B974BB51A7F2218"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences64.h",
+          "sha256": "2620A4994298FD47C24A43FF9A3322DCD5C6BEA7D0B69076AA55A18C099CEE4E"
+        },
+        {
+          "name": "ZstdGpuFinaliseSequenceOffsets.h",
+          "sha256": "6D1F82AC72EE74AE70E46F52FE156FA4EEA53DF1A416B9CAD319E4D4D39F24C3"
+        },
+        {
+          "name": "ZstdGpuInitFseTable.h",
+          "sha256": "449A4AD372287749463BD8122A10083CB3DF06548325D6BFDE17707FDD20013A"
+        },
+        {
+          "name": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+          "sha256": "5806F6ADDB57A4E3CB1A0D665CA26FA4DC175D7950967E28155A2A0BDB0868DC"
+        },
+        {
+          "name": "ZstdGpuInitResources.h",
+          "sha256": "9BC16EA3F4E605A3EDBE4D9758DEB569AB279DDD65404CFCA4578308123E4B3E"
+        },
+        {
+          "name": "ZstdGpuMemset.h",
+          "sha256": "0D3C208DC64B01172995377DE862DFC5589878571B1DD9C54683C726740179CA"
+        },
+        {
+          "name": "ZstdGpuMemsetMemcpy.h",
+          "sha256": "1F79ED5CFEB4B6A235549CBE25AC959633BC9687715B5DCD14D469E8936D26BF"
+        },
+        {
+          "name": "ZstdGpuParseCompressedBlocks.h",
+          "sha256": "7CEC4064B09795184D5C6F9982A104D854CB6B06FBB90F6E6876418C262B0CF8"
+        },
+        {
+          "name": "ZstdGpuParseFrames.h",
+          "sha256": "1E0B2EF5DCAD0FF94719F312C0BA5C2479C334A9164A963C9D4ED1A45EF4EF2C"
+        },
+        {
+          "name": "ZstdGpuPrefixSequenceOffsets.h",
+          "sha256": "F0C6599B9993547D90E65C6CFB1098222FCDF4F86339CA43B5FA50BF2908DC96"
+        },
+        {
+          "name": "ZstdGpuPrefixSum.h",
+          "sha256": "322D9F61C62989DDD206645BF05F6904F0294F78B4C6C85F669F8C13A7BA179B"
+        },
+        {
+          "name": "ZstdGpuPropagateFseIndex.h",
+          "sha256": "8E43FA26301AB282806756A3239F6665B5BC0A7FE15241B74E2A07AB4111C13E"
+        },
+        {
+          "name": "ZstdGpuUpdateDispatchArgs.h",
+          "sha256": "7B931B54A7BA92BDB316323887C52AFC99731ED737A3F0B615C61792F6516A96"
+        }
+      ]
+    },
+    {
+      "arm": "reference",
+      "commit": "60fb499e311036e4d903725e3a2eaa05066b59ce",
+      "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\reference",
+      "configuration": "Release",
+      "platform": "x64",
+      "shaderOptions": "/nologo /WX /Ges /Zi /O3",
+      "debugLayerForPerf": false,
+      "startedUtc": "2026-09-19T19:49:25.8945118Z",
+      "completedUtc": "2026-09-19T19:49:53.0626082Z",
+      "buildCommand": [
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe",
+        "C:\\code\\zg_campaign\\worktrees\\reference\\zstd\\zstd.sln",
+        "-t:zstdgpu_demo:Rebuild;zstdgpu_ci_tests:Rebuild",
+        "-p:Configuration=Release",
+        "-p:Platform=x64",
+        "-m",
+        "-nr:false",
+        "-v:quiet",
+        "-fl",
+        "-flp:logfile=C:\\code\\zg_campaign\\rx6900-20260919-69e45d0f\\builds\\reference.log;verbosity=normal"
+      ],
+      "buildLog": "C:\\code\\zg_campaign\\rx6900-20260919-69e45d0f\\builds\\reference.log",
+      "buildLogSha256": "73DC721967259B7BF228637B71845B15D1CAD10BFF1143F183E294FBC6019D90",
+      "vcRuntime": "14.44.35112",
+      "files": [
+        {
+          "name": "concrt140.dll",
+          "bytes": 324208,
+          "sha256": "2405355F0A58067B258F8DF33C327E3A3D716EAAC5A3A5AEBB757842D85BD376"
+        },
+        {
+          "name": "dstorage.dll",
+          "bytes": 206904,
+          "sha256": "CAE65787F61514BEC6F012F44546E68B19E39D8854A9AB52AF813370D44B272A"
+        },
+        {
+          "name": "dstoragecore.dll",
+          "bytes": 1482784,
+          "sha256": "CF85B19A92A8276F8BACA0DB9BBCD60735BAD50768DEB303D310E84D5F4FDD11"
+        },
+        {
+          "name": "dxcompiler.dll",
+          "bytes": 17837088,
+          "sha256": "5888D3E590F5BFD8743484E7F31313996734ADEC5741506271A5C6368CBE8BA9"
+        },
+        {
+          "name": "dxil.dll",
+          "bytes": 1494048,
+          "sha256": "0CF5FA4B90F74550166108B3870C883F4A85243976B246B1DA3EA90AD5B92015"
+        },
+        {
+          "name": "msvcp140_1.dll",
+          "bytes": 35952,
+          "sha256": "BFAD5AEF4C63A669E3C140655CDFDF395B6C979B400A447BD5DCB65ED8826C3D"
+        },
+        {
+          "name": "msvcp140_2.dll",
+          "bytes": 280200,
+          "sha256": "3EA06F0EE098B4823CB79599DF3780E7F23CCE52C19AAC31D2A0D47EFE33A5E9"
+        },
+        {
+          "name": "msvcp140_atomic_wait.dll",
+          "bytes": 50304,
+          "sha256": "640B2AEFCED484D0368EEA5BDD06ADDD0658A3A70A49256E560D6923B404A479"
+        },
+        {
+          "name": "msvcp140_codecvt_ids.dll",
+          "bytes": 31872,
+          "sha256": "F2069A52880EC885EE7F0511186100EB7FADA0411A2B4948FAFEA7735B878A18"
+        },
+        {
+          "name": "msvcp140.dll",
+          "bytes": 557728,
+          "sha256": "0F885B509A685D2BBFA652FED26B5FB31D88FBDAB0A978C641D1C7B8AA460AA9"
+        },
+        {
+          "name": "vccorlib140.dll",
+          "bytes": 352384,
+          "sha256": "19839407C3FDBC824E5BCE189BF68DDF8097F12EC28B757797FFA0415C144DDD"
+        },
+        {
+          "name": "vcruntime140_1.dll",
+          "bytes": 49792,
+          "sha256": "1F2D41C4AA5DB0BC33EBF7B66D72943A817D7CE6CBE880502A9403823633093F"
+        },
+        {
+          "name": "vcruntime140_threads.dll",
+          "bytes": 38528,
+          "sha256": "219915CF20822F34D5E7C1FDD4E21AE7F3396881096C51036225FB8F84B47AFA"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "bytes": 124544,
+          "sha256": "D5E4D9A3E835FA679450145D6A7D94E36573A509317111904D9B3712C30D9066"
+        },
+        {
+          "name": "WinPixEventRuntime.dll",
+          "bytes": 58368,
+          "sha256": "81ADCFD8253C3489BE720DA7E30F16004DC9A1F02A8B418C6C3AEF4993032E6D"
+        },
+        {
+          "name": "zstdgpu_ci_tests.exe",
+          "bytes": 466944,
+          "sha256": "583C488D1A1A4676C4816B75271E932C28948B8AEBB3C67D6668C2F214BAF80A"
+        },
+        {
+          "name": "zstdgpu_demo.exe",
+          "bytes": 739840,
+          "sha256": "20A897AEC088DCBC4A197D57CA00C57999F2CA9F8C453EEB8A1B6A3569D20E6C"
+        }
+      ],
+      "shaders": [
+        {
+          "name": "ZstdGpuComputeDestBlockOffsets.h",
+          "sha256": "50595FB8AF81CB1E671726FB1FA6DDDBD634506921C7F35C0C8CD397F70EACB6"
+        },
+        {
+          "name": "ZstdGpuComputeDestSequenceOffsets.h",
+          "sha256": "28EF2F51BCE021D3689B81F8987EB78BE1299A92A7106A4BCEFE9C8D31B8E801"
+        },
+        {
+          "name": "ZstdGpuComputePrefixSum.h",
+          "sha256": "94E10208607439583BB53E7613CF65A04A0924B11126CCDB8C2CF446CF5D3A54"
+        },
+        {
+          "name": "ZstdGpuDecodeHuffmanWeights.h",
+          "sha256": "AF1C15A4E0AA528CF87F67859939CF5838CF489430F60D349088437364659364"
+        },
+        {
+          "name": "ZstdGpuDecompressHuffmanWeights.h",
+          "sha256": "53AE8C6AD16467B8872C80B420AFABF55E6A49C1B4447B6DD14EAD2F0C59E366"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals_LdsStoreCache128_8.h",
+          "sha256": "1E8E1783E1BFEDF865C44D6F51E59F45F8085F3C86FB9F4E7C0881365ABD237E"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals_LdsStoreCache32_16.h",
+          "sha256": "0340EFA4FC081D98DFD26045D9921EF35702E6680BC61AB50A40FCC5E5A5EE1B"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals_LdsStoreCache32_32.h",
+          "sha256": "BA26CD16367DE97A821C827A3E97B7301B7D749F3BB8CB326450541C00EBBC7F"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals_LdsStoreCache32_8.h",
+          "sha256": "A981F57008B2361038B62E9E978DD4A62CDD0A70D81E55695FF612EE3CE3C73A"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals_LdsStoreCache64_16.h",
+          "sha256": "F402F2BCDA90B6B7FCE11615C3A4D65B052F3B6D562BC1799A94DBFF9EEEA580"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals_LdsStoreCache64_8.h",
+          "sha256": "77CC31F1D749446EFA288488372A6FBB8AEFBA1A22F5AC1D122326B48E5A94F8"
+        },
+        {
+          "name": "ZstdGpuDecompressLiterals.h",
+          "sha256": "2A8735483F71E1608753F66E8EA5A2472C0B4B6DE8036D981F98757DE0DDA229"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.h",
+          "sha256": "4AB9E1B99E868B54E867F42771AB6C5A7EAB21C293AA87E48C2CB7920E471B46"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.h",
+          "sha256": "C4C624105C5531DD0B97F92CD3AC3C3101F6EB7C2CCDB2ACEEFCBB6A2E62C1F3"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.h",
+          "sha256": "8D55D088E3E0E46C8B7C2221EC11F244325125E539467352E8CD00FA97D1033D"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_4.h",
+          "sha256": "54F8C6CBF041B465331F7A02A29225A27BC9F67408C08F059CCBA6E5DF70CC1D"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.h",
+          "sha256": "1C3F3F50DDA774DF0B2910ED549D3C5BE95376715BB58E425AA9E92B02FA9E07"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.h",
+          "sha256": "A89AB6F1FCA7B2918C05D0DB4FF10CD4B68DBC24A5F5735471EFC17B45EB48BD"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_MultiStream_8.h",
+          "sha256": "1B4D257A14DF7EE01C954A2043E69F7452A1888D83886616A56785C8C2C1565B"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.h",
+          "sha256": "B362CF971CECC8442A7104D08C636A5FE82A35821C7AF5F6AFD8AB86BCE85144"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.h",
+          "sha256": "2A141737DF6DB2169B5AC28D0D678CBA49A86480C0726E269CDA3E4464507112"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.h",
+          "sha256": "8FA2F46FD0BE892D5F1E5CD92DF7A0216DA262833F2BF065BC7468CCCD404478"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.h",
+          "sha256": "8832C14C06176C4C9B2F53FB1AF6E6EA64ED51A8393B4BE9109D3DC61AA5088C"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h",
+          "sha256": "64DF28760E98AEBA80C78A7A28B9BE291AE1C4C5B46AEB8E278E5EA9E319B3F8"
+        },
+        {
+          "name": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.h",
+          "sha256": "30866516B3C14F6365454E4F94F4F2C99C25DA6C106F74AF5E80A529239132E1"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences128.h",
+          "sha256": "F4B9842E45409901D1C0AE89E84BC5E6D149A3A98EAD7ADBBBE1E3FA94061FA2"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences32.h",
+          "sha256": "54356565C7C0D095DED743677AE422ED0EB2BB76EAA5A1DFBB61A69C4C29A176"
+        },
+        {
+          "name": "ZstdGpuExecuteSequences64.h",
+          "sha256": "BEA9C7D1D023B8BAF227CEFE602E67122639B7EB4978DD0C830274F127B009C7"
+        },
+        {
+          "name": "ZstdGpuFinaliseSequenceOffsets.h",
+          "sha256": "1D379589C281CD13A6411E9D695DE571523A40DCE2D422805CEF606CE91B3CAD"
+        },
+        {
+          "name": "ZstdGpuInitFseTable.h",
+          "sha256": "330205622581F84D2D080A3BF01A44A8F4FF4897573CC7E57D63A48A5AA8ACD3"
+        },
+        {
+          "name": "ZstdGpuInitHuffmanTable.h",
+          "sha256": "382D2AFDC9628450E30A10DC0D60D6828B8A15E02B3BD488E78A3CDEEDF119FD"
+        },
+        {
+          "name": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+          "sha256": "D7E5E4822889AA9D5CDC5671F258F4B855572CBD2402AB7ED8CC3FA87C36ABB5"
+        },
+        {
+          "name": "ZstdGpuInitResources.h",
+          "sha256": "D9C36F4354E47C62EF7BDD46DCD73752CA9DAB872BCE0816C26C79753775A5D0"
+        },
+        {
+          "name": "ZstdGpuMemset.h",
+          "sha256": "A4A83CBB7A8EEBB40EE7A4A492705BE3B6F4A24C35CDC6518BB86F9E7A0A8E0B"
+        },
+        {
+          "name": "ZstdGpuMemsetMemcpy.h",
+          "sha256": "E05B9800874C84FEE6B04250A22584575656E1BCBEBD365B6C54E5C952B40BBA"
+        },
+        {
+          "name": "ZstdGpuParseCompressedBlocks.h",
+          "sha256": "988C618E014A1EA229C7C2E851EB426158E34EFD3BED0590B26D9743C1C16FFC"
+        },
+        {
+          "name": "ZstdGpuParseFrames.h",
+          "sha256": "A0C5FAF6B1D6A1300BEC1B4E104F4FA7CA2489FF713141D9522CB93817BAD88B"
+        },
+        {
+          "name": "ZstdGpuPrefixSequenceOffsets.h",
+          "sha256": "3ADAD7151C23ED49DADB38AE8226CDEE63703321942B16992EBF6133EF670367"
+        },
+        {
+          "name": "ZstdGpuPrefixSum.h",
+          "sha256": "DFB5929C66BB12662C4BD284ABCFF63FE2C61B562B54F796DBB581BBFDD2303D"
+        },
+        {
+          "name": "ZstdGpuPropagateFseIndex.h",
+          "sha256": "2F33848239538084F243089FC0D3AA5DDE766B3C1596A4282557C835BD2C69C7"
+        },
+        {
+          "name": "ZstdGpuUpdateDispatchArgs.h",
+          "sha256": "54B720A222595A4868399159B5C75F29DDBCBEE843D4A46EA3C656004CA8E1D2"
+        }
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "runId": "baselinefixed-correctness-01",
+      "invocation": {
+        "arm": "baselinefixed",
+        "commit": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+        "action": "Run",
+        "kind": "Correctness",
+        "startedUtc": "2026-09-19T21:44:03.8399964Z",
+        "executable": "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\baselinefixed\\zstdgpu_ci_tests.exe",
+        "arguments": [
+          "--demo-path",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\baselinefixed\\zstdgpu_demo.exe",
+          "--content-path",
+          "C:\\agent\\data\\zstd_content",
+          "--log-dir",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\baselinefixed-correctness-01",
+          "--log-file",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\baselinefixed-correctness-01\\demo.log",
+          "--timeout",
+          "900",
+          "--gpu-name",
+          "AMD Radeon RX 6900 XT",
+          "--gtest_filter=*ZstdGpuCorrectnessTests.ExternalMemory/*:*ZstdGpuCorrectnessTests.ExternalMemorySeq/*",
+          "--gtest_output=xml:C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\baselinefixed-correctness-01\\gtest.xml"
+        ],
+        "armManifestSha256": "0AF04C519A52DCECFF9960095C985278FCF92C69B2CC560147068679EC4EA5A4",
+        "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9"
+      },
+      "result": {
+        "runId": "baselinefixed-correctness-01",
+        "arm": "baselinefixed",
+        "commit": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+        "action": "Run",
+        "kind": "Correctness",
+        "startedUtc": "2026-09-19T21:44:03.8399964Z",
+        "completedUtc": "2026-09-19T21:45:42.8201696Z",
+        "exitCode": 0,
+        "processExitCode": 0,
+        "tests": {
+          "tests": 2,
+          "failures": 0,
+          "disabled": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "failureReasons": [],
+        "stdoutSha256": "5EC94AA631A7C70A4B46DC403E547C6571BE5FF474C4FEA8C78C4A7A3C594DEA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "cpuCases": []
+    },
+    {
+      "runId": "baselinefixed-cpu-individual-01",
+      "invocation": {
+        "arm": "baselinefixed",
+        "commit": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+        "action": "ValidateCpu",
+        "kind": "Perf",
+        "startedUtc": "2026-09-19T21:45:57.2980598Z",
+        "executable": "powershell.exe",
+        "arguments": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\tools\\Validate-CpuFiles.ps1",
+          "-DemoPath",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\baselinefixed\\zstdgpu_demo.exe",
+          "-ListPath",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\baselinefixed-cpu-individual-01\\cpu-decisive-list.txt",
+          "-OutputDirectory",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\baselinefixed-cpu-individual-01"
+        ],
+        "armManifestSha256": "0AF04C519A52DCECFF9960095C985278FCF92C69B2CC560147068679EC4EA5A4",
+        "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9"
+      },
+      "result": {
+        "runId": "baselinefixed-cpu-individual-01",
+        "arm": "baselinefixed",
+        "commit": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+        "action": "ValidateCpu",
+        "kind": "Perf",
+        "startedUtc": "2026-09-19T21:45:57.2980598Z",
+        "completedUtc": "2026-09-19T21:46:00.5199695Z",
+        "exitCode": 0,
+        "processExitCode": 0,
+        "tests": null,
+        "failureReasons": [],
+        "stdoutSha256": "5DBB8F1CD202000919526016A8EF3D22CEC8D93A47B15A2102350858FC9727D7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "cpuCases": [
+        {
+          "index": 0,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:45:57.6566036Z",
+          "completedUtc": "2026-09-19T21:45:58.1064238Z",
+          "stdoutSha256": "16A07BF938F4ED023F736C908E71E4BB4EBA48F7A4BF6DAD6FBD6D9F4D332C8C",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 1,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:45:58.2076306Z",
+          "completedUtc": "2026-09-19T21:45:58.4733001Z",
+          "stdoutSha256": "B67722D1EC1285DA52528995655C0BDA0D3F6763799A3EF44FE26FE4368677D2",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 2,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:45:58.4753465Z",
+          "completedUtc": "2026-09-19T21:45:58.7548078Z",
+          "stdoutSha256": "9CF5BDB8E4002343042196557F58DA79B0D82E5DBB79E7CF520AB8C4663EB7F1",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 3,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:45:58.7595138Z",
+          "completedUtc": "2026-09-19T21:45:59.0130225Z",
+          "stdoutSha256": "7A96EBE89AAFF964ADE75D5C6633F4C573C2BDD98C555312BBA3E6B28AC0D0F2",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 4,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:45:59.017174Z",
+          "completedUtc": "2026-09-19T21:45:59.5101226Z",
+          "stdoutSha256": "D65192A2671F9C06B3350999F704738B67F7E665668FDCF882DE023E358D4F06",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 5,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:45:59.5144317Z",
+          "completedUtc": "2026-09-19T21:46:00.0973769Z",
+          "stdoutSha256": "19BB9CB2C303166E160AF871704114E89452DF65F0A3CF529D40A720D14346B2",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 6,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:46:00.1099004Z",
+          "completedUtc": "2026-09-19T21:46:00.4494448Z",
+          "stdoutSha256": "DA38A705A54521E45974FF087F98B02966BCBF3F319C4041502AD20D990A53DF",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        }
+      ]
+    },
+    {
+      "runId": "e4fixed-correctness-01",
+      "invocation": {
+        "arm": "e4fixed-4777371",
+        "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+        "action": "Run",
+        "kind": "Correctness",
+        "startedUtc": "2026-09-19T21:46:43.2590063Z",
+        "executable": "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\e4fixed-4777371\\zstdgpu_ci_tests.exe",
+        "arguments": [
+          "--demo-path",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\e4fixed-4777371\\zstdgpu_demo.exe",
+          "--content-path",
+          "C:\\agent\\data\\zstd_content",
+          "--log-dir",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-correctness-01",
+          "--log-file",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-correctness-01\\demo.log",
+          "--timeout",
+          "900",
+          "--gpu-name",
+          "AMD Radeon RX 6900 XT",
+          "--gtest_filter=*ZstdGpuCorrectnessTests.ExternalMemory/*:*ZstdGpuCorrectnessTests.ExternalMemorySeq/*",
+          "--gtest_output=xml:C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-correctness-01\\gtest.xml"
+        ],
+        "armManifestSha256": "9DC8B2046081ABCED8DF870CCEAEF0AEEC754CCC44A75DAEBF7DAFE31030BD2F",
+        "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9"
+      },
+      "result": {
+        "runId": "e4fixed-correctness-01",
+        "arm": "e4fixed-4777371",
+        "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+        "action": "Run",
+        "kind": "Correctness",
+        "startedUtc": "2026-09-19T21:46:43.2590063Z",
+        "completedUtc": "2026-09-19T21:48:22.3468521Z",
+        "exitCode": 0,
+        "processExitCode": 0,
+        "tests": {
+          "tests": 2,
+          "failures": 0,
+          "disabled": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "failureReasons": [],
+        "stdoutSha256": "7897164FFD3A151291B14036A91FC2EA20BC1203F120A6E83266ECD4B408AADE",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "cpuCases": []
+    },
+    {
+      "runId": "e4fixed-debug-01",
+      "invocation": {
+        "arm": "e4fixed-4777371",
+        "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+        "action": "Run",
+        "kind": "Debug",
+        "startedUtc": "2026-09-19T21:48:36.5433986Z",
+        "executable": "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\e4fixed-4777371\\zstdgpu_ci_tests.exe",
+        "arguments": [
+          "--demo-path",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\e4fixed-4777371\\zstdgpu_demo.exe",
+          "--content-path",
+          "C:\\agent\\data\\zstd_content",
+          "--log-dir",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-debug-01",
+          "--log-file",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-debug-01\\demo.log",
+          "--timeout",
+          "900",
+          "--gpu-name",
+          "AMD Radeon RX 6900 XT",
+          "--gtest_filter=*ZstdGpuCorrectnessTests.D3D12DebugLayerSeq/*",
+          "--gtest_output=xml:C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-debug-01\\gtest.xml"
+        ],
+        "armManifestSha256": "9DC8B2046081ABCED8DF870CCEAEF0AEEC754CCC44A75DAEBF7DAFE31030BD2F",
+        "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9"
+      },
+      "result": {
+        "runId": "e4fixed-debug-01",
+        "arm": "e4fixed-4777371",
+        "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+        "action": "Run",
+        "kind": "Debug",
+        "startedUtc": "2026-09-19T21:48:36.5433986Z",
+        "completedUtc": "2026-09-19T21:49:27.4713474Z",
+        "exitCode": 0,
+        "processExitCode": 0,
+        "tests": {
+          "tests": 1,
+          "failures": 0,
+          "disabled": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "failureReasons": [],
+        "stdoutSha256": "CDE2D8C3FDE4D3A693330962054D356BABF619A09666C1D6DAB1D219D973EE91",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "cpuCases": []
+    },
+    {
+      "runId": "e4fixed-cpu-individual-01",
+      "invocation": {
+        "arm": "e4fixed-4777371",
+        "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+        "action": "ValidateCpu",
+        "kind": "Perf",
+        "startedUtc": "2026-09-19T21:49:41.6083986Z",
+        "executable": "powershell.exe",
+        "arguments": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\tools\\Validate-CpuFiles.ps1",
+          "-DemoPath",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\arms\\e4fixed-4777371\\zstdgpu_demo.exe",
+          "-ListPath",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-cpu-individual-01\\cpu-decisive-list.txt",
+          "-OutputDirectory",
+          "C:\\dannych\\rdp_proxy\\workspace\\rx6900-20260919-69e45d0f\\results\\e4fixed-cpu-individual-01"
+        ],
+        "armManifestSha256": "9DC8B2046081ABCED8DF870CCEAEF0AEEC754CCC44A75DAEBF7DAFE31030BD2F",
+        "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9"
+      },
+      "result": {
+        "runId": "e4fixed-cpu-individual-01",
+        "arm": "e4fixed-4777371",
+        "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+        "action": "ValidateCpu",
+        "kind": "Perf",
+        "startedUtc": "2026-09-19T21:49:41.6083986Z",
+        "completedUtc": "2026-09-19T21:49:44.666003Z",
+        "exitCode": 0,
+        "processExitCode": 0,
+        "tests": null,
+        "failureReasons": [],
+        "stdoutSha256": "15CC09417E1D7005B43814E5745A9325ED636FC11B0A84DA15567BE8DC829438",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "cpuCases": [
+        {
+          "index": 0,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:41.9704134Z",
+          "completedUtc": "2026-09-19T21:49:42.3653808Z",
+          "stdoutSha256": "5AA938667B142EF3AD1B7817D24565EC22A976350B5535EEC9B97E6909593C39",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 1,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:42.4622019Z",
+          "completedUtc": "2026-09-19T21:49:42.7191678Z",
+          "stdoutSha256": "4FDBD1CC6097371B8C01547330D8E5B75A7B46B768BDB4E15FB150D6A37E8209",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 2,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:42.723206Z",
+          "completedUtc": "2026-09-19T21:49:42.9943926Z",
+          "stdoutSha256": "803902F78B3892AB6085B4B8314ACA9C03B2756F3A7716874303CEC2DF78CAD4",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 3,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:42.9963933Z",
+          "completedUtc": "2026-09-19T21:49:43.258501Z",
+          "stdoutSha256": "BCE628FBC87BD873F2826BECE7F790BE86B534685627C147835F0B65C8B768BA",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 4,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:43.262897Z",
+          "completedUtc": "2026-09-19T21:49:43.6873797Z",
+          "stdoutSha256": "1B41D234214EFB9807AA14C70FB6A0FDDF7E98340EA51C9875C68FB59F3651BC",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 5,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:43.6914176Z",
+          "completedUtc": "2026-09-19T21:49:44.2568728Z",
+          "stdoutSha256": "63E7D718170F7EDD68BD26B434C2E311D93C0123C4BD71783AC0C718082D2344",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        {
+          "index": 6,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+          "arguments": [
+            "--zst",
+            "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+            "--run-cnt",
+            "1",
+            "--prf-lvl",
+            "0",
+            "--chk-cpu",
+            "--chk-gpu",
+            "--sim-gpu"
+          ],
+          "processExitCode": 0,
+          "passed": true,
+          "startedUtc": "2026-09-19T21:49:44.2689891Z",
+          "completedUtc": "2026-09-19T21:49:44.5989883Z",
+          "stdoutSha256": "FF7260F2111BF7EA2CA2294801688F8E1BA7AC25006FC3472ED88FD8AB37C76A",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        }
+      ]
+    }
+  ]
+}

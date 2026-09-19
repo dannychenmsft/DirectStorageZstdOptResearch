@@ -1,5 +1,5 @@
 {
-  "phase": "e4-final-confirmation-blocked-cpu-replay",
+  "phase": "e4-fixed-gates-passed-ready-for-shared-confirmation",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
@@ -17,10 +17,13 @@
   "measurement_owner": "d9a9d2a0-609a-4b6a-afe6-fc61056adcb2",
   "device": "DSTESTPC2",
   "campaign_board_snapshot": "campaign-board.json",
-  "in_flight_explorers": ["e1", "e2", "e3"],
+  "in_flight_explorers": [],
   "policyVersion": 2,
-  "candidate_queue_state": "final e4 debug passed; CPU replay gate blocked before timing; no active GPU process",
-  "pending_finalist": "e4-c4b3725 blocked: PR156 CPU replay 7/7 passes, original baseline and e4 0/7",
+  "candidate_queue_state": "fixed immutable baseline/e4 GPU gates and CPU7/7 passed; shared15-ladder confirmation next",
+  "pending_finalist": "e4fixed-4777371; optimization c4b3725 plus separate CPU-replay fix4777371",
+  "confirmation_baseline": "baselinefixed commit03c2135c62da3540dd70fa8fdc957e07d42b8f47: a8572d7 plus ONLY CPU-replay fix",
+  "fixed_arm_provenance": "fixed-arm-gates.json",
+  "fixed_shader_proof": "fixed-arm-shader-identity.json",
   "confirmation_ladders_run": 0,
   "confirmation_ladders_planned": 15,
   "blocker_report": "e4-final-blocker.txt",
@@ -28,7 +31,7 @@
     {"id": "e1", "commit": "54604812649247846f4bb3f38ebc56d30c161997", "phase": "rejected", "delta_percent": -0.11104700776003841, "z": -7.6928834374108614},
     {"id": "e2", "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d", "phase": "promising single-ladder screen", "screen_delta_percent": 3.4783751345986103},
     {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "deprioritized after screen", "screen_delta_percent": -2.694137622151005},
-    {"id": "e4", "commit": "c4b372592b8da8f01a724d4159cc5348ec37bcad", "phase": "final correctness blocked by inherited GPU-readback CPU replay failure", "screen_delta_percent": 3.8744262792357986}
+    {"id": "e4", "commit": "477737183bc549e16fc21bdca0055f27ed247e7f", "phase": "fixed CPU7/7 and full GPU/debug pass; final confirmation pending", "screen_delta_percent": 3.8744262792357986}
   ],
   "goal_met": false
 }

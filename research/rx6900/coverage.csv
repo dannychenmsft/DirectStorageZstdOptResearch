@@ -4,3 +4,4 @@ e2,cooperative-store-coalescing,literal-output,screen-promising-not-accepted,3.4
 e3,launch-geometry,fused-huffman,screen-deprioritized,-2.694137622151005,80dc139dc0a4d250266e1a39b5387c2d44a8c65d,policy2-screen-summary.json
 e4,stream-density,fused-huffman,screen-promising-not-accepted,3.8744262792357986,c4b372592b8da8f01a724d4159cc5348ec37bcad,policy2-e4-screen-summary.json
 e4-final-cpu,validation,huffman-gpu-readback-cpu-replay,blocked-inherited-baseline-failure,,c4b372592b8da8f01a724d4159cc5348ec37bcad,e4-cpu-gate-report.json
+e4-fixed-gates,validation,huffman-gpu-readback-cpu-replay,full-gpu-debug-and-cpu7-pass,,477737183bc549e16fc21bdca0055f27ed247e7f,fixed-arm-gates.json

@@ -152,3 +152,24 @@ gate. Therefore0/15 confirmation ladders ran; no fresh final-reference result ex
 Diagnostic per-file input reading changed to IO.File.ReadAllLines to avoid serializing
 PowerShell-added filesystem properties into bloated JSON; executable/arguments
 unchanged. Raw failed-run artifacts retained; concise paired proofe4-cpu-gate-report.json.
+
+2026-09-19 Fixed-arm final gates COMPLETE, no waiver
+Separate one-line CPU-replay alias fix477737183bc549e16fc21bdca0055f27ed247e7f
+rebinds LiteralDwords tocpuRes inside simGpu; no throughput/shader semantics change.
+Built new immutablee4fixed-4777371, plus baselinefixed at03c2135c62da3540dd70fa8fdc957e07d42b8f47.
+The latter is exactlya8572d7 plus ONLY the separate one-line fix,not identical source
+toa8572d7. Old baseline,e4,andreference artifacts remain untouched.
+Manifest-anchored verification:33 shaders each forbaselinefixed vsbaseline and
+e4fixed vsolde4. Every shader container is embedded in its immutable demo.
+All DXIL executable,root-signature,validation,signature,STAT,HASH chunks identical.
+Full containers differ ONLY by ILDN debug filenames relocated to new worktree roots;
+do not claim full debug-container hashes identical. Persisted per-shader hashes and
+paths infixed-arm-shader-identity.json.
+Fresh baselinefixed fullExternalMemory+Seq2/2 andCPU7/7 pass,rc0.
+Fresh e4fixed fullExternalMemory+Seq2/2,Debug1/1,andCPU7/7 pass,rc0.
+CPU checks cover956frames/7 validCI files, both standalone emulation andwhole-buffer
+GPU-readback replay. Raw output/result/manifests rehashed; no skipped batches or
+device/scratch/assertion failure signatures. Evidence infixed-arm-gates.json.
+CPU helper now fails fast after recording the first failed case; all new cases passed.
+13/13 statistics tests pass. Next authorized confirmation is[R,e4fixed,baselinefixed,
+e4fixed,R]x3:15 full8rung/run-cnt5 ladders,shared contemporaneous controls,no profiles.

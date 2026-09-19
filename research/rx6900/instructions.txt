@@ -97,5 +97,12 @@ confidence interval from only three sessions. Full restoration is conclusive onl
 when the reference interval lower bound is nonnegative and incumbent gate passes.
 No product is automatically promoted.
 
-CURRENT BLOCKER: baseline and e4 fail all seven GPU-readback CPU replay cases,
-whereas PR156 passes all seven. See e4-final-blocker.txt. No final timing ran.
+Historical blocker: original baseline and e4 failed seven GPU-readback CPU replay
+cases, whereas PR156 passed. See e4-final-blocker.txt. The separate one-line
+CPU output-alias fix 4777371 resolves all seven on both newly built fixed arms.
+baselinefixed is a8572d7 plus only that fix (actual cherry-pick commit03c2135);
+e4fixed-4777371 includes the e4 optimization plus the separate fix. Never identify
+baselinefixed as identical source to a8572d7. Original arms remain immutable.
+verify_shader_identity.py checks manifest/header/executable consistency and every
+DXBC chunk; only ILDN debug-filename source-root relocation may differ.
+CPU diagnostics now stop and preserve evidence after the first failed case.

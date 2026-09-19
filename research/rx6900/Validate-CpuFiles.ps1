@@ -40,6 +40,7 @@ for ($i = 0; $i -lt $files.Count; ++$i) {
     Write-Output "CPU_CASE $i FILE=$file PASSED=$passed EXIT=$rc"
     Write-Output $stdout
     if ($stderr) { Write-Output $stderr }
+    if (-not $passed) { break }
 }
 $cases | ConvertTo-Json -Depth 6 | Set-Content "$OutputDirectory\cpu-cases.json" -Encoding UTF8
 $passedCount = @($cases | Where-Object passed).Count

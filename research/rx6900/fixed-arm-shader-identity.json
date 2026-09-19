@@ -1,0 +1,2076 @@
+[
+  {
+    "oldArm": "baseline",
+    "newArm": "baselinefixed",
+    "oldCommit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+    "newCommit": "03c2135c62da3540dd70fa8fdc957e07d42b8f47",
+    "oldManifestSha256": "9ebbd39e13e269140b296a81886f2ebb60782637d692086f564654a6d87a9e27",
+    "newManifestSha256": "0af04c519a52dcecff9960095c985278fcf92c69b2cc560147068679ec4ea5a4",
+    "shaderCount": 33,
+    "allExecutableAndRuntimeChunksEqual": true,
+    "allShadersEmbeddedInImmutableDemos": true,
+    "onlyPermittedDifference": "ILDN debug filename source-root relocation",
+    "shaders": [
+      {
+        "shader": "ZstdGpuComputeDestBlockOffsets.h",
+        "oldContainerSha256": "2502930fbf2ccbd38f994a811bd1803687c8cbcb126715dc7ad86e173121294b",
+        "newContainerSha256": "c037562696d92cc09b2c3946f907540b5975b4ff310ae3b97695e5635698bc93",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestBlockOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestblockoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestBlockOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestblockoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "657fdfdbcc762b15cb5f25dfc0f525fdab5f16fa5b070e277ca56f3122e32449",
+          "RTS0": "bf64632736ab5e50c1a94784d761370bda30a0954e11c3c1adf8d65b79b7ea91",
+          "STAT": "c783eb8ab857544a7c18887b7edfe015ac1f62672efe487168799910d4fbae81",
+          "HASH": "dd85959e7f1becb218c67ab9fd21bf1d8ff8196bfb6635941a2383d92ed44c01",
+          "DXIL": "32f49019b9740aef5f7292d4dc65db26a2df7ae739595d49e680b582696ef8d4"
+        }
+      },
+      {
+        "shader": "ZstdGpuComputeDestSequenceOffsets.h",
+        "oldContainerSha256": "67c8021b7d8df560f2456ace6c6f6f4dbe06c1cff4a4f6dffe10a12a56b588ab",
+        "newContainerSha256": "bf8d68caf964e6b1da4ff1b9293e57feb28ae89338c94da435e279e32ee92c9f",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestsequenceoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestsequenceoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "b3af82cbac37c2e6f077255fe48dae83869ab77c093d6540b9615af838a86d64",
+          "RTS0": "0cfdcf1a7308f2a2ffb9be0af01bf64bbfb714ab63e4eb438b0c6068d3acce54",
+          "STAT": "8ed3f9955a70d4eed8bf037b99033211694250dda6277bba45654dd80adfefa5",
+          "HASH": "2609dda6325379779e242e4f03ca7c5efc5f64f920eabc712ca6b897a294e60a",
+          "DXIL": "90825bb1db671c8dc7d1e9bb5e374745d40a4551c1faa5c972b52402bbe0fd96"
+        }
+      },
+      {
+        "shader": "ZstdGpuComputePrefixSum.h",
+        "oldContainerSha256": "f46183fde78dab4e4e6fd3864ae14287b30ac23f75ab41cb4b517229af3737be",
+        "newContainerSha256": "c06a3094e00649a2c79203e9b62f71bf49022375417a4669d1e4f5d4393cfbcf",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputePrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputeprefixsum.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputePrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputeprefixsum.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "7adb59517903396897e1e5fc827093e17978350bfc9fd28dda4c9c2b84453b08",
+          "RTS0": "6c83336d4f80ae690cd7d1b4a808df60537b01b3e6d4753ca7e1e7ce920c5ae0",
+          "STAT": "2689cd071902a02d6ec3381714ac59dd2b5590ed9461621dfdf25b330a6d3bbf",
+          "HASH": "64f47b2e5c3cc7f4921586fddff6f7177045c01e5492ba3f3f502c954872adaa",
+          "DXIL": "857a9dcbdbf3096082439f4eada55e0d34ee21f8b24ebbae7938e9647432f5f9"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecodeHuffmanWeights.h",
+        "oldContainerSha256": "87a300f12c7f72180a27af117b11db4252c551126ea868b3a7af222e74a61d8e",
+        "newContainerSha256": "2cad4a239493bd3bc68fe2ce7173867728a1cf8776852e4afb0507c76ad12c7c",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecodeHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecodehuffmanweights.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecodeHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecodehuffmanweights.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "9b912583da353c7a0191e110f70d81dd2d85709cc18a5413118e24d0c9a02694",
+          "RTS0": "5fd2693fe18018d5e72fd537f12f8d63c5c69fba0f2cb582d8f5b6ad102a03ee",
+          "STAT": "c9b203562ef8e45bb1b7522184816a6b8e9422e0f0475b48a777359e90d37941",
+          "HASH": "3747c1c5dfc625801d92eda3ae7773c36d0b8ce9509252bc36dd0d41b9f550a8",
+          "DXIL": "e4e997675e9593a1dceb399803f71fa62c5b93d5503acea5dbb8bc703f585804"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressHuffmanWeights.h",
+        "oldContainerSha256": "aa3f1201d13de0a62616bd3c3f6c64cd624d266088c999ad30c42c9b61cf84cb",
+        "newContainerSha256": "3f95ef275c77f5f341a07135542781006087cca59124eb17b50346a1033b0f39",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresshuffmanweights.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresshuffmanweights.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "fa3ece40f72e25410b7995212937d5bbe0672d25e6eae71294e07cc4d3d5ce97",
+          "RTS0": "e3898f799a356cf35b22fb52aa646b361ba38b3a48572d666148d171ffb21bd3",
+          "STAT": "57c3f0dd510eea9dbb3a1c6ff6c3352667452ba6031a4a0bfb67fab3452b4d34",
+          "HASH": "79d3702f1373f83ce80a1689f54a4ac49ea45e4e27e883a798c1ed2ded7be5bd",
+          "DXIL": "3025bfaeeb9374a8535cd2c1fd77e5619ba986de6a6fa5920fd5be02d7cf4208"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.h",
+        "oldContainerSha256": "671cb3b2f21f6c310c381d26367e3d8fc17bf5c452c90d1523e96e3f1de34141",
+        "newContainerSha256": "a515f1d2e1942be15855922dd4da81b35bffa775e1eba93668258d0b0389e4b3",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_2_ldsoutcache_32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_2_ldsoutcache_32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "84355f216f10028bd180f58daa89cd86a47661c0572275e0a42224d790ce0289",
+          "HASH": "35f1c3600196ef377eea6821c5bc754c2aacf4825fd4cbeda5dd5f80713d8e31",
+          "DXIL": "2ad3b8c837e3b3e7d5a2897345e39fd0ad4b02df6b31e86b31f0c40a46638824"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_4.h",
+        "oldContainerSha256": "f0ae73daef87b312a0772e09003d30a09c84848c75a17fa361fb3eba6e9ced99",
+        "newContainerSha256": "42a9eb47e64f5ac6bc6557abef32b1130c24d1d61d05752ed798d660c68b8b4b",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "96fd496c5c0f0b06bb814a2eb993eb72ec0c4983b0cc8ef38f1123a003a4b479",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "8521ee08a65cccdec7f55ead92079a3672adfc578ea392b91b818c7ab018a9ba",
+          "HASH": "03c45b6f9e3923cafc9f0d995ab924264b38f0700e3addd5932c82119a7b2e70",
+          "DXIL": "e7bbfb43b307b8e1542a128e345326f7074a6a153646b5af73932b1eef6a300b"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.h",
+        "oldContainerSha256": "37a1d5fb9d809623f2841f3cf9fef1d83b702784d7e356893c001235a4a995a8",
+        "newContainerSha256": "033944c78afdb22cc31bd0e0edd9acf4fd22acff02283433f57ca03b8aa4fd69",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "d9d121a2740e0afd8f4522b82336421b231f8f3dcc3e1177a2f584b08e8a28dd",
+          "HASH": "fb55fb86d4f62493bbffc2fdba34a35a7bc3ae0d37d4c998981a106f0c0a8169",
+          "DXIL": "b2b52c032591190c889d1ac0166fa79cf1ca08424ded249ec76c09fc93a47f1d"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.h",
+        "oldContainerSha256": "380b41d12f56e160202455b40e0e0687922d93b2bb95489d7c905e30c5e67297",
+        "newContainerSha256": "9496cb19ff454ba329aa953151cd2f1218a0b31a0aab091364bf36255f646474",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "84355f216f10028bd180f58daa89cd86a47661c0572275e0a42224d790ce0289",
+          "HASH": "b7266b65087bc0ce365e7441aa50b4c76b2c4c22aef1e2c4f531fd503e328652",
+          "DXIL": "b848b7ec9e00c758e74c0f6f4614ce3ef73fd0fafe22faef64053cb2e71c4c3c"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_8.h",
+        "oldContainerSha256": "98e0a8eab845c9e00a70618155a92e6238f01712f899d3c6ed93119f3685a299",
+        "newContainerSha256": "c8214223712d0eac62b6df8a1ca21fa65a5be74684ac29c5eb9f83bd3fdea04b",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "19797e2dd33586a68ce4f18a5b6c729b2fdb946c121fe4cfe57953bed8223d7f",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "9b0cb6d9ccaf15f25376088bda11c32ecf9e549eac89e28096c8fcd0820df7c0",
+          "HASH": "3b04e645e77687e6b7b8910a2ff6309e5a86a70fd639b2b52e6b4bd0ddca0249",
+          "DXIL": "3ec5dd5ac31689e79d1c1baeecdd35a121c35bfae9202c33da74a1cbb38bc83e"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.h",
+        "oldContainerSha256": "93c533e57376b91cd96dc13fdd654dc1e6a984fa7299cefab6444c41d6c3cae3",
+        "newContainerSha256": "9081bd988cfab04855fd1341ab69fe51f16db565ace6834fb147515db3cb39a3",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "84355f216f10028bd180f58daa89cd86a47661c0572275e0a42224d790ce0289",
+          "HASH": "3d5824f4d19ffaea1921be208f6caa110b8dd6ee04c6e29e65d9d44fd5771ae4",
+          "DXIL": "bd651858cead31b58fd7aba261ed2378a1bf3459d2b2e1a61ce2fb9bddc688cf"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.h",
+        "oldContainerSha256": "e31fb8e3e0f14afc4c40df9d9773b43fe72abba2983b03c6cc6c809ddff1186e",
+        "newContainerSha256": "decc133b87c9517a3664bd7e56cf7a75451527199e5534a24f837047fd7d4197",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "d9d121a2740e0afd8f4522b82336421b231f8f3dcc3e1177a2f584b08e8a28dd",
+          "HASH": "984b347474ffe23e4fba07cd55489bfb66007b58ac2aa6969f93a04482c6078e",
+          "DXIL": "8e24659e51f68a64dc984c750017c2cbe18f25a7e0099437715337a2d39b576e"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.h",
+        "oldContainerSha256": "464134b280f81abb6e200ba5aa02b3c670a184a0fe491dad95ebade2351774ad",
+        "newContainerSha256": "59ccf5b6fb549137adc3dcadce75a298dc09b4820f9da2ed3f30645304daf64d",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "da5db9040c14568b271841b21d3292f04bf4fbed82fe1d9bfeb8ea6ee6097bac",
+          "HASH": "30ea95286af64e1103de9915d61a08acefa03ba06062de2298cf767173d1c27f",
+          "DXIL": "85914c795b7e633ad5524dd1066d08996e116944d30cc0a1dcd126070a3d1718"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.h",
+        "oldContainerSha256": "7de119427a12f2e8dfe853548078381b7ca70cbd525b305da6f6aa94503af156",
+        "newContainerSha256": "c9eddc57562b7d7fd07f49ee03fcb49d32bf5e333e29cc689418285e6e80ca20",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "678f4c24f28b5947dd9e26eb35fca1ee0715129d7aa20e3f66688c66c998b2f1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "b8767fb6a9b98bd2dc45c8f37e71b32c49c15c7cf3d52bf286e1240d8ab647fc",
+          "HASH": "cf9493bb0437f0fe0ba8639b07b863658a2cb5bcce6e14de210a4dae83b9c1db",
+          "DXIL": "273ed1e226e359f92b6bfc3b6b277e59d6e094b0124899b472ac4929c2632f37"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.h",
+        "oldContainerSha256": "1bf7c26fe1bb6d3d36e9124f971d36a8afd1d6195210a21183eb3804a20fc0b4",
+        "newContainerSha256": "b3b983ceed6f2d788d99261d61cc0a8d79ba7cdb9852ca7a4f339cc13f7a665e",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "3523f9a2661ae2a180d8bb13e1f4cd3ab58398a2cf9a8919efe19fac7b25ed79",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "c189032cac4617a20be173bae4b2022c88d81e674ec98f69f248ee5528f4922a",
+          "HASH": "28bf08feb92d12c5e60393a4f50b594c1b50ebe4f4cb5b5a522a193865d19cd7",
+          "DXIL": "96d56d23a605217945111455275212393e472ab585523e1fbfd7331b4ec1cb41"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.h",
+        "oldContainerSha256": "ad112720161f4ba59245a2b59707de177a4eb55791c9594d887773ce3430ad9e",
+        "newContainerSha256": "d25df8df4e4ea16e9180b79d0dcb663ba8154c0d4ae9236979dfc552dd0dce62",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "5465fc3e0e2a0db81f17cbd97ab2aa51c7a1cbe0a858661b79e447cf7d572bff",
+          "HASH": "ebb92e77698dfd73b63069bd931fd83b769f45da631fbe72d2664d38d1fd0a5d",
+          "DXIL": "fd8a48f06f68fd52786de67a5bb280239ed12460f747886e323d455e69e2e6bf"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h",
+        "oldContainerSha256": "05288d274affd380e54d3124e13b2d92adaf64bfdca3344f094f0bdca76fabdf",
+        "newContainerSha256": "f552520e9289b5ad2a297c33d69174568c77b9c263d0f12b3bd8c3b802376c93",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "678f4c24f28b5947dd9e26eb35fca1ee0715129d7aa20e3f66688c66c998b2f1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "b07f72346db2bc7f3a6ffd70fdb3da1138459868172dd51c81e3659526acf48b",
+          "HASH": "a838e728a17cc9224c0ae6824ee5e132bb66a6504130646fb996a9d12b7021a2",
+          "DXIL": "4cabdc319f6d926c9575db8186a29e9b11f5e7666c5066fe3b343b8479811839"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.h",
+        "oldContainerSha256": "8091700d60e3f27f002a09f52df57804fdd0bccda4b41eb93bd215fc89fadd77",
+        "newContainerSha256": "9fd860c6b93934cada39f58136dea186b7989d659c85b61e04a5b44a7361d3b1",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "3523f9a2661ae2a180d8bb13e1f4cd3ab58398a2cf9a8919efe19fac7b25ed79",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "ff774ba23d767586d0af02a89e17aa308a95bd27fa71dbb9ec6c0453f025074f",
+          "HASH": "8babff006fa5c471cda2fd5374af339f39c0c53a3f8499afbec7510daa1ce68c",
+          "DXIL": "68e420477387e991bc9fd87e464bd62d97ae5bd2421359f48a27205271c61711"
+        }
+      },
+      {
+        "shader": "ZstdGpuExecuteSequences128.h",
+        "oldContainerSha256": "ba8af2e72af7173efe9e2c81e91accadee03d4db5ca98043e6704b47fbf30694",
+        "newContainerSha256": "2fd41f4329f7f0fdc23118360ea03081f72cb6597c28c4b2ad1c17e06910d06a",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "8b5451fcec07819ff74c5ebf6830f5a7873533cdd3ef6ba0183800c8e58ce44a",
+          "RTS0": "a4cc32a77ac9a416c47b22c57d784638624041ab3d99adc1c9d3f345f33d5a45",
+          "STAT": "29d370d180ce8a5b06c9d9d816fd9cdfdb189fa3673e327d4656ccedc62fd51c",
+          "HASH": "2aab5d4d12ebd10f76e51c6af336018956213d3b3de571da1eb133fb30723740",
+          "DXIL": "c9a7ab9abbf7eeebf3afc80994ffeccb1ca59cb083c2f400d56ab8f47e7fa8b1"
+        }
+      },
+      {
+        "shader": "ZstdGpuExecuteSequences32.h",
+        "oldContainerSha256": "9323ff2c778f8e8e89e52aa5401e7600618642d7faf354e3c2037cad023c1cb5",
+        "newContainerSha256": "7b081b8e9414e8dc967b87effa1cbe2508e1164b97840a964419dd39e738f498",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "9aef98e26d42b9cec2e70b593b23a3d2f76046d7363ff75b3d7cad20a9cedebf",
+          "RTS0": "a4cc32a77ac9a416c47b22c57d784638624041ab3d99adc1c9d3f345f33d5a45",
+          "STAT": "86ecbcc93f70b72cf28fa10d30e176ff66e97b62563956bc69a5f781ef3610b6",
+          "HASH": "be03793ddb10803c2e757367a273c38c40be07e1b75bf7e9dc50c3d5703d10dc",
+          "DXIL": "da85070bb0f81d9b6d7605ef0bcf8066027c439ea690cb21fc80e0ed9bae3048"
+        }
+      },
+      {
+        "shader": "ZstdGpuExecuteSequences64.h",
+        "oldContainerSha256": "fd7cf445d13f39f5354c7032c7805e3213d9e694d2c459fd881e42ac4840a1ae",
+        "newContainerSha256": "8a8111d3cb873767d94836ca5726d29805ee45c561280cf67d5f95ebe016b7da",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "6cbedc2ca1f560e2e0ddde176d67b02cdac0721bed1ebcc217f307ecac53ec0b",
+          "RTS0": "a4cc32a77ac9a416c47b22c57d784638624041ab3d99adc1c9d3f345f33d5a45",
+          "STAT": "aa8819caf66ec356f54ac93b8e9ed851891d231a4f07634bfacbd9e7c1c8e070",
+          "HASH": "078c55de5ff0b1a0653b8551e896b0baedca2ca433ce7fcfd187908f15003875",
+          "DXIL": "97c8381e9fc7805fa7197808123d22919345483b9a59958ad22b1201bd5c3519"
+        }
+      },
+      {
+        "shader": "ZstdGpuFinaliseSequenceOffsets.h",
+        "oldContainerSha256": "c8fc0e59a49d3bc45da4be071aed6420a45812a56c20d01f725d96be2bea3d24",
+        "newContainerSha256": "19ed56bd7056539db22769f3588fce3087576aea697b3d275e90517ba268a3a3",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuFinaliseSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpufinalisesequenceoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuFinaliseSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpufinalisesequenceoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "5b95fe76e20742661c86caafb5b1bd4edf2daf831b730b98ead75144b41fd66f",
+          "RTS0": "06278531bdbe722e3dee17cc8736e2e12e4a421145227b3eacfa2098b344fbc3",
+          "STAT": "159f68c56935f1bd7123f461895530f090a9c09668dbb9c4cf6deecf111078e8",
+          "HASH": "9567149eafe4fa43f79c8ff047333f741849c14b5a86b378ad7489d84ddf59b3",
+          "DXIL": "954f95bc34d9d1d5ae9c7dcedd336d6e77c3b9980c61434b49cabf29806620e1"
+        }
+      },
+      {
+        "shader": "ZstdGpuInitFseTable.h",
+        "oldContainerSha256": "b5b580f87eb31be553591720aacac6d9f9e9228219b2a3bb388df54fb3c63e2f",
+        "newContainerSha256": "32ce8714d5d79e78f93bc083aab7cca2c9eb00067a11cef874aa0f55936725df",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitFseTable.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitfsetable.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitFseTable.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitfsetable.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "25362fca7f16485ed297023670d69fa01bf386f13bcddb0b8d89eb8629dd60ae",
+          "RTS0": "dfc0305285ac3b08a51621591cf744d8008ddc1e45714694d5c0128a0451e36d",
+          "STAT": "16540c657e89772779b5b9a6e456442356e50c78b666e0e83408c1f4c33536fa",
+          "HASH": "7868edc1f63e9f4ef3715115199bfeeef0b6aafa3ea1dd0de23b7db2c6cb6e51",
+          "DXIL": "d06a192257b64c12ea45f11125f87cf494266f730cf9c2e8284076ac1be095f2"
+        }
+      },
+      {
+        "shader": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+        "oldContainerSha256": "a4b02a55acb94ace03db3ee32d7cb18058f4cc5f17a9f8d9961bb220998344e4",
+        "newContainerSha256": "a000745b43a9a0c079cae63e80a890450d5f1399726e4b2b9bbd70e92b6bd744",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitHuffmanTableAndDecompressLiterals.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinithuffmantableanddecompressliterals.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitHuffmanTableAndDecompressLiterals.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinithuffmantableanddecompressliterals.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "b08e7945a034a1238c08fae52fcfde4c73e80ad9caa9a4177fa5bd1c3bb998f3",
+          "RTS0": "92413eb5e31a8e7abb5d2ae4ed2444c77e87e9199d953d57ab675a0173f08dfb",
+          "STAT": "74c5028cf725678c8d84233809b97c3ceeb38f1c4bcdc42cf28654c756310b2c",
+          "HASH": "afb80b8d8f001c8b57cf658c7253dda2f103432485aaf1702dcfdc581e986dfc",
+          "DXIL": "9b39f4ec157a51f9e9228db97f660deea6a79b40e94b534928bac7fcc5b74fef"
+        }
+      },
+      {
+        "shader": "ZstdGpuInitResources.h",
+        "oldContainerSha256": "293b56d746da46840a9cc1f0ba51ca0f23b6a4773557d1856f1104d7b23882e5",
+        "newContainerSha256": "ca2c03c31ef94571c4dccc071dc95bb51423da489759da8bef88e86dfc20977e",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitResources.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitresources.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitResources.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitresources.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "a9cf75d01dfaf674ed78fb4af686aa7ab72771faa20ac77a8f7adf79a0298bde",
+          "RTS0": "9d2801c5be05eb98e33247dd035dd022fed384737137c05612b66f5b22b65147",
+          "STAT": "bb5efb4043b44615e1eb394f75c9cad8766b5606a2be80a75937fff8b48f6b58",
+          "HASH": "ae5855f07fe4ca4057fc57732592649d49e10b2fbeabcc66b6216dc925ac4283",
+          "DXIL": "8d2ff194cc401ddb994653c2269c027b732df102587095368ec6b5e86542294e"
+        }
+      },
+      {
+        "shader": "ZstdGpuMemset.h",
+        "oldContainerSha256": "5ed9f2589b3b0b4959bca45c6a571b4a6799d8b879cfb508f56f608dfa1ce67d",
+        "newContainerSha256": "1af3781d522203bb03eaacfdbf82961c5f692d909965d5b27c9da886e2eeb42d",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemset.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemset.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemset.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemset.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "a47b27287515467e0e1a41eed2494480bb889863bc38ecd3c7cf4243990ea490",
+          "RTS0": "1d36e404da090fed7a81101d3432cfdad7c030e67c9e8fe7dc5a9511d0d21733",
+          "STAT": "1a64db736fd4bfc763f3acf4ac1591839944ad011c280e0ec6410db4ab22a539",
+          "HASH": "3253785d0c2cf298d909d0dba492150377484d8fea992cb0c9884de73fa59ebc",
+          "DXIL": "6bc271ebb0ea89e3c88cab43b10da061589e7b16049c23039921d37c5ac8e8f7"
+        }
+      },
+      {
+        "shader": "ZstdGpuMemsetMemcpy.h",
+        "oldContainerSha256": "077b8c065d881b2a71032f80532419f42206e43d9516679a2a78ac4f4cacae48",
+        "newContainerSha256": "4ef2062dfb3c95dec1a1f178f87fcf77b04a911dc00ce0a60c3343f6eb3fcc51",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemsetMemcpy.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemsetmemcpy.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemsetMemcpy.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemsetmemcpy.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "94ea36ed98848ad87cd81cfb712b968e87f515b8f9b5166abf93791d39b566f7",
+          "RTS0": "2a14711ef342336856b1f7f712b58f2ac0522a6d6983d380c247ed18470dbc07",
+          "STAT": "e798d9351a3740617c14fc293e6ced1cbc20d558b5897bfac1f1c73fd2f0f05d",
+          "HASH": "f0c52442a68835b8b40e2f6391b5778676d42282e5aa231c511146b7c7ffcd75",
+          "DXIL": "42ef2735797146ef47646b1cb75a2dc0c82a5e040edc91f53f9b3f2745a142f0"
+        }
+      },
+      {
+        "shader": "ZstdGpuParseCompressedBlocks.h",
+        "oldContainerSha256": "77a1a38324796281182da66e0f616422fe2a12681567f1cae09fa4b2723ccf5e",
+        "newContainerSha256": "fa73dc4c8c9fc9a925c83ced1cd0618ce06bdbf4ba8166fed573205540a73627",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseCompressedBlocks.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparsecompressedblocks.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseCompressedBlocks.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparsecompressedblocks.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "a65931297fc61615c9b51cb9e8ffc0d0a67daaa67f341a5e83fd7ba0253e936a",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "071ec16d0484903ca96bbc61473240d5866c80a6c1f7b450f7d217abc46af606",
+          "RTS0": "6d55d72da00457a64d1adcd52c561977d6d730868e1b75d02d1d7ecd1c2df00d",
+          "STAT": "b39872b920dda9540cddc9a798b14f1103ad38aad6d835435b9c14c053ff6f9f",
+          "HASH": "d3e8282c4bd85573d93f3c9d53f62b75fbde262a22f277d9b43081df9fd6570a",
+          "DXIL": "74c40cf96348b00d1e7da0cae17cef8561afcc739251ad8cec77825df77d162e"
+        }
+      },
+      {
+        "shader": "ZstdGpuParseFrames.h",
+        "oldContainerSha256": "21030f4be3d40419332c1486effda86f99e6469a89a1e3a6d635cd1cf33bd28b",
+        "newContainerSha256": "df6dbb256a5dfa59aa3ca658473e9072e50506679c67b050145d7873bed0e558",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseFrames.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparseframes.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseFrames.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparseframes.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "a65931297fc61615c9b51cb9e8ffc0d0a67daaa67f341a5e83fd7ba0253e936a",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "e7f9773f5c3ad2f67a493c1f861b641b7ffc629497b39ca7d672756d31de3f29",
+          "RTS0": "e9b615e3313840d9f3d7257c9f808eb3c82cc4bf56d7dd815fcb1337df80e14c",
+          "STAT": "2008f51730704ba323e46145df9b0c59976f8b9ce2ea80c818282efdb4acb595",
+          "HASH": "36e162db65bb4dbbd7e885face7af2ca48e0a6fa788ee0b369fc1f8a1d5fc845",
+          "DXIL": "b78acd67f97e69fb04c3df0ec820df9d5b0a07c7aa78aaeb00fdbbc03171f84c"
+        }
+      },
+      {
+        "shader": "ZstdGpuPrefixSequenceOffsets.h",
+        "oldContainerSha256": "209e81cce0e59abf71aa4174abecc0aded71d7cc998c327a466ba6dc3f41bacb",
+        "newContainerSha256": "9f2ae754d040bc78f3efe079f5608e30ff638c1375256de3fb0252996b360cf0",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsequenceoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsequenceoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "9d7d091ef5c4a60089c191f447a948ff1d918f6c9bddafe95814686aede025a8",
+          "RTS0": "ae2c27e526cfc1a8d61c999e32021053f414f5082b637dae6ed7e9d938bf5d08",
+          "STAT": "2529a95340fabe2f61be5f3ab128d2c96a4a852b50e27a175a29033fbb16cedd",
+          "HASH": "815c89de8308360b48cacf34f2734d217f0127891d60a116bf4cbda79726318d",
+          "DXIL": "852f29ff26ae0bd0def5608dd25655d4ca5ebe78f178f5f12923e3eb09638cfb"
+        }
+      },
+      {
+        "shader": "ZstdGpuPrefixSum.h",
+        "oldContainerSha256": "edc114a69d2dd7999774d3255c60367d29def57014ea1813a24e41ca85dab0e7",
+        "newContainerSha256": "7eb1f31ea159ecf2a6e0b0721934ca8d54776e25467eb2ba36da9fd7951b5fc2",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsum.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsum.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "ebae1e9c943b62a22b73c66c19c2cdc00e8b6a6dbb957b989875359a78cd5a59",
+          "RTS0": "54708aafe05abd8ea03911f8622897afc3131cdeb8748f4c8b01204106642400",
+          "STAT": "b1aa90d986f079fe04a7f9e3c4f43396c30dba0aca24bc374627a888ea9c041d",
+          "HASH": "a6d00d538de71d8f3c852541a72d62cfa03c74d22becb9e4589832a9453166e7",
+          "DXIL": "4f2444ca255c1c59fe292ea01ade891ba41a082f68b7d9d9a7ffe6bbc7653109"
+        }
+      },
+      {
+        "shader": "ZstdGpuPropagateFseIndex.h",
+        "oldContainerSha256": "7a9f304c3f0befee98d23c52f9e9cf12d21ccc16d6554ff807aa06a5cb382329",
+        "newContainerSha256": "6fffc0c4536274a871f62a32f3fe844585442f5662fcf345d5561064bf0e854a",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPropagateFseIndex.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpupropagatefseindex.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPropagateFseIndex.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpupropagatefseindex.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "ebae1e9c943b62a22b73c66c19c2cdc00e8b6a6dbb957b989875359a78cd5a59",
+          "RTS0": "5c0ce28a0559e933c8705d0025a4c21664e559f26a6ea401dfcadac24e2b2263",
+          "STAT": "3cf08df28d08ad384b08e29ff5ef88dc9e2d5164a3a67c07531319320f553e8c",
+          "HASH": "188f36ce261c6d233fb8d12579a26fa21752e34245802752009d0041f3385eb3",
+          "DXIL": "f75b736b305a4111727e7e1a847cbf3e2b06856b4f7c7675e57b8c6a7cc5d64c"
+        }
+      },
+      {
+        "shader": "ZstdGpuUpdateDispatchArgs.h",
+        "oldContainerSha256": "4b28e13d25fdbf35e179a785b133e96ee23291960f806b7ee27dca4567789b35",
+        "newContainerSha256": "d1a4a825e442ea87f7a216137c118da33f8c71f1c4a83c79b3cda284ed30789d",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\GH_DirectStorage3\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuUpdateDispatchArgs.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuupdatedispatchargs.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-baselinefixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuUpdateDispatchArgs.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuupdatedispatchargs.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "e23bd74030a0acf4e7ee5677e25fe21c191770adb52bb1b52b825fb93ea93916",
+          "RTS0": "b9c0d2fb2654687f3fd581fb44da371462ffbb6209af3b7d6108384059794304",
+          "STAT": "77a419098c4a35a42ad117cd010f842fb8203e638bde5c608c8afebe8ca61170",
+          "HASH": "79e1a0fee11ee3996e6b5b9a069b0aaad0006a8291716f06ee9cef8af20f2459",
+          "DXIL": "4ee638a7fdcc199b61116aaaa29760dece76551169e2755bc3b477b78051e631"
+        }
+      }
+    ]
+  },
+  {
+    "oldArm": "e4-c4b3725",
+    "newArm": "e4fixed-4777371",
+    "oldCommit": "c4b372592b8da8f01a724d4159cc5348ec37bcad",
+    "newCommit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+    "oldManifestSha256": "2fb85d5cf9e6c3c344861070559ee2c353b5b5c57558c740c56e0f06de68e5cb",
+    "newManifestSha256": "9dc8b2046081abced8df870cceaef0aeec754ccc44a75daebf7dafe31030bd2f",
+    "shaderCount": 33,
+    "allExecutableAndRuntimeChunksEqual": true,
+    "allShadersEmbeddedInImmutableDemos": true,
+    "onlyPermittedDifference": "ILDN debug filename source-root relocation",
+    "shaders": [
+      {
+        "shader": "ZstdGpuComputeDestBlockOffsets.h",
+        "oldContainerSha256": "e36712880b1ec883466d155c42dbf88c4267a1c0a9223e8ed9481a6029e6f56b",
+        "newContainerSha256": "696ca88195cf9f904a435c2397a7cc408f393b2bdc6658f66ba9cd59cf6ca3c4",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestBlockOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestblockoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestBlockOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestblockoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "657fdfdbcc762b15cb5f25dfc0f525fdab5f16fa5b070e277ca56f3122e32449",
+          "RTS0": "bf64632736ab5e50c1a94784d761370bda30a0954e11c3c1adf8d65b79b7ea91",
+          "STAT": "c783eb8ab857544a7c18887b7edfe015ac1f62672efe487168799910d4fbae81",
+          "HASH": "dd85959e7f1becb218c67ab9fd21bf1d8ff8196bfb6635941a2383d92ed44c01",
+          "DXIL": "32f49019b9740aef5f7292d4dc65db26a2df7ae739595d49e680b582696ef8d4"
+        }
+      },
+      {
+        "shader": "ZstdGpuComputeDestSequenceOffsets.h",
+        "oldContainerSha256": "7ce43c104c1da22c6957bf2430e7127dd53ccb75aaddde0a153d24130740d715",
+        "newContainerSha256": "b6149589a9a36698515c15a96f924339f624493225bab6ab63d1ba4edcd4b612",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestsequenceoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputeDestSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputedestsequenceoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "b3af82cbac37c2e6f077255fe48dae83869ab77c093d6540b9615af838a86d64",
+          "RTS0": "0cfdcf1a7308f2a2ffb9be0af01bf64bbfb714ab63e4eb438b0c6068d3acce54",
+          "STAT": "8ed3f9955a70d4eed8bf037b99033211694250dda6277bba45654dd80adfefa5",
+          "HASH": "2609dda6325379779e242e4f03ca7c5efc5f64f920eabc712ca6b897a294e60a",
+          "DXIL": "90825bb1db671c8dc7d1e9bb5e374745d40a4551c1faa5c972b52402bbe0fd96"
+        }
+      },
+      {
+        "shader": "ZstdGpuComputePrefixSum.h",
+        "oldContainerSha256": "cf3246c5bdc28d735da9005dd8c25ceb018eebf62f37c13803ae2198bd96d834",
+        "newContainerSha256": "346ad716829caabe787f2cc1b0c3835315bdac32987e57dd601541c7a8057359",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputePrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputeprefixsum.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuComputePrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpucomputeprefixsum.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "7adb59517903396897e1e5fc827093e17978350bfc9fd28dda4c9c2b84453b08",
+          "RTS0": "6c83336d4f80ae690cd7d1b4a808df60537b01b3e6d4753ca7e1e7ce920c5ae0",
+          "STAT": "2689cd071902a02d6ec3381714ac59dd2b5590ed9461621dfdf25b330a6d3bbf",
+          "HASH": "64f47b2e5c3cc7f4921586fddff6f7177045c01e5492ba3f3f502c954872adaa",
+          "DXIL": "857a9dcbdbf3096082439f4eada55e0d34ee21f8b24ebbae7938e9647432f5f9"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecodeHuffmanWeights.h",
+        "oldContainerSha256": "eff4223fdd14a3a61c7063a3f5042aa1b7cd9e7462afeb3ca9bb7e0d549e5f5f",
+        "newContainerSha256": "ca434a853659cc14687a14de3d5b717839e7d7cef17f995f2aa0a497353e249a",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecodeHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecodehuffmanweights.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecodeHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecodehuffmanweights.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "9b912583da353c7a0191e110f70d81dd2d85709cc18a5413118e24d0c9a02694",
+          "RTS0": "5fd2693fe18018d5e72fd537f12f8d63c5c69fba0f2cb582d8f5b6ad102a03ee",
+          "STAT": "c9b203562ef8e45bb1b7522184816a6b8e9422e0f0475b48a777359e90d37941",
+          "HASH": "3747c1c5dfc625801d92eda3ae7773c36d0b8ce9509252bc36dd0d41b9f550a8",
+          "DXIL": "e4e997675e9593a1dceb399803f71fa62c5b93d5503acea5dbb8bc703f585804"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressHuffmanWeights.h",
+        "oldContainerSha256": "0c0bc8e044ebb65144b70988d59d60fe04c9e660d2f10dc9fcd3c7484070144d",
+        "newContainerSha256": "bbeafe5991193b771ef318295e6eb36350867c5c01abaf633c6d9fbdbe160acd",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresshuffmanweights.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressHuffmanWeights.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresshuffmanweights.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "fa3ece40f72e25410b7995212937d5bbe0672d25e6eae71294e07cc4d3d5ce97",
+          "RTS0": "e3898f799a356cf35b22fb52aa646b361ba38b3a48572d666148d171ffb21bd3",
+          "STAT": "57c3f0dd510eea9dbb3a1c6ff6c3352667452ba6031a4a0bfb67fab3452b4d34",
+          "HASH": "79d3702f1373f83ce80a1689f54a4ac49ea45e4e27e883a798c1ed2ded7be5bd",
+          "DXIL": "3025bfaeeb9374a8535cd2c1fd77e5619ba986de6a6fa5920fd5be02d7cf4208"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.h",
+        "oldContainerSha256": "17a1a2aefd6aa397aa33b4fb4cd44638f8641f1dc3f600bced57f728a054cd65",
+        "newContainerSha256": "9c3d55bf273e7ac1b6c75ea0e87ba12a53ca0912594d83860ac149828eda9c6d",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_2_ldsoutcache_32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_2_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_2_ldsoutcache_32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "84355f216f10028bd180f58daa89cd86a47661c0572275e0a42224d790ce0289",
+          "HASH": "35f1c3600196ef377eea6821c5bc754c2aacf4825fd4cbeda5dd5f80713d8e31",
+          "DXIL": "2ad3b8c837e3b3e7d5a2897345e39fd0ad4b02df6b31e86b31f0c40a46638824"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_4.h",
+        "oldContainerSha256": "3a57a1ac22f6cb93a2a1ab2b8d825fb07885038e0b5e6ccae5f27714639ca92f",
+        "newContainerSha256": "21450b5d6399b923d4b5d1444482df8dcc18520d2e118f2c084e820a6e50c2d9",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "96fd496c5c0f0b06bb814a2eb993eb72ec0c4983b0cc8ef38f1123a003a4b479",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "8521ee08a65cccdec7f55ead92079a3672adfc578ea392b91b818c7ab018a9ba",
+          "HASH": "03c45b6f9e3923cafc9f0d995ab924264b38f0700e3addd5932c82119a7b2e70",
+          "DXIL": "e7bbfb43b307b8e1542a128e345326f7074a6a153646b5af73932b1eef6a300b"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.h",
+        "oldContainerSha256": "0277ef2a1a7874365b85986734d082a6cb985a94ade50051685c25d480d13b16",
+        "newContainerSha256": "bbc3775a085729e392fffb104435f6c9279eb1e631aac6117f93e3adbc03346a",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "d9d121a2740e0afd8f4522b82336421b231f8f3dcc3e1177a2f584b08e8a28dd",
+          "HASH": "fb55fb86d4f62493bbffc2fdba34a35a7bc3ae0d37d4c998981a106f0c0a8169",
+          "DXIL": "b2b52c032591190c889d1ac0166fa79cf1ca08424ded249ec76c09fc93a47f1d"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.h",
+        "oldContainerSha256": "82733bfbb153c94edbde4d44f6f230b7f55e0e5aadee33ba684b4853bca6c31a",
+        "newContainerSha256": "4c5860d5df08e48c77654617150ec3426a5e31f0c062b9223b57615d6841bb7d",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_4_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_4_ldsoutcache_64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "84355f216f10028bd180f58daa89cd86a47661c0572275e0a42224d790ce0289",
+          "HASH": "b7266b65087bc0ce365e7441aa50b4c76b2c4c22aef1e2c4f531fd503e328652",
+          "DXIL": "b848b7ec9e00c758e74c0f6f4614ce3ef73fd0fafe22faef64053cb2e71c4c3c"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_8.h",
+        "oldContainerSha256": "786d3e15ad195cc5199ecf15065628e782db26d55ccf59fdb7b0e041fe1be48d",
+        "newContainerSha256": "ab602d3303d0f45286a22d6ecea2237331297f502980cf8f6a3f1a13abc8aacf",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "19797e2dd33586a68ce4f18a5b6c729b2fdb946c121fe4cfe57953bed8223d7f",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "9b0cb6d9ccaf15f25376088bda11c32ecf9e549eac89e28096c8fcd0820df7c0",
+          "HASH": "3b04e645e77687e6b7b8910a2ff6309e5a86a70fd639b2b52e6b4bd0ddca0249",
+          "DXIL": "3ec5dd5ac31689e79d1c1baeecdd35a121c35bfae9202c33da74a1cbb38bc83e"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.h",
+        "oldContainerSha256": "1f367aa7c674213ad7d8d811805fb2880fada13ecd399e8b50e2119f3ab8587d",
+        "newContainerSha256": "ff4a633796d1ff31ffc51ae111bd1b2e1b7a33c4f7f849d3859d14c25a150a16",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "84355f216f10028bd180f58daa89cd86a47661c0572275e0a42224d790ce0289",
+          "HASH": "3d5824f4d19ffaea1921be208f6caa110b8dd6ee04c6e29e65d9d44fd5771ae4",
+          "DXIL": "bd651858cead31b58fd7aba261ed2378a1bf3459d2b2e1a61ce2fb9bddc688cf"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.h",
+        "oldContainerSha256": "701d107b12aacac64590742ca05a7fac59d2c9d964f44a6cde02165187fcd315",
+        "newContainerSha256": "84e605148a5ec27271ebfdddbe751087ac28e8bb127de3b311fbe44d3554305b",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_MultiStream_8_LdsOutCache_64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_multistream_8_ldsoutcache_64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "d9d121a2740e0afd8f4522b82336421b231f8f3dcc3e1177a2f584b08e8a28dd",
+          "HASH": "984b347474ffe23e4fba07cd55489bfb66007b58ac2aa6969f93a04482c6078e",
+          "DXIL": "8e24659e51f68a64dc984c750017c2cbe18f25a7e0099437715337a2d39b576e"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.h",
+        "oldContainerSha256": "37a4ca8bd0c5324f6c8b870d818b79fcaa99eb98c11ea1899db2410d6b08f5e3",
+        "newContainerSha256": "1fa211b2ef0bf96eb292d3ad65b9ff0c51313d5355bc99738746db7efb99af3a",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "da5db9040c14568b271841b21d3292f04bf4fbed82fe1d9bfeb8ea6ee6097bac",
+          "HASH": "30ea95286af64e1103de9915d61a08acefa03ba06062de2298cf767173d1c27f",
+          "DXIL": "85914c795b7e633ad5524dd1066d08996e116944d30cc0a1dcd126070a3d1718"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.h",
+        "oldContainerSha256": "705f4c4be39fb15c71bf03f75e309d11dddb372a93d5dbf225591766579d0c23",
+        "newContainerSha256": "b1090ce979cbb904af5ddc726c81b679c45e8c90ccd0710c5bffcbbec6a60e9d",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "678f4c24f28b5947dd9e26eb35fca1ee0715129d7aa20e3f66688c66c998b2f1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "b8767fb6a9b98bd2dc45c8f37e71b32c49c15c7cf3d52bf286e1240d8ab647fc",
+          "HASH": "cf9493bb0437f0fe0ba8639b07b863658a2cb5bcce6e14de210a4dae83b9c1db",
+          "DXIL": "273ed1e226e359f92b6bfc3b6b277e59d6e094b0124899b472ac4929c2632f37"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.h",
+        "oldContainerSha256": "a01fcdebed0d3e3399108086a63941c4707fdec2d54ce815c48779457cb0f054",
+        "newContainerSha256": "04893a2207561f862865e16589607a424751948e9b76e6183c1effce3bdcdb71",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_LdsFseCache64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_ldsfsecache64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "3523f9a2661ae2a180d8bb13e1f4cd3ab58398a2cf9a8919efe19fac7b25ed79",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "c189032cac4617a20be173bae4b2022c88d81e674ec98f69f248ee5528f4922a",
+          "HASH": "28bf08feb92d12c5e60393a4f50b594c1b50ebe4f4cb5b5a522a193865d19cd7",
+          "DXIL": "96d56d23a605217945111455275212393e472ab585523e1fbfd7331b4ec1cb41"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.h",
+        "oldContainerSha256": "c5f43129a6b7707518cdda994dd59ee53083fcc31c12da218069c7c707114ac5",
+        "newContainerSha256": "d4da6c9e39365b720546177aab73b343802ddfaa1bb9e2149fbefad29daa6325",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "46c222e97a11bcef4fcda1b7feaf925a652f185955ebce1c16c029225e71f9e1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "5465fc3e0e2a0db81f17cbd97ab2aa51c7a1cbe0a858661b79e447cf7d572bff",
+          "HASH": "ebb92e77698dfd73b63069bd931fd83b769f45da631fbe72d2664d38d1fd0a5d",
+          "DXIL": "fd8a48f06f68fd52786de67a5bb280239ed12460f747886e323d455e69e2e6bf"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.h",
+        "oldContainerSha256": "4cce531bc161c9962078f6f26a25a0c135c19be33c884964fdfc0cd03a26d5ea",
+        "newContainerSha256": "0195588d098de463c10256cebb32fdd72fe0c6914e3be48a0222ea364ede8c72",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "678f4c24f28b5947dd9e26eb35fca1ee0715129d7aa20e3f66688c66c998b2f1",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "b07f72346db2bc7f3a6ffd70fdb3da1138459868172dd51c81e3659526acf48b",
+          "HASH": "a838e728a17cc9224c0ae6824ee5e132bb66a6504130646fb996a9d12b7021a2",
+          "DXIL": "4cabdc319f6d926c9575db8186a29e9b11f5e7666c5066fe3b343b8479811839"
+        }
+      },
+      {
+        "shader": "ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.h",
+        "oldContainerSha256": "5f903dabcf1d0957681915f97db7bc905ed7292ae7b4838fefa117617e66ff7a",
+        "newContainerSha256": "6c0c0cdaef964ff58457259e06eca2b199a2d31def0726edf86b453f9c89989f",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuDecompressSequences_SingleStream_ScalarFseLoad64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpudecompresssequences_singlestream_scalarfseload64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "b54b1a339e9f1b672af88b397362d05c99e30d790835dbfd74fc9117a6de76d3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "3523f9a2661ae2a180d8bb13e1f4cd3ab58398a2cf9a8919efe19fac7b25ed79",
+          "RTS0": "412f6187a46ec5bcd7c44ec65f80c49cff8647dc0227901bc3f3d55110bf2d1d",
+          "STAT": "ff774ba23d767586d0af02a89e17aa308a95bd27fa71dbb9ec6c0453f025074f",
+          "HASH": "8babff006fa5c471cda2fd5374af339f39c0c53a3f8499afbec7510daa1ce68c",
+          "DXIL": "68e420477387e991bc9fd87e464bd62d97ae5bd2421359f48a27205271c61711"
+        }
+      },
+      {
+        "shader": "ZstdGpuExecuteSequences128.h",
+        "oldContainerSha256": "31128ca06f9b41e8b0402913127a37002651559dc032e148c23d6bc6c9679f01",
+        "newContainerSha256": "63ad90271f85d252da6afe1d2fb6a0884f222c991a1549bc5fec2b69e56d2e76",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences128.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences128.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences128.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "8b5451fcec07819ff74c5ebf6830f5a7873533cdd3ef6ba0183800c8e58ce44a",
+          "RTS0": "a4cc32a77ac9a416c47b22c57d784638624041ab3d99adc1c9d3f345f33d5a45",
+          "STAT": "29d370d180ce8a5b06c9d9d816fd9cdfdb189fa3673e327d4656ccedc62fd51c",
+          "HASH": "2aab5d4d12ebd10f76e51c6af336018956213d3b3de571da1eb133fb30723740",
+          "DXIL": "c9a7ab9abbf7eeebf3afc80994ffeccb1ca59cb083c2f400d56ab8f47e7fa8b1"
+        }
+      },
+      {
+        "shader": "ZstdGpuExecuteSequences32.h",
+        "oldContainerSha256": "4dfbb28409ff1e7f9c50d9aa77f419dd411628784bec157d47c09d9e699d423a",
+        "newContainerSha256": "dd7ee9c09aa10d0684bea7bd674912531267b356b500ef2d3f3e391f479dc538",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences32.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences32.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences32.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "9aef98e26d42b9cec2e70b593b23a3d2f76046d7363ff75b3d7cad20a9cedebf",
+          "RTS0": "a4cc32a77ac9a416c47b22c57d784638624041ab3d99adc1c9d3f345f33d5a45",
+          "STAT": "86ecbcc93f70b72cf28fa10d30e176ff66e97b62563956bc69a5f781ef3610b6",
+          "HASH": "be03793ddb10803c2e757367a273c38c40be07e1b75bf7e9dc50c3d5703d10dc",
+          "DXIL": "da85070bb0f81d9b6d7605ef0bcf8066027c439ea690cb21fc80e0ed9bae3048"
+        }
+      },
+      {
+        "shader": "ZstdGpuExecuteSequences64.h",
+        "oldContainerSha256": "2729b21527b0baeb77747db4d53c98abc4ffaeb24bde58e4f7f41eff3ef86189",
+        "newContainerSha256": "d228a5b2aca515b6a1d7727e449d2de4748418e872a4e4207fa3f624f547a36c",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences64.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuExecuteSequences64.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuexecutesequences64.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "6cbedc2ca1f560e2e0ddde176d67b02cdac0721bed1ebcc217f307ecac53ec0b",
+          "RTS0": "a4cc32a77ac9a416c47b22c57d784638624041ab3d99adc1c9d3f345f33d5a45",
+          "STAT": "aa8819caf66ec356f54ac93b8e9ed851891d231a4f07634bfacbd9e7c1c8e070",
+          "HASH": "078c55de5ff0b1a0653b8551e896b0baedca2ca433ce7fcfd187908f15003875",
+          "DXIL": "97c8381e9fc7805fa7197808123d22919345483b9a59958ad22b1201bd5c3519"
+        }
+      },
+      {
+        "shader": "ZstdGpuFinaliseSequenceOffsets.h",
+        "oldContainerSha256": "2dadf77716123f88b4eb182a12d5c59816c07a7f633a397b9e606192fe22128f",
+        "newContainerSha256": "9c2680ece079ce64b834934f36e9973746cd3c6f73e66468e2770ad0a24beae2",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuFinaliseSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpufinalisesequenceoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuFinaliseSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpufinalisesequenceoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "5b95fe76e20742661c86caafb5b1bd4edf2daf831b730b98ead75144b41fd66f",
+          "RTS0": "06278531bdbe722e3dee17cc8736e2e12e4a421145227b3eacfa2098b344fbc3",
+          "STAT": "159f68c56935f1bd7123f461895530f090a9c09668dbb9c4cf6deecf111078e8",
+          "HASH": "9567149eafe4fa43f79c8ff047333f741849c14b5a86b378ad7489d84ddf59b3",
+          "DXIL": "954f95bc34d9d1d5ae9c7dcedd336d6e77c3b9980c61434b49cabf29806620e1"
+        }
+      },
+      {
+        "shader": "ZstdGpuInitFseTable.h",
+        "oldContainerSha256": "0762aba86bb403645abbb7a38c51c96e00e272cc6e6a698c870cf27f6d722b93",
+        "newContainerSha256": "b2d6bf53d549dff6008a5f2e52ec2df1af7ae93ff04dcb3e14c16c8c5cb8740b",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitFseTable.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitfsetable.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitFseTable.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitfsetable.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "25362fca7f16485ed297023670d69fa01bf386f13bcddb0b8d89eb8629dd60ae",
+          "RTS0": "dfc0305285ac3b08a51621591cf744d8008ddc1e45714694d5c0128a0451e36d",
+          "STAT": "16540c657e89772779b5b9a6e456442356e50c78b666e0e83408c1f4c33536fa",
+          "HASH": "7868edc1f63e9f4ef3715115199bfeeef0b6aafa3ea1dd0de23b7db2c6cb6e51",
+          "DXIL": "d06a192257b64c12ea45f11125f87cf494266f730cf9c2e8284076ac1be095f2"
+        }
+      },
+      {
+        "shader": "ZstdGpuInitHuffmanTableAndDecompressLiterals.h",
+        "oldContainerSha256": "5d3b27fad10014291d627165eb9fe8c2239cf1fcbfe1753bb584eb6315f38e40",
+        "newContainerSha256": "2292a15aa160dd1b343b7c2c34a5d5e2fd27cc4614681a94101fdecbccbacb03",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitHuffmanTableAndDecompressLiterals.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinithuffmantableanddecompressliterals.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitHuffmanTableAndDecompressLiterals.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinithuffmantableanddecompressliterals.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "114e02b67a9b354bb3d43251007e7c3fe5f2a205722fff50b33e2fc66b489ba3",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "b08e7945a034a1238c08fae52fcfde4c73e80ad9caa9a4177fa5bd1c3bb998f3",
+          "RTS0": "92413eb5e31a8e7abb5d2ae4ed2444c77e87e9199d953d57ab675a0173f08dfb",
+          "STAT": "74c5028cf725678c8d84233809b97c3ceeb38f1c4bcdc42cf28654c756310b2c",
+          "HASH": "1f9004512854269c6e9a4d0f1624b77e5c83513b800212447ca989027f954ec5",
+          "DXIL": "62d0970b2afe6974a9305a1e1b11a09a17035753929c128cf5d33d1f4adc5b40"
+        }
+      },
+      {
+        "shader": "ZstdGpuInitResources.h",
+        "oldContainerSha256": "ad98c73de27eb5f2099446a61bc45530fd9f6e947799e5ed2bd378947abad0b2",
+        "newContainerSha256": "329a43446a3326e96a2b8475eae46f88d16c1e801df1dd9832abf20d91cc8c2f",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitResources.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitresources.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuInitResources.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuinitresources.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "a9cf75d01dfaf674ed78fb4af686aa7ab72771faa20ac77a8f7adf79a0298bde",
+          "RTS0": "9d2801c5be05eb98e33247dd035dd022fed384737137c05612b66f5b22b65147",
+          "STAT": "bb5efb4043b44615e1eb394f75c9cad8766b5606a2be80a75937fff8b48f6b58",
+          "HASH": "ae5855f07fe4ca4057fc57732592649d49e10b2fbeabcc66b6216dc925ac4283",
+          "DXIL": "8d2ff194cc401ddb994653c2269c027b732df102587095368ec6b5e86542294e"
+        }
+      },
+      {
+        "shader": "ZstdGpuMemset.h",
+        "oldContainerSha256": "e74ddc6d85d3f7a5af54fc9d3553025906f020cfca94ce0e694357c19ad26c09",
+        "newContainerSha256": "13b9a504a7e9f09e9ad783f99cad3e444e89b001362ff53fc8673419e1ecc113",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemset.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemset.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemset.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemset.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "a47b27287515467e0e1a41eed2494480bb889863bc38ecd3c7cf4243990ea490",
+          "RTS0": "1d36e404da090fed7a81101d3432cfdad7c030e67c9e8fe7dc5a9511d0d21733",
+          "STAT": "1a64db736fd4bfc763f3acf4ac1591839944ad011c280e0ec6410db4ab22a539",
+          "HASH": "3253785d0c2cf298d909d0dba492150377484d8fea992cb0c9884de73fa59ebc",
+          "DXIL": "6bc271ebb0ea89e3c88cab43b10da061589e7b16049c23039921d37c5ac8e8f7"
+        }
+      },
+      {
+        "shader": "ZstdGpuMemsetMemcpy.h",
+        "oldContainerSha256": "1229308da827c7905766b502c19a8d1247ba2bbf87d9d05cd1d0da230628e8a7",
+        "newContainerSha256": "9089064fd7b7299bad9e7170432162527e228c2d15330bf770367cb3ecafd9ea",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemsetMemcpy.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemsetmemcpy.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuMemsetMemcpy.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpumemsetmemcpy.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "94ea36ed98848ad87cd81cfb712b968e87f515b8f9b5166abf93791d39b566f7",
+          "RTS0": "2a14711ef342336856b1f7f712b58f2ac0522a6d6983d380c247ed18470dbc07",
+          "STAT": "e798d9351a3740617c14fc293e6ced1cbc20d558b5897bfac1f1c73fd2f0f05d",
+          "HASH": "f0c52442a68835b8b40e2f6391b5778676d42282e5aa231c511146b7c7ffcd75",
+          "DXIL": "42ef2735797146ef47646b1cb75a2dc0c82a5e040edc91f53f9b3f2745a142f0"
+        }
+      },
+      {
+        "shader": "ZstdGpuParseCompressedBlocks.h",
+        "oldContainerSha256": "8d8f417589abe14df1235914002fe15f45997e80c4ca4c8c3df091d998478c87",
+        "newContainerSha256": "90575266fb8f2858bedb871bf6734cfa6813ed0f6d2aa2e0a2be192eb0ec2782",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseCompressedBlocks.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparsecompressedblocks.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseCompressedBlocks.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparsecompressedblocks.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "a65931297fc61615c9b51cb9e8ffc0d0a67daaa67f341a5e83fd7ba0253e936a",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "071ec16d0484903ca96bbc61473240d5866c80a6c1f7b450f7d217abc46af606",
+          "RTS0": "6d55d72da00457a64d1adcd52c561977d6d730868e1b75d02d1d7ecd1c2df00d",
+          "STAT": "b39872b920dda9540cddc9a798b14f1103ad38aad6d835435b9c14c053ff6f9f",
+          "HASH": "d3e8282c4bd85573d93f3c9d53f62b75fbde262a22f277d9b43081df9fd6570a",
+          "DXIL": "74c40cf96348b00d1e7da0cae17cef8561afcc739251ad8cec77825df77d162e"
+        }
+      },
+      {
+        "shader": "ZstdGpuParseFrames.h",
+        "oldContainerSha256": "471cea0240591682b9f44ddc9c81fe2eb306000437d4106f99ac5454e8fb4cf7",
+        "newContainerSha256": "ae68e6b9ee177018e964b6dbb5d1db86e48c57c8b3fd592ab94c78df64e20f05",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseFrames.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparseframes.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuParseFrames.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuparseframes.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "a65931297fc61615c9b51cb9e8ffc0d0a67daaa67f341a5e83fd7ba0253e936a",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "e7f9773f5c3ad2f67a493c1f861b641b7ffc629497b39ca7d672756d31de3f29",
+          "RTS0": "e9b615e3313840d9f3d7257c9f808eb3c82cc4bf56d7dd815fcb1337df80e14c",
+          "STAT": "2008f51730704ba323e46145df9b0c59976f8b9ce2ea80c818282efdb4acb595",
+          "HASH": "36e162db65bb4dbbd7e885face7af2ca48e0a6fa788ee0b369fc1f8a1d5fc845",
+          "DXIL": "b78acd67f97e69fb04c3df0ec820df9d5b0a07c7aa78aaeb00fdbbc03171f84c"
+        }
+      },
+      {
+        "shader": "ZstdGpuPrefixSequenceOffsets.h",
+        "oldContainerSha256": "75c1c303ab1dac4658fd0ee74d1de1ebcfb04c64c25fcda6d9ada147fc691599",
+        "newContainerSha256": "b13a4c278b378803553356765a68985ae14185802277d0ecff9cdd2d9b7befe1",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsequenceoffsets.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSequenceOffsets.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsequenceoffsets.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "9d7d091ef5c4a60089c191f447a948ff1d918f6c9bddafe95814686aede025a8",
+          "RTS0": "ae2c27e526cfc1a8d61c999e32021053f414f5082b637dae6ed7e9d938bf5d08",
+          "STAT": "2529a95340fabe2f61be5f3ab128d2c96a4a852b50e27a175a29033fbb16cedd",
+          "HASH": "815c89de8308360b48cacf34f2734d217f0127891d60a116bf4cbda79726318d",
+          "DXIL": "852f29ff26ae0bd0def5608dd25655d4ca5ebe78f178f5f12923e3eb09638cfb"
+        }
+      },
+      {
+        "shader": "ZstdGpuPrefixSum.h",
+        "oldContainerSha256": "40669c96c1428c52e0be009e0bb282948f208d9237eebc3f1163fbe0b158827d",
+        "newContainerSha256": "361c13c7e253c6375bb5307662d6950c71b4fe050f99f5b1b8e45a871ed3e662",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsum.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPrefixSum.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuprefixsum.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "ebae1e9c943b62a22b73c66c19c2cdc00e8b6a6dbb957b989875359a78cd5a59",
+          "RTS0": "54708aafe05abd8ea03911f8622897afc3131cdeb8748f4c8b01204106642400",
+          "STAT": "b1aa90d986f079fe04a7f9e3c4f43396c30dba0aca24bc374627a888ea9c041d",
+          "HASH": "a6d00d538de71d8f3c852541a72d62cfa03c74d22becb9e4589832a9453166e7",
+          "DXIL": "4f2444ca255c1c59fe292ea01ade891ba41a082f68b7d9d9a7ffe6bbc7653109"
+        }
+      },
+      {
+        "shader": "ZstdGpuPropagateFseIndex.h",
+        "oldContainerSha256": "a490d752b5401fe8c1670649e3e1c19337ef8f62d1ca4c7af4d02cf7f1b90f96",
+        "newContainerSha256": "bf903d111baa7a87a1523157120e395ba1b15ffa745964ff4ba0ed1f8a353255",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPropagateFseIndex.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpupropagatefseindex.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuPropagateFseIndex.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpupropagatefseindex.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "46386ff0eccd7a7871daa3122b418bbf8e0d0180eca74808a53b2c3ed970f50e",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "ebae1e9c943b62a22b73c66c19c2cdc00e8b6a6dbb957b989875359a78cd5a59",
+          "RTS0": "5c0ce28a0559e933c8705d0025a4c21664e559f26a6ea401dfcadac24e2b2263",
+          "STAT": "3cf08df28d08ad384b08e29ff5ef88dc9e2d5164a3a67c07531319320f553e8c",
+          "HASH": "188f36ce261c6d233fb8d12579a26fa21752e34245802752009d0041f3385eb3",
+          "DXIL": "f75b736b305a4111727e7e1a847cbf3e2b06856b4f7c7675e57b8c6a7cc5d64c"
+        }
+      },
+      {
+        "shader": "ZstdGpuUpdateDispatchArgs.h",
+        "oldContainerSha256": "886f2c6eb566ed04409b2d2beda57ca8daba8462487b6e109f403c7cd388a0e4",
+        "newContainerSha256": "7a8d7521e94104026944674bb8bebe300949f4b37cdc9dac6445a1b78d875521",
+        "fullContainerEqual": false,
+        "differentChunks": [
+          "ILDN"
+        ],
+        "debugFilename": {
+          "old": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuUpdateDispatchArgs.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuupdatedispatchargs.pdb"
+          },
+          "new": {
+            "flags": 0,
+            "path": "C:\\code\\zg_campaign\\worktrees\\evaluation-e4fixed\\zstd\\x64\\Release\\\\Shaders\\ZstdGpuUpdateDispatchArgs.pdb",
+            "relative": "/zstd/x64/release//shaders/zstdgpuupdatedispatchargs.pdb"
+          }
+        },
+        "identicalChunkSha256": {
+          "SFI0": "af5570f5a1810b7af78caf4bc70a660f0df51e42baf91d4de5b2328de0e83dfc",
+          "ISG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "OSG1": "7b742c398b1a841a160d67298c4e11857acc1db71c3f90509722ca74733cb814",
+          "PSV0": "e23bd74030a0acf4e7ee5677e25fe21c191770adb52bb1b52b825fb93ea93916",
+          "RTS0": "b9c0d2fb2654687f3fd581fb44da371462ffbb6209af3b7d6108384059794304",
+          "STAT": "77a419098c4a35a42ad117cd010f842fb8203e638bde5c608c8afebe8ca61170",
+          "HASH": "79e1a0fee11ee3996e6b5b9a069b0aaad0006a8291716f06ee9cef8af20f2459",
+          "DXIL": "4ee638a7fdcc199b61116aaaa29760dece76551169e2755bc3b477b78051e631"
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "id": "cpu-replay-fix",
+  "base": "c4b372592b8da8f01a724d4159cc5348ec37bcad",
+  "commit": "477737183bc549e16fc21bdca0055f27ed247e7f",
+  "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e4",
+  "branch": "research/rx6900-e4",
+  "status": "Separate committed harness correction; not built or runtime-tested by Explorer.",
+  "inheritedFrom": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+  "changedPaths": [
+    "zstd\\zstdgpu_demo\\main.cpp"
+  ],
+  "sourcePoint": "zstd\\zstdgpu_demo\\main.cpp:567 inside zstdgpu_Test_DecompressLiterals, immediately after srt.inoutDecompressedLiterals is redirected.",
+  "diffStat": "1 file changed, 1 insertion(+)",
+  "rootCause": "a8572d7 added DWORD-coalesced stores to the fused literal decoder. GPU-readback CPU replay fills its SRT from gpuReadbackRes, then redirects the byte output to cpuRes.DecompressedLiterals without redirecting the new DWORD alias. The replay therefore splits output across two buffers. The second validator reads cpuRes.DecompressedLiterals using GPU block offsets, whose atomic allocation order need not match previous standalone CPU contents. PR156's replay decoder used only the redirected byte view.",
+  "aliasInvariantBefore": {
+    "byteOutput": "cpuRes.DecompressedLiterals",
+    "dwordOutput": "(uint32_t *)gpuReadbackRes.DecompressedLiterals",
+    "effect": "Head/tail bytes reach the intended CPU replay output, but aligned DWORD interiors reach the GPU-readback buffer instead."
+  },
+  "aliasInvariantAfter": {
+    "byteOutput": "cpuRes.DecompressedLiterals",
+    "dwordOutput": "(uint32_t *)cpuRes.DecompressedLiterals",
+    "effect": "Both typed views address the same CPU replay allocation, matching normal SRT binding semantics."
+  },
+  "correction": "zstdgpu_Srt_FillBindGroup_LiteralDwords(srt, cpuRes);",
+  "gpuAndPerfInvariant": "The added call is confined to the demo's simGpu CPU-replay branch. It changes only a local C++ SRT pointer. No GPU shader, resource layout, dispatch geometry, kernel binding, corpus, benchmark flag, timing, or pooling changes. Normal GPU throughput runs do not enter this replay path. The 1076-byte global scratch reduction and e4's 32-thread/16-stream geometry are unchanged.",
+  "e4Independence": "The optimization commit c4b372592b8da8f01a724d4159cc5348ec37bcad is preserved unchanged as this commit's direct parent. The bug exists on unmodified a8572d7 and is not caused by decoupling streams from threads. No other candidate branches or trees were modified.",
+  "independentBaselineApplication": {
+    "base": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+    "method": "Cherry-pick only 477737183bc549e16fc21bdca0055f27ed247e7f, not the e4 optimization commit.",
+    "file": "zstd\\zstdgpu_demo\\main.cpp",
+    "contextBefore": "srt.inoutDecompressedLiterals   = cpuRes.DecompressedLiterals;",
+    "insert": "zstdgpu_Srt_FillBindGroup_LiteralDwords(srt, cpuRes);",
+    "contextAfter": "const uint32_t htSlotCount = gpuReadbackRes.Counters->Blocks_CMP;",
+    "applicability": "The same surrounding statements and generated C++ bind-group helper exist on a8572d7, verified by source comparison. No dependency on the e4 streams-per-group constant.",
+    "runtimeVerification": "Reserved for evaluator's independently rebuilt immutable baseline/candidate arms."
+  },
+  "validation": "git diff --check clean; scope is exactly one added line. No builds, compilation, tests, remote operations, benchmark changes, or broadcasts."
+}

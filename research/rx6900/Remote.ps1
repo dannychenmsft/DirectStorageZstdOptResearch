@@ -124,6 +124,8 @@ $quoted = @($arguments | ForEach-Object {
 }) -join ' '
 $process = Start-Process -FilePath $exe -ArgumentList $quoted -WorkingDirectory $armPath -PassThru `
     -RedirectStandardOutput "$run\stdout.txt" -RedirectStandardError "$run\stderr.txt"
+# Windows PowerShell can discard the exit status unless the process handle is retained before waiting.
+$retainedHandle = $process.Handle
 $process.WaitForExit()
 $rc = $process.ExitCode
 if ($null -eq $rc) { throw 'Missing process exit code' }
@@ -136,7 +138,8 @@ if ($Action -eq 'Run') {
     if ($xmlFile.LastWriteTimeUtc -lt $started) { throw 'Stale gtest XML' }
     [xml]$xml = Get-Content $xmlFile.FullName -Raw
     $tests = [ordered]@{ tests = [int]$xml.testsuites.tests; failures = [int]$xml.testsuites.failures
-        disabled = [int]$xml.testsuites.disabled; errors = [int]$xml.testsuites.errors }
+        disabled = [int]$xml.testsuites.disabled; errors = [int]$xml.testsuites.errors
+        skipped = [int](($xml.testsuites.testsuite | Measure-Object skipped -Sum).Sum) }
     $expectedTests = if ($Kind -eq 'Correctness') { 2 } else { 1 }
     if ($tests.tests -ne $expectedTests -or $tests.failures -ne 0 -or $tests.errors -ne 0) { $rc = 1 }
 }

@@ -8,3 +8,12 @@ Reference worktree created; first build failed on missing NuGet package imports.
 Reuse the exact already-restored local dependency tree after this observed failure.
 Tooling is fail-closed and will be committed before long measurement.
 No performance or correctness conclusions yet.
+
+2026-09-19 Tooling smoke check
+Both matched Release arms built. Tooling commit 78d3533 pushed to origin.
+First reference correctness invocation wrote fresh XML: 2 scenario tests, no
+assertion failures, 99.006 seconds. Wrapper failed closed because Windows
+PowerShell Start-Process lost ExitCode after WaitForExit. Retain Handle before
+waiting; re-run under a new ID rather than retroactively fabricate an exit code.
+Corpus locked with SHA256 for 298 .zst and both manifests. Initial live GPU engine
+counter query succeeded and reported no engine >0.1%; no competing CI process.

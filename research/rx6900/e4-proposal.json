@@ -1,0 +1,94 @@
+{
+  "id": "e4",
+  "base": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+  "commit": "c4b372592b8da8f01a724d4159cc5348ec37bcad",
+  "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e4",
+  "branch": "research/rx6900-e4",
+  "status": "propose-only; awaiting coordinator intake",
+  "changedPaths": [
+    "zstd\\zstdgpu\\zstdgpu_structs.h",
+    "zstd\\zstdgpu\\zstdgpu.cpp",
+    "zstd\\zstdgpu\\zstdgpu_shaders.h",
+    "zstd\\zstdgpu_demo\\main.cpp"
+  ],
+  "hypothesis": "Keep the baseline 32-thread table build but reduce PC literal streams per group from 32 to 16. More independent groups for heavily reused Huffman tables may improve scheduling and divergent-tail load balance at large windows, despite increasing regeneration work.",
+  "mechanism": "Introduce kzstdgpu_StreamsPerGroup_DecompressLiterals, equal to 16 on PC and the existing threadgroup size on consoles. Use it for host prefix/group-count sizing, scalar decoder group offsets and tail bounds, and CPU-emulation group counts. Keep numthreads, table construction, work-item thread stride, Huffman math, and scalar DWORD output unchanged.",
+  "stage": "fused-huffman",
+  "class": "launch-geometry",
+  "expected": {
+    "performanceClaim": "None. This is an unbuilt and unmeasured scheduling hypothesis, not an occupancy or ISA conclusion.",
+    "possibleBenefit": "For N>16 streams sharing one table, ceil(N/16) independently schedulable groups replace ceil(N/32). A group's active decode set is capped at 16 streams, potentially reducing retention by a small number of long streams.",
+    "counterCost": "The same change can nearly double group-local table regenerations for heavily reused tables. PR156's 16-stream AMD density used a separately initialized persistent table, so matching density does not reproduce its construction cost.",
+    "metric": "Unchanged exact CI geometric mean of GB/s at rungs 64,128,192,256,384,512,768,1024; five sweeps per rung using the unchanged perf_manifest corpus and pooling.",
+    "requestedEvaluation": "Fast funnel: one full unchanged eight-rung CI ladder for this candidate, bracketed by fresh baseline controls. Screen only provisionally; reserve ABBA x3 and conclusive gates for promising finalists.",
+    "measurementOwner": "d9a9d2a0-609a-4b6a-afe6-fc61056adcb2"
+  },
+  "scope": {
+    "sourceRanges": {
+      "sharedGeometry": "zstd\\zstdgpu\\zstdgpu_structs.h:438-453",
+      "hostPrefixBinding": "zstd\\zstdgpu\\zstdgpu.cpp:2767-2771",
+      "scalarMapping": "zstd\\zstdgpu\\zstdgpu_shaders.h:2946-2954",
+      "cpuPrefix": "zstd\\zstdgpu_demo\\main.cpp:522-543",
+      "cpuReplayExplanation": "zstd\\zstdgpu_demo\\main.cpp:573-574"
+    },
+    "wiredSurfaces": [
+      "Host zstdgpu_SubmitStage2 passes the shared streams-per-group constant to ComputePrefixSum.",
+      "Unchanged Shaders\\ZstdGpuComputePrefixSum.hlsl:59-69 computes ceil(N/streamsPerGroup), inclusive per-table group ends, and total DecompressLiteralsGroups.",
+      "Unchanged Shaders\\ZstdGpuUpdateDispatchArgs.hlsl:100 feeds the total group count to the existing DecompressLiterals slot.",
+      "Unchanged Shaders\\ZstdGpuInitHuffmanTableAndDecompressLiterals.hlsl:35,42-45 launches 32 PC threads, preserves the uniform out-of-range guard, and passes tgSize=32 for construction and work distribution.",
+      "The scalar decoder multiplies local group index by the shared stream stride and limits its remainder to that stride, while the work-item thread stride stays tgSize.",
+      "Both CPU paths call zstdgpu_HufLitStreamCountToGroupCount: GPU-readback replay at main.cpp:576 and standalone CPU emulation at main.cpp:1003. The helper now uses the same shared stream stride.",
+      "CPU fused calls retain tgSize=1. The C++ FOR_WORK_ITEMS macro enumerates all items sequentially, so it now decodes every stream in the shared 16-stream group rather than requiring one stream per group."
+    ],
+    "unchanged": [
+      "Table generation and expansion algorithm; all 32 PC threads participate before decoding.",
+      "Huffman Get/Consume protocol and scalar DWORD head/interior/tail operations.",
+      "LDS layout, global resources, bindings, descriptors, SRT declarations, build files, and benchmark files.",
+      "Console GPU launch and stream geometry; Xbox One remains 64/64 and Scarlett remains 32/32.",
+      "Unrelated kernel threadgroup constants."
+    ],
+    "cacheIsolation": "The baseline fused entry calls only zstdgpu_DecompressHuffmanCompressedLiterals. StoreLdsCache has a definition but no call site in this worktree, confirmed by source search. e2 is not integrated. Any future pairing must pass the new streams-per-group constant to the cache helper instead of assuming streamsPerGroup=tgSize and independently recheck its active-lane and cache invariants.",
+    "portability": "All-PC experiment, not AMD-only. The shared fused shader has no added vendor-specific routing or compiled variant. No cross-GPU performance benefit is claimed."
+  },
+  "scratchInvariant": "The only new state is a compile-time constant. No resource declaration, allocation, capacity, descriptor, binding, or LDS layout changes. Tables remain ephemeral in the same 6456-byte LDS allocation per group, with no persistent or equivalent global table buffer. Per-table prefix arrays retain their old capacity and dispatch storage retains fixed slots. The full 1076-byte global scratch reduction per compressed block is therefore preserved.",
+  "correctnessArgument": {
+    "validation": "Source inspection and reasoned bounds/mapping invariants only. git diff --check was clean. No compilation, builds, tests, measurement, remote access, package operations, or delegation.",
+    "groupPartition": "Let S=16 on PC. A table with N streams owns G=ceil(N/S) groups. Group j owns offsets S*j through min(S*j+S-1,N-1). Each offset s has unique owner j=floor(s/S), local index s mod S. Since j<G implies S*j<N for a nonempty table, the remainder subtraction cannot underflow.",
+    "gpuLaneBounds": "All 32 threads finish the existing table build and group barriers. During decoding, the loop starts at threadId and has bound remain<=16 with increment tgSize=32. Thus only threads 0..remain-1 access streams, once each; threads 16..31 perform no decode work. No group barrier is introduced in the divergent decode phase.",
+    "oneAndFourStreams": "N=1 or N=4 still produces one group and respectively one or four decoding owners. Table construction still uses the baseline 32 PC threads.",
+    "multipleAndPartialGroups": "N=16 is one full group; N=17 is a full group and a one-stream tail; N=32 is two full groups; N=33 is two full groups and a one-stream tail. The same quotient/remainder argument covers all N with no duplicate or missing output.",
+    "treeless": "Full-tree stream boundaries and HufWIdToHufLitId are unchanged. Streams from following treeless blocks remain in their original inherited-table range up to the next full-tree start. Only its partition into groups changes.",
+    "emptySlots": "Unused table slots continue contributing zero groups. Existing prefix lookup skips zero-length intervals; a zero total produces no real decode groups. The entrypoint's group-uniform total-count guard stays before table barriers.",
+    "cpu": "The host and both CPU prefix callers share S. C++ FOR_WORK_ITEMS ignores GPU thread parameters and iterates local indices 0..remain-1 sequentially; the CPU still builds each table with tgSize=1, then processes every stream assigned to the group. This maintains the same group boundaries as the GPU without changing decoded values.",
+    "dispatchCapacity": "zstdgpu_EmitDispatch retains its existing one/two-command representation and computes dimensions from the new total. For B blocks whose streams share a table, N<=4*B and ceil(N/16)<=B; summing means the worst-case total group count remains bounded by compressed-block count, as with the baseline's one-table-per-block case. Prefix and indirect-buffer allocation bounds are unchanged.",
+    "decodeAndOutput": "The source edit stops at stream selection. Each stream retains its original input/output segments, one decoding owner, Huffman consumption order, and aligned DWORD/byte stores. Table contents and their final synchronization are unchanged."
+  },
+  "coverage": {
+    "independence": "Direct child of a8572d7792d186bf2977d9fac64ff3e701aa58d8, not a stack on any unaccepted candidate. e3 tree and commit are untouched.",
+    "e1": "Separate table-expansion hypothesis; coordinator reported rejected. No e1 expansion changes are included.",
+    "e2": "Separate cooperative output-cache hypothesis; no cache integration in e4. Pairing is a future independently evaluated candidate.",
+    "e3": "Opposite geometry direction: e3 increases build threads and stream density to 64/64. e4 keeps baseline 32 build threads and lowers only stream density to 16. e3's exploratory slower profile is not treated as a definitive paired-screen verdict.",
+    "newAxis": "Decoupled stream-group density at fixed table-build width.",
+    "policy": "One exact-CI ladder per candidate for the first screen; ABBA x3 reserved for finalists."
+  },
+  "risks": [
+    "Extra table regenerations and dispatch work may dominate any reduction in divergent-tail retention.",
+    "With 32 hardware threads but at most 16 decoding streams, full decode groups use at most half the threadgroup. More groups do not guarantee more resident groups or useful occupancy.",
+    "A fixed 6456-byte LDS allocation per group can constrain concurrent groups, so reducing stream density can lower useful work per resident group.",
+    "Tables with only one or four streams have unchanged group counts and no additional scheduling opportunity.",
+    "NVIDIA, Intel, and other AMD hardware may regress; successful RX 6900 XT measurement would not establish portability.",
+    "CPU emulation now groups streams like the GPU; the evaluator must exercise both CPU validation paths in addition to GPU correctness.",
+    "Future e2 pairing must not retain its streamsPerGroup=tgSize assumption."
+  ],
+  "geometry-before-after": {
+    "pcTableBuildThreads": [32, 32],
+    "pcStreamsPerGroup": [32, 16],
+    "pcLiteralWorkItemThreadStride": [32, 32],
+    "perTableGroupCount": ["ceil(N/32)", "ceil(N/16)"],
+    "cpuEmulationBuildThreads": [1, 1],
+    "cpuEmulationStreamsPerGroupPc": [1, 16],
+    "fusedLdsBytesPerGroup": [6456, 6456],
+    "globalScratchReductionBytesPerCompressedBlock": [1076, 1076],
+    "waveSize": ["driver-selected", "driver-selected"]
+  }
+}

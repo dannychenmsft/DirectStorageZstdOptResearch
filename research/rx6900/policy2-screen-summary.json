@@ -1,0 +1,310 @@
+{
+  "policyVersion": 2,
+  "mode": "screen-only",
+  "accepted": false,
+  "verdict": "provisional ranking only; confirmation required for any acceptance",
+  "baseline": "baseline",
+  "baseline_bracket_geomean": 8.411588741247131,
+  "control_drift_percent": 0.11850283877579137,
+  "control_drift_warning": false,
+  "candidates": [
+    {
+      "arm": "e2-3092b55",
+      "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d",
+      "geomean": 8.704175352447368,
+      "delta_percent": 3.4783751345986103,
+      "n": 1,
+      "stderr_log_ratio": null,
+      "z": null,
+      "accepted": false
+    },
+    {
+      "arm": "e3-80dc139",
+      "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d",
+      "geomean": 8.184968964348574,
+      "delta_percent": -2.694137622151005,
+      "n": 1,
+      "stderr_log_ratio": null,
+      "z": null,
+      "accepted": false
+    }
+  ],
+  "runs": [
+    {
+      "runId": "e3-vs-baseline-s1-p1-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9756,
+          "p50_us": 5524.1,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2771,
+          "p50_us": 6259.26,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8894,
+          "p50_us": 7176.6,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1891,
+          "p50_us": 8018.24,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.244,
+          "p50_us": 9689.98,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.8862,
+          "p50_us": 10993.68,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2937,
+          "p50_us": 13719.92,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.1779,
+          "p50_us": 16117.42,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.406609180778467,
+      "position": 0
+    },
+    {
+      "runId": "policy2-screen-p1-e2-3092b55",
+      "arm": "e2-3092b55",
+      "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "A64CACBD1FB405074FE641ED17FAB7AD1453D0BDAE6A59ED23CA0A8AA92B8ED9",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.932,
+          "p50_us": 5620.84,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2034,
+          "p50_us": 6348.06,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9181,
+          "p50_us": 7121.04,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.2933,
+          "p50_us": 7906.04,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.5858,
+          "p50_us": 9187.2,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 12.7821,
+          "p50_us": 10284.02,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 15.6848,
+          "p50_us": 12492.36,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 17.7358,
+          "p50_us": 14803.18,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.704175352447368,
+      "position": 1
+    },
+    {
+      "runId": "policy2-screen-p2-e3-80dc139",
+      "arm": "e3-80dc139",
+      "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "0100307EEFE2908C1C57D92D9E891C6F6D0FFFBA116D6236F3D43DBDFD43A154",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9784,
+          "p50_us": 5524.42,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2703,
+          "p50_us": 6261.86,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.8835,
+          "p50_us": 7168.42,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.1694,
+          "p50_us": 8028.24,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.0022,
+          "p50_us": 9870.54,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.5545,
+          "p50_us": 11281.78,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 13.3441,
+          "p50_us": 14832.2,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 14.7973,
+          "p50_us": 17702.38,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.184968964348574,
+      "position": 2
+    },
+    {
+      "runId": "policy2-screen-p3-baseline",
+      "arm": "baseline",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "selectedListSha256": "df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53",
+      "files": 32,
+      "rungs": [
+        {
+          "rung": 64,
+          "gbps": 2.9784,
+          "p50_us": 5532.98,
+          "frames": 14643,
+          "pooled_batches": 228
+        },
+        {
+          "rung": 128,
+          "gbps": 5.2789,
+          "p50_us": 6262.98,
+          "frames": 14643,
+          "pooled_batches": 114
+        },
+        {
+          "rung": 192,
+          "gbps": 6.9051,
+          "p50_us": 7159.24,
+          "frames": 14643,
+          "pooled_batches": 76
+        },
+        {
+          "rung": 256,
+          "gbps": 8.2054,
+          "p50_us": 8010.68,
+          "frames": 14643,
+          "pooled_batches": 57
+        },
+        {
+          "rung": 384,
+          "gbps": 10.2714,
+          "p50_us": 9671.64,
+          "frames": 14643,
+          "pooled_batches": 38
+        },
+        {
+          "rung": 512,
+          "gbps": 11.9272,
+          "p50_us": 10994.02,
+          "frames": 14643,
+          "pooled_batches": 28
+        },
+        {
+          "rung": 768,
+          "gbps": 14.2476,
+          "p50_us": 13742.56,
+          "frames": 14643,
+          "pooled_batches": 19
+        },
+        {
+          "rung": 1024,
+          "gbps": 16.1948,
+          "p50_us": 16143.44,
+          "frames": 14643,
+          "pooled_batches": 14
+        }
+      ],
+      "geomean": 8.416571251302477,
+      "position": 3
+    }
+  ]
+}

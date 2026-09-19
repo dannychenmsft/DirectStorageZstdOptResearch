@@ -94,3 +94,14 @@ statistics(accepted=false,no Z),11/11 tests including screen-cannot-accept.
 e2 commit3092b55690dfc613a7681a3207a5515c936e0f6d authorized by policy board;
 isolated Release build complete. New packages junction follows observed missing
 dependency probe; no source or benchmark changes. Next correctness then screen.
+
+2026-09-19 First policy2 screen complete
+e2 full ExternalMemory+Seq:2/2,rc0,0 skips; no debug/profile run yet.
+Exact-CI bracketbaselineGM8.411588741;control drift+0.118502839%.
+e2GM8.704175352,+3.478375135%:PROMISING SCREEN ONLY,not accepted.
+e3GM8.184968964,-2.694137622%:DEPRIORITIZE,do not repeat obvious loser.
+Each candidate hasone full8rung observation,not a statistical Z sample.
+Fresh reference parity is NOT established by comparing e2 to old reference scores.
+Updated coordinator board now authorizes e4c4b372592b8da8f01a724d4159cc5348ec37bcad
+atfixed32 buildthreads/16 streams,independent of other candidates. Screen next
+using just-completed trailingbaseline asleadingcontrol,thenone newclosingbaseline.

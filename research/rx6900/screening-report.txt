@@ -107,3 +107,13 @@ RunIDs: eN-correctness-01,e1/e3-debug-01,e1-vs-baseline-s*-p*-<arm>,
 policy2-screen-p1-e2-3092b55,policy2-screen-p2-e3-80dc139,
 policy2-screen-p3-baseline,policy2-e4-p1-e4-c4b3725,policy2-e4-p2-baseline.
 All11 evaluator tests pass; no managed remote processes remained after this batch.
+
+Overhead diagnostic (no extra GPU runs)
+Measure-Overhead.ps1 verified300files,total2725285639bytes,three times.
+Mean enumeration+hash+comparison2.9630s versus~81.88s harness wall and~13.86s
+between-harness orchestration. Verification contributes3.62% of harness wall,
+~3.10% of complete start-to-start interval; it does not dominate.
+Full SHA256 checking remains enabled. Strong immutable-corpus caching is deferred,
+not replaced by weaker timestamp/size-only checks. This diagnostic does not affect
+GPU measurements or justify altering the exact CI workload.
+One durable concise result table is available in candidate-results.csv.

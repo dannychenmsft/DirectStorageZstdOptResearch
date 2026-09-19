@@ -1,0 +1,28 @@
+{
+    "utc":  "2026-09-19T21:19:08.4138528Z",
+    "action":  "verification-overhead-diagnostic",
+    "acceptanceData":  false,
+    "measurements":  [
+                         {
+                             "iteration":  1,
+                             "fileCount":  300,
+                             "totalBytes":  2725285639,
+                             "enumerationMs":  25.8808,
+                             "sha256AndComparisonMs":  3004.6114000000002
+                         },
+                         {
+                             "iteration":  2,
+                             "fileCount":  300,
+                             "totalBytes":  2725285639,
+                             "enumerationMs":  15.6346,
+                             "sha256AndComparisonMs":  2918.6947
+                         },
+                         {
+                             "iteration":  3,
+                             "fileCount":  300,
+                             "totalBytes":  2725285639,
+                             "enumerationMs":  15.4748,
+                             "sha256AndComparisonMs":  2908.7755
+                         }
+                     ]
+}

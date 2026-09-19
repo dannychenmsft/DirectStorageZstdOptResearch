@@ -119,3 +119,16 @@ Finalevidence in screening-report.txt,policy2-screen-summary.json,
 policy2-e4-screen-summary.json,and e1-vs-baseline-summary.json.
 11/11 evaluator tests pass; no active managed remote processes; coordinator product
 tree remains exactlya8572d7. Ledger UTCs normalized to closing-control completion.
+
+2026-09-19 Screening-phase overhead check (no additional GPU runs)
+Three diagnostic full hash passes verified all300files(298zst+2manifests),
+2725285639bytes. Enumeration+SHA256+comparison averages2.9630s.
+Recent exact-CI harness walltimes81.6743,82.1790,81.7938s; inter-harness
+orchestration gaps13.8342,13.8872s. Corpus verification is3.62% of harness wall,
+about3.10% of the full start-to-start interval:NOT the dominant bottleneck.
+Retained fail-closed full SHA256 verification rather than introduce a metadata-only
+cache that could miss same-size/timestamp-preserving content changes. Strong cached
+verification is deferred; no weakened identity check or benchmark semantics change.
+The major latency improvement is already policy2'sone candidate ladder instead of
+six candidate plus six control ladders for every reject. Confirmation remains only
+for promising finalists. Durable compact table:candidate-results.csv.

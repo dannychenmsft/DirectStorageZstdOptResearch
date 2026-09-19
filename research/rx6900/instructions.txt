@@ -1,0 +1,61 @@
+RX6900 singleton evaluator, campaign rx6900-20260919-69e45d0f
+
+Only the evaluator may call RdpProxy or build/measure. Every proxy call explicitly
+selects DSTESTPC2. No services, power settings, other processes, or CI files change.
+The reference 60fb499 and original a8572d7 arms are immutable. Product edits and
+promotion belong to the coordinator. Preserve the 1076-byte scratch removal.
+
+Local PowerShell entry points (run from repository root):
+  .\research\rx6900\Build-Arm.ps1 -SourceRoot C:\code\GH_DirectStorage3 -Arm baseline
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Inventory
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Deploy -Arm baseline
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Run -Arm baseline -Kind Correctness -RunId baseline-correctness-01
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Run -Arm baseline -Kind Debug -RunId baseline-debug-01
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Pair -Arm baseline -OtherArm reference -RunId bootstrap -Sessions 3
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Profile -Arm baseline -RunId baseline-profile-01
+
+Build-Arm always solution-target Rebuilds Release x64 (including shader headers),
+fails on uncommitted product sources, and checks fresh executable timestamps.
+NuGet/googletest must already exist. Never fall back to stale binaries. /Zi gives
+shader debug symbols, not disabled optimization: Release uses /O3 and NDEBUG.
+The arm contains all output DLLs plus app-local Release VC runtime. SHA256s cover
+deployed files, generated shader headers, build log and source commit.
+
+Inventory records all 298 .zst SHA256s plus both manifest SHA256s; subsequent calls
+fail on any content change. Every run rechecks binaries and corpus. Health samples
+live CPU deltas, GPU engine utilization, and active CI/test processes. CPU >20% or
+a known competing test/build process blocks a run. Missing GPU counters are recorded,
+not silently ignored. No environmental change is automatically authorized.
+
+Correctness uses unchanged gtest ExternalMemory and ExternalMemorySeq over the
+full corpus, including manifest-declared adversarial rejection. Debug adds unchanged
+D3D12DebugLayerSeq. Counts are gtest scenario units (2 or 1), NOT frame decodes.
+Case-sensitive "error: " denotes assertions; uppercase corruption messages may be
+expected. Exit code, fresh XML, and raw output hashes are required. Record skips.
+
+Perf uses unchanged ZstdGpuPerfTests.Throughput. All eight 64/128/192/256/384/
+512/768/1024 rungs, selected sorted manifest corpus, five sweeps, prf-lvl=0,
+seq-cnt, NO ext-mem. Total pooled median bandwidth per rung is authoritative.
+All eight rungs must exist and be finite/positive; no partial geomeans.
+No extra warmup, data trimming, run-count overrides, or perf benchmark edits.
+Profiling is separate prf-lvl=2 and never acceptance data.
+
+Three independent ABBA sessions give six full ladder observations per arm.
+Inference uses each session's mean paired log-ratio; rungs/sweeps are not treated
+as independent replicates. Acceptance requires >=0.3% AND Z>=3, at least three
+sessions, and <=5% full-ladder spread per arm. Otherwise repeat or reject; veto
+is permitted but force-accept is not. Report 3-sigma interval, every rung and raw
+observations. Also require fresh reference parity; baseline-relative gain alone
+does not establish the PR156 recovery goal.
+
+Artifacts: C:\code\zg_campaign\rx6900-20260919-69e45d0f (local)
+Remote: C:\dannych\rdp_proxy\workspace\rx6900-20260919-69e45d0f
+Use unique arm/run IDs; do not overwrite completed artifacts. Raw stdout/stderr,
+gtest XML, list files, demo logs, invocation metadata and health snapshots are pulled
+even on nonzero exit. RdpProxy's enclosing 14400s timeout owns the remote process
+tree. All local callers remain attached; no detached background processes.
+
+Candidate intake: committed SHA, isolated SourceRoot (evaluation-* worktree), arm ID,
+hypothesis/mechanism, touched paths, scratch-invariant explanation, proposer.
+Build, deploy/hash-check, correctness, fresh paired incumbent comparison, then fresh
+PR156 comparison for finalists. Coordinator alone cherry-picks accepted product code.

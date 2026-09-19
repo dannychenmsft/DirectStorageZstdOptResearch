@@ -1,0 +1,10 @@
+{
+  "phase": "bootstrap-tooling",
+  "baseline": "a8572d7",
+  "reference": "60fb499",
+  "best": "a8572d7",
+  "accepts": 0,
+  "rejects": 0,
+  "ready": false,
+  "measurement": null
+}

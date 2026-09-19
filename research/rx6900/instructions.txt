@@ -65,3 +65,15 @@ PR156 comparison for finalists. Coordinator alone cherry-picks accepted product 
 Remote Perf/Profile refuses to start without a matching successful full-corpus
 correctness result for the exact arm manifest. Deploy refuses an existing arm ID;
 verification compares remote arm.json SHA256 to the local immutable manifest.
+
+PolicyVersion2 update (2026-09-19, coordinator/user-requested faster funnel):
+Screen each candidate once using the unchanged full8rung/5sweep CI metric, bracketed
+by baseline controls. Existing identical-binary correctness gates may be reused.
+Example:
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Screen -Arm baseline -ScreenArms e2-3092b55,e3-80dc139 -RunId fast-screen -LeadingRunId e3-vs-baseline-s1-p1-baseline
+Screen results are provisional rankings/deprioritizations ONLY: no Z, no inferred
+statistical acceptance. Reuse completed e1 ABBA observations. Do not profile every
+candidate or repeat obvious losers. Reserve Pair(3 sessions) and all conclusive
+margin/Z/full-correctness gates for promising finalists versus incumbent and PR156.
+Remote pause-before-perf.json, if present, stops new Run Perf/Profile calls at
+complete-ladder boundaries; do not resume an obsolete campaign after a policy pause.

@@ -1,11 +1,13 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Inventory', 'Health', 'Deploy', 'Verify', 'Run', 'Profile', 'Pair')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Inventory', 'Health', 'Deploy', 'Verify', 'Run', 'Profile', 'Pair', 'Screen')][string]$Action,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$Arm,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$OtherArm,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$RunId,
     [ValidateSet('Perf', 'Correctness', 'Debug')][string]$Kind = 'Perf',
     [ValidateRange(1, 20)][int]$Sessions = 3,
+    [string[]]$ScreenArms,
+    [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$LeadingRunId,
     [ValidateSet(64, 128, 192, 256, 384, 512, 768, 1024)][int]$ProfileRung = 256,
     [string]$ArtifactRoot = 'C:\code\zg_campaign\rx6900-20260919-69e45d0f',
     [string]$Proxy = 'C:\tools\rdp_proxy\RdpProxy.Cli.exe'
@@ -32,7 +34,10 @@ function Remote([string]$Operation, [string]$SelectedArm, [string]$Id, [string]$
     $rc = $LASTEXITCODE
     if ($Id) {
         New-Item -ItemType Directory -Force "$ArtifactRoot\results" | Out-Null
-        Proxy @('pull', "$remote\results\$Id", "$ArtifactRoot\results\$Id")
+        & $Proxy 'pull' "$remote\results\$Id" "$ArtifactRoot\results\$Id" '--dvc=DSTESTPC2'
+        $pullRc = $LASTEXITCODE
+        if ($pullRc -ne 0 -and $rc -eq 0) { throw "Run succeeded but artifact pull failed ($pullRc): $Id" }
+        if ($pullRc -ne 0) { Write-Warning "No run artifacts available ($pullRc); preserving original remote error $rc." }
     }
     if ($rc -ne 0) { throw "Remote $Operation failed ($rc); raw artifacts retained for $Id" }
 }
@@ -47,6 +52,29 @@ if ($Action -eq 'Inventory') {
     Remote 'CheckDeploy' $Arm '' ''
     Proxy @('push', "$ArtifactRoot\arms\$Arm", "$remote\arms\$Arm")
     Remote 'Verify' $Arm '' ''
+} elseif ($Action -eq 'Screen') {
+    if (-not $Arm -or -not $RunId -or -not $ScreenArms.Count) { throw 'Arm, RunId, and ScreenArms required' }
+    foreach ($item in $ScreenArms) {
+        if ($item -notmatch '^[a-zA-Z0-9_-]+$' -or $item -eq $Arm) { throw "Invalid screening candidate $item" }
+    }
+    if (@($ScreenArms | Select-Object -Unique).Count -ne $ScreenArms.Count) { throw 'Duplicate screening arms' }
+    if (-not $LeadingRunId) {
+        $LeadingRunId = "$RunId-p0-$Arm"
+        Remote 'Run' $Arm $LeadingRunId 'Perf'
+    }
+    $schedule = @([ordered]@{ position = 0; arm = $Arm; runId = $LeadingRunId })
+    $position = 0
+    foreach ($item in @($ScreenArms) + @($Arm)) {
+        ++$position
+        $id = "$RunId-p$position-$item"
+        Remote 'Run' $item $id 'Perf'
+        $schedule += [ordered]@{ position = $position; arm = $item; runId = $id }
+        $schedule | ConvertTo-Json -Depth 5 | Set-Content "$ArtifactRoot\results\$RunId-screen-schedule.json" -Encoding UTF8
+    }
+    & python "$PSScriptRoot\analyze.py" --root "$ArtifactRoot\results" `
+        --schedule "$ArtifactRoot\results\$RunId-screen-schedule.json" --baseline $Arm --screen `
+        --output "$ArtifactRoot\results\$RunId-screen-summary.json"
+    if ($LASTEXITCODE -ne 0) { throw 'Screen validation failed' }
 } elseif ($Action -eq 'Pair') {
     if (-not $Arm -or -not $OtherArm -or -not $RunId -or $Arm -eq $OtherArm) { throw 'Distinct arms and RunId required' }
     $schedule = @()

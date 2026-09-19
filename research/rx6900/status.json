@@ -1,5 +1,5 @@
 {
-  "phase": "measuring-e3-versus-baseline",
+  "phase": "policy2-e2-correctness-then-bracketed-screen",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
@@ -18,10 +18,12 @@
   "device": "DSTESTPC2",
   "campaign_board_snapshot": "campaign-board.json",
   "in_flight_explorers": ["e1", "e2", "e3"],
-  "candidate_queue_state": "authorized e1 then e3; independent branches from a8572d7; no promotion",
+  "policyVersion": 2,
+  "candidate_queue_state": "reuse completed e1; screen baseline/e2/e3/baseline once; repeat only promising finalists",
   "candidate_queue": [
     {"id": "e1", "commit": "54604812649247846f4bb3f38ebc56d30c161997", "phase": "rejected", "delta_percent": -0.11104700776003841, "z": -7.6928834374108614},
-    {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "full correctness and debug passed; paired timing"}
+    {"id": "e2", "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d", "phase": "Release build complete; correctness gate"},
+    {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "full correctness/debug reusable; one screening ladder queued"}
   ],
   "goal_met": false
 }

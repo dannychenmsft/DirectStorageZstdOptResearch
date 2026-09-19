@@ -81,3 +81,16 @@ Both have6456B declared LDS,6 barrier sites; these are not ISA/occupancy results
 e3-correctness-01:2/2 scenarios,rc0,0 skips; e3-debug-01:1/1,rc0,0 skips.
 e3 one-off R1024 profile:table+literals5018.94us,Stage2 17370.16us.
 Profile is exploratory,not acceptance. Begin fresh baseline/e3 fullABBAx3.
+
+2026-09-19 Coordinator/user policyVersion2 adopted
+Coordinator paused before the first e3 ladder. Existing full baseline ladder
+e3-vs-baseline-s1-p1-baseline is retained as leading screening control; the
+incomplete ABBA schedule is INVALID for paired inference,not scored.
+Latest authoritative campaign.json requests faster funnel:reuse e1 results,
+one unchanged full8rung/5sweep ladder for e2 thene3,thenbaseline. No reduced-rung
+metric and no statistical acceptance from screen. Repeat only promising finalists.
+Preserved coordinator's Remote.ps1 pause hook. Added explicit screen-only
+statistics(accepted=false,no Z),11/11 tests including screen-cannot-accept.
+e2 commit3092b55690dfc613a7681a3207a5515c936e0f6d authorized by policy board;
+isolated Release build complete. New packages junction follows observed missing
+dependency probe; no source or benchmark changes. Next correctness then screen.

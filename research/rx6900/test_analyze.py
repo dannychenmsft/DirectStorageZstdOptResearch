@@ -95,6 +95,21 @@ class AnalysisTests(unittest.TestCase):
         self.assertLess(summary["z"], 3)
         self.assertFalse(summary["accepted"])
 
+    def test_screen_never_accepts(self):
+        schedule = [{"position": pos, "arm": arm, "runId": f"{pos}-{arm}"}
+                    for pos, arm in enumerate(("A", "B", "C", "A"))]
+
+        def fake_run(path):
+            arm = path.name.split("-")[1]
+            return {"runId": path.name, "arm": arm, "commit": arm, "geomean": 10 if arm == "A" else 20,
+                    "corpusLockSha256": "corpus", "selectedListSha256": "list", "armManifestSha256": arm}
+
+        with patch.object(analyze, "parse_run", side_effect=fake_run):
+            summary = analyze.summarize_screen("synthetic", schedule, "A")
+        self.assertFalse(summary["accepted"])
+        self.assertEqual(summary["candidates"][0]["delta_percent"], 100)
+        self.assertFalse(summary["candidates"][0]["accepted"])
+        self.assertIsNone(summary["candidates"][0]["z"])
 
 if __name__ == "__main__":
     unittest.main()

@@ -110,6 +110,36 @@ def summarize(root, schedule, baseline, candidate, minimum_margin=0.003):
             "inference_unit": "one complete ABBA session (not rungs or GPU submissions)", "runs": records}
 
 
+def summarize_screen(root, schedule, baseline):
+    records = []
+    for entry in schedule:
+        run = parse_run(Path(root) / entry["runId"])
+        assert run["arm"] == entry["arm"]
+        run["position"] = entry["position"]
+        records.append(run)
+    assert [row["position"] for row in records] == list(range(len(records)))
+    assert len(records) >= 3 and records[0]["arm"] == baseline and records[-1]["arm"] == baseline
+    assert records[0]["commit"] == records[-1]["commit"]
+    assert records[0]["armManifestSha256"] == records[-1]["armManifestSha256"]
+    assert len({row["corpusLockSha256"] for row in records}) == 1
+    assert len({row["selectedListSha256"] for row in records}) == 1
+    candidates = records[1:-1]
+    assert all(row["arm"] != baseline for row in candidates)
+    assert len({row["arm"] for row in candidates}) == len(candidates)
+    control = math.sqrt(records[0]["geomean"] * records[-1]["geomean"])
+    drift = 100 * (records[-1]["geomean"] / records[0]["geomean"] - 1)
+    return {
+        "policyVersion": 2, "mode": "screen-only", "accepted": False,
+        "verdict": "provisional ranking only; confirmation required for any acceptance",
+        "baseline": baseline, "baseline_bracket_geomean": control,
+        "control_drift_percent": drift, "control_drift_warning": abs(drift) > .5,
+        "candidates": [{"arm": row["arm"], "commit": row["commit"], "geomean": row["geomean"],
+                        "delta_percent": 100 * (row["geomean"] / control - 1),
+                        "n": 1, "stderr_log_ratio": None, "z": None, "accepted": False}
+                       for row in candidates],
+        "runs": records}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
@@ -117,8 +147,12 @@ if __name__ == "__main__":
     parser.add_argument("--baseline")
     parser.add_argument("--candidate")
     parser.add_argument("--output")
+    parser.add_argument("--screen", action="store_true")
     args = parser.parse_args()
-    value = summarize(args.root, load(args.schedule), args.baseline, args.candidate) if args.schedule else parse_run(args.root)
+    if args.screen:
+        value = summarize_screen(args.root, load(args.schedule), args.baseline)
+    else:
+        value = summarize(args.root, load(args.schedule), args.baseline, args.candidate) if args.schedule else parse_run(args.root)
     rendered = json.dumps(value, indent=2, allow_nan=False)
     if args.output:
         output = Path(args.output)

@@ -1,0 +1,130 @@
+{
+  "id": "e2",
+  "base": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+  "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d",
+  "branch": "research/rx6900-e2",
+  "worktree": "C:\\code\\zg_campaign\\worktrees\\e2",
+  "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e2",
+  "status": "proposed-only; awaiting coordinator intake before singleton evaluation",
+  "hypothesis": "Cooperative contiguous literal stores can recover some fused-kernel output inefficiency without increasing allocated LDS or restoring persistent Huffman scratch.",
+  "mechanism": "Reuse the existing StoreLdsCache helper with 16 dwords per stream and unchanged 32 streams per group. Overlay 512 dwords of dead CodeAndSymbol/PreInit storage after the existing table-expansion group barrier. Adapt the cache swizzle to a 16-dword tile and explicitly synchronize cache production and reuse. Enable only when the whole TG fits in one hardware wave and the cache fits the dead region; otherwise retain the scalar path.",
+  "stage": "literal-output",
+  "class": "cooperative-store-coalescing",
+  "expected": {
+    "qualitative": "Replace distant per-lane output stores with up to 16 adjacent dword stores per wave instruction, with no change to dispatch geometry or allocated LDS.",
+    "performanceClaim": "None; benefit versus synchronization, LDS traffic, and wave-loop overhead is unmeasured.",
+    "measurementOwner": "d9a9d2a0-609a-4b6a-afe6-fc61056adcb2",
+    "requestedEvaluation": "Unchanged corpus and exact8 rungs 64,128,192,256,384,512,768,1024; five full sweeps and paired immutable controls."
+  },
+  "scope": {
+    "changedFiles": [
+      "zstd\\zstdgpu\\zstdgpu_shaders.h"
+    ],
+    "unchanged": [
+      "Huffman table expansion algorithm",
+      "Host prefix/group-count calculation and resources",
+      "Threadgroup and streams-per-group geometry",
+      "HLSL entrypoint allocation",
+      "Build files, benchmarks, and perf_manifest corpus",
+      "Persistent/global Huffman table scratch elimination"
+    ]
+  },
+  "sourceRanges": {
+    "file": "zstd\\zstdgpu\\zstdgpu_shaders.h",
+    "cacheHelperForwardDeclaration": "2745-2760",
+    "unchangedLdsLayout": "2829-2835",
+    "expansionBarrierAndFusedCacheWiring": "2919-2950",
+    "helperPreconditionsAndStreamInitialization": "3089-3137",
+    "guardedHeadFetch": "3143-3169",
+    "boundedSwizzleAndCacheProducer": "3171-3220",
+    "cooperativeFlushAndReuseBarrier": "3222-3242",
+    "guardedTail": "3244-3275"
+  },
+  "correctnessArgument": {
+    "nature": "Static source reasoning only; no compilation, tests, simulation, or measurement performed.",
+    "lifetime": "PreInit is dead when preprocessing returns. CodeAndSymbol is read until table expansion ends. The existing group barrier at line 2919 completes all expansion reads and all Huffman-table writes before any cache producer executes. Only CodeAndSymbol plus the first 256 dwords of PreInit are overwritten; the live Huffman table and RankIndex are untouched.",
+    "cacheBounds": [
+      "The current TG has T=32 streams and C=16 dwords per stream. The uniform dispatch guard checks T*C <= 256+322=578 available dwords.",
+      "For a producer t in [0,31], each batch contains n in [0,16] dwords and its logical d satisfies 0<=d<n. The mask is min(32,C)-1=15. Therefore (d & ~15)+((d+t)&15) equals ((d+t)&15), lies in [0,15], and total address 16*t+((d+t)&15) lies in [0,511].",
+      "Different producers have disjoint 16-dword rows. Within a row, addition modulo 16 is bijective, so distinct logical dwords cannot overwrite one another.",
+      "The consumer uses the same swizzle for stream i and logical d. Its loop has d<n, where n is the producing lane's batch count. Every loaded slot was written in this iteration, even for a partial batch; unwritten rotated slots are never read.",
+      "The generalized helper requires positive power-of-two C. For C<=32 the whole row is one C-wide tile; for larger power-of-two C it comprises complete 32-wide tiles. The swizzle stays within the originating tile and therefore within the stream row. The new call always passes 16."
+    ],
+    "activeLanesAndTermination": [
+      "The call is reached by every thread after a group-wide expansion barrier. Both selection predicates depend only on uniform TG size, hardware wave width, and constants.",
+      "When the call is enabled, tgSize<=WaveGetLaneCount ensures exactly one hardware wave covers the entire TG. Consequently WaveActiveAnyTrue is a TG-uniform continuation predicate and both group barriers are reached by every thread on every iteration.",
+      "GroupMemoryBarrierWithGroupSync after population makes every cross-lane cache read observe the current batch. The second group barrier completes every cache read before any producer overwrites its row for the next batch.",
+      "For a partial final group, only threadId<thisGroupLiteralRemain reads LitRefs. Remaining threads keep all byte/dword bounds zero, perform no stream initialization or decode, but still participate in barriers, votes, and cooperative stores for valid producers.",
+      "The flush only broadcasts source lanes i<thisGroupLiteralRemain. These are real, participating TG lanes, including lanes whose stream has no remaining batch. No WaveReadLaneAt selects a nonexistent tail lane.",
+      "A finished producer stays in the uniform loop while other streams remain, contributes a zero batch count, and is never decoded again. Once every producer is exhausted the common vote terminates the loop.",
+      "Even when every stream has zero interior dwords, the initial do-iteration performs only empty loops and both uniform barriers before terminating."
+    ],
+    "zeroSizeAndFetchGuards": [
+      "A present zero-size stream is not initialized. Its byte begin, aligned begin, aligned end, and byte end all equal the destination offset. Its dword begin and end are equal, including at unaligned offsets. Head, interior, and tail predicates are all false.",
+      "Absent lanes have all bounds zero, so the same reasoning prevents any access to their uninitialized HuffmanStream.",
+      "The existing PR156 head ConditionalFetch remains inside byteAlignedBeg<dwordAlignedBeg. Every head fetch is dominated by a nonempty stream's initialization.",
+      "Interior GetFromFetched and ConditionalFetch calls occur only inside a positive interior-batch loop. Tail calls occur only when dwordAlignedEnd<byteAlignedEnd. Both imply a nonempty initialized stream.",
+      "No unconditional HuffmanStream fetch was introduced. Existing fetch cadence remains: at most three head symbols before fetch, four symbols per interior dword with the existing pipelined fetch, and at most three tail symbols."
+    ],
+    "outputCoverage": "The existing clamped alignment arithmetic partitions each nonempty destination into head bytes, complete aligned dwords, and tail bytes without overlap. Each full dword is decoded in the same stream order and packed in the same byte order as before. Cooperative flush changes only the lane issuing its store, not its value or destination. Streams' destination intervals remain disjoint. No UAV memory barrier is required for cache reuse because only LDS producer/consumer accesses communicate between lanes.",
+    "hostConsistency": "The helper receives streamsPerGroup=tgSize, preserving thisGroupLiteralStart=(groupId-htGroupStart)*tgSize and the existing prefix/group-count convention."
+  },
+  "platformImplications": {
+    "RX6900XT": "The intended TG32 wave32 path uses the cache. A wave64 execution of the same TG32 also satisfies the single-wave guard and cooperates using min(wave width,TG size)=32 lanes.",
+    "smallerWaves": "Wave widths smaller than TG size use the unchanged scalar implementation, avoiding mismatched group barriers in independently terminating waves.",
+    "largerThreadgroups": "A TG64 with 16 dwords per stream requires 1024 dwords and fails the 578-dword capacity guard, retaining the scalar path. No geometry change is included.",
+    "Cpp": "The fused cache call is preprocessor-disabled outside __hlsl_dx_compiler, preserving the existing sequential FOR_WORK_ITEMS CPU path. The helper uses the already-defined C++ group-barrier stub and existing macros. Its forward declaration precedes the call; its body remains after the Huffman sample helper definition.",
+    "coalesceDisabled": "ZSTDGPU_COALESCE_LITERAL_STORES=0 preserves the existing scalar/byte-store selection.",
+    "crossGpuPerformance": "No cross-GPU benefit is claimed; every device requires evaluation."
+  },
+  "risks": [
+    "Two explicit group barriers per batch can cost more than improved store coalescing saves, especially with short or imbalanced streams.",
+    "The compact 16-dword rows produce two-way LDS bank conflicts for simultaneous producers separated by 16 lanes. This intentionally trades potential bank conflicts and half-wave 16-dword flushes for zero additional LDS allocation.",
+    "The cooperative flush serially visits each stream, adding wave broadcasts and loop overhead.",
+    "Register pressure, DXC resource handling, generated ISA, and runtime behavior are unverified.",
+    "The helper now explicitly requires a single-wave TG; the new guarded fused call is its only call site in this candidate.",
+    "Combining with e1 requires rechecking overlay lifetime and layout; combining with e3 may select the scalar fallback unless the new geometry still satisfies the guards."
+  ],
+  "LDS-before-after": {
+    "unit": "bytes",
+    "before": 6456,
+    "after": 6456,
+    "delta": 0,
+    "declaredDwordsBefore": 1614,
+    "declaredDwordsAfter": 1614,
+    "baselineComponentsDwords": {
+      "CodeAndSymbol": 256,
+      "PreInit": 322,
+      "RankIndex": 12,
+      "HuffmanTable": 1024
+    },
+    "preInitArithmetic": "256 Bits + 40 BitsMask + 12 RankCount + 12 RankCountPrefix + 1 WeightSum + 1 BitsMax = 322 dwords",
+    "cacheLogicalBytes": 2048,
+    "cacheDwordRangeInclusive": [0, 511],
+    "deadOverlayAvailableDwordRangeInclusive": [0, 577],
+    "rankIndexDwordRangeInclusive": [578, 589],
+    "liveHuffmanTableDwordRangeInclusive": [590, 1613],
+    "newPersistentScratchBytes": 0,
+    "eliminatedGlobalScratchBytesPerCompressedBlockStillEliminated": 1076,
+    "allocationNote": "Source-declared LDS is unchanged. Hardware/compiler allocation granularity has not been measured."
+  },
+  "activities": {
+    "performed": [
+      "Read shared campaign knowledge",
+      "Inspected source, LDS macros, stream-fetch semantics, and wave assumptions",
+      "Edited only the permitted shader header",
+      "Inspected the source diff and git diff --check output",
+      "Created one candidate commit with requested trailers",
+      "Confirmed clean candidate worktree after commit"
+    ],
+    "notPerformed": [
+      "Builds or compiles",
+      "Tests or simulations",
+      "Measurements",
+      "Remote calls or pushes",
+      "Package restores",
+      "Subagents",
+      "Edits to main or other worktrees"
+    ]
+  }
+}

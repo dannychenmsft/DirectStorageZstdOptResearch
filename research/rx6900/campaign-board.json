@@ -8,10 +8,27 @@
   "rungs": [64, 128, 192, 256, 384, 512, 768, 1024],
   "sweepsPerRung": 5,
   "metric": "exp(mean(log(bandwidth_gbps))) across all eight throughput rungs",
-  "status": "Establishing reproducible controls; no measured candidate results yet",
+  "status": "User requested faster evaluation: screen rapidly, repeat only promising finalists",
+  "policyVersion": 2,
+  "policyUpdatedUtc": "2026-09-19T20:48:49Z",
+  "policyOverridesEarlierAgentMessages": true,
+  "evaluationFunnel": {
+    "screen": "Reuse completed e1 observations; bracket one full exact-CI ladder per remaining candidate with fresh baseline controls",
+    "nextOrder": ["baseline", "e2", "e3", "baseline"],
+    "screenMeaning": "Provisional ranking/deprioritization only; no statistical acceptance",
+    "correctness": "Decisive correctness before screening; existing identical-binary gates reusable; full corpus and debug gates before final acceptance",
+    "confirmation": "Reserve three-session ABBA and conclusive margin/Z gates for promising finalists versus incumbent and fresh PR156",
+    "unchanged": "All eight rungs, five sweeps per rung, exact corpus selection, timing and pooling semantics",
+    "avoid": "Do not spend three sessions confirming an obvious loser or profile every candidate"
+  },
+  "candidateEvaluationAuthorized": true,
+  "evaluationOrder": ["e1", "e2", "e3"],
   "inFlight": [
     {
       "id": "e1",
+      "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+      "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e1",
+      "status": "queued-for-evaluation",
       "agent": "67334c29-40e4-4247-aa23-fa0f271e70c6",
       "class": "table-expansion",
       "stage": "huffman-init",
@@ -19,6 +36,9 @@
     },
     {
       "id": "e2",
+      "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d",
+      "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e2",
+      "status": "queued-for-evaluation",
       "agent": "c62fbbb1-d400-4045-ae5a-6b1dc103eacd",
       "class": "cooperative-store-coalescing",
       "stage": "literal-output",
@@ -26,6 +46,9 @@
     },
     {
       "id": "e3",
+      "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d",
+      "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e3",
+      "status": "queued-for-evaluation",
       "agent": "25a9e479-1ac1-4769-993f-b56f144349bd",
       "class": "launch-geometry",
       "stage": "fused-huffman",

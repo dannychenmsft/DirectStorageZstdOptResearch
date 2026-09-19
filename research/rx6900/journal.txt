@@ -173,3 +173,26 @@ device/scratch/assertion failure signatures. Evidence infixed-arm-gates.json.
 CPU helper now fails fast after recording the first failed case; all new cases passed.
 13/13 statistics tests pass. Next authorized confirmation is[R,e4fixed,baselinefixed,
 e4fixed,R]x3:15 full8rung/run-cnt5 ladders,shared contemporaneous controls,no profiles.
+
+2026-09-19T22:15:26.3807400Z FINAL PERFORMANCE GOAL VERIFIED
+Completed all15 authorized shared-control ladders,[reference,e4fixed,baselinefixed,
+e4fixed,reference]x3,all8rungs/run-cnt5/exact32files14643frames perladder.
+Allnative returns0,all15 gtest throughput scenario units pass,no skips/failures.
+GeomeansGB/s:baselinefixed8.409058681985,e4fixed8.739402404681,reference8.698574321827.
+Candidate vsbaselinefixed:+3.928426892817%,stderr(log)0.000394537098170,Z97.6645123.
+Three-SE interval[+3.805488803%,+4.051510580%];>=0.3% andZ>=3 gatepasses.
+Candidate vsfreshPR156:+0.469365224042%,stderr(log)0.000350936066125,Z13.3433746.
+95%Student-t(df2) interval[+0.317775377%,+0.621184138%],strictlypositive:
+fulltopline restoration verified,not merely anincumbent winor stale-reference claim.
+Arm spreadsbaseline0.114216%,candidate0.157595%,reference0.284290%.
+30 current-load samples maxaggregateCPU0.25891%,noconflicting processes;idle-boundary
+GPU samplesempty/noerrors,notcontinuousutilization. Allraw hashesvalidated.
+No additional profiles/rejected-candidate repeats/unapproved combinations.
+13/13 statistical tests previously pass;immutable all33GPU programs/pair verified.
+STOP:recommendcoordinator promoteoptimizationc4b3725 plusseparateCPUfix4777371.
+Evaluator producttree remainsa8572d7;no promotion performed;no managedremoteprocesses.
+Finalreport:e4fixed-final-report.txt;summary,schedule,run-index,andhealthJSON retained.
+Final audit:recomputed statistics exactly match persisted summary;JSON/CSV valid;
+13/13 tests pass. Post-measurement remote runtime verification confirms all17files
+andoriginal manifest hashes forbaselinefixed,e4fixed,andreference. Mainresearchzstd
+tree569991eaa896d66377fcf787f3cdc18fc7abb636 still exactlyequalsa8572d7.

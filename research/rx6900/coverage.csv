@@ -5,3 +5,4 @@ e3,launch-geometry,fused-huffman,screen-deprioritized,-2.694137622151005,80dc139
 e4,stream-density,fused-huffman,screen-promising-not-accepted,3.8744262792357986,c4b372592b8da8f01a724d4159cc5348ec37bcad,policy2-e4-screen-summary.json
 e4-final-cpu,validation,huffman-gpu-readback-cpu-replay,blocked-inherited-baseline-failure,,c4b372592b8da8f01a724d4159cc5348ec37bcad,e4-cpu-gate-report.json
 e4-fixed-gates,validation,huffman-gpu-readback-cpu-replay,full-gpu-debug-and-cpu7-pass,,477737183bc549e16fc21bdca0055f27ed247e7f,fixed-arm-gates.json
+e4fixed-final,stream-density,fused-huffman,performance-goal-verified-not-promoted,3.9284268928174644,477737183bc549e16fc21bdca0055f27ed247e7f,e4fixed-final-summary.json

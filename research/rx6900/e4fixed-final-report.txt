@@ -1,0 +1,98 @@
+RX6900 final confirmation: PERFORMANCE GOAL VERIFIED
+Completed 2026-09-19T22:15:26.3807400Z. Evaluator verdict, not product promotion.
+
+Immutable sources and separate CPU validation fix
+  Optimization: c4b372592b8da8f01a724d4159cc5348ec37bcad
+    32 table-construction threads,16 literal streams/group,consistent host/CPU wiring.
+  CPU replay fix: 477737183bc549e16fc21bdca0055f27ed247e7f (directly atop optimization)
+    One-line LiteralDwords output rebind inside simGpu; fixes inherited output alias.
+  Candidate arm:e4fixed-4777371,source477737183bc549e16fc21bdca0055f27ed247e7f.
+  Control arm:baselinefixed,source03c2135c62da3540dd70fa8fdc957e07d42b8f47.
+    This is originala8572d7 plus ONLY the CPU fix,NOT identical source toa8572d7.
+  PR156 reference unchanged:60fb499e311036e4d903725e3a2eaa05066b59ce.
+  Original baseline/e4/reference arms were never overwritten.
+  Full1076B/compressed-block persistent scratch reduction retained; ephemeral
+  LDS remains6456B. No restored global table/cache or equivalent per-block storage.
+
+Correctness and code identity
+  Newly built Release|x64 baselinefixed:full298-file ExternalMemory+Seq2/2 scenarios.
+  Newly built e4fixed:full298-file ExternalMemory+Seq2/2,DebugLayerSeq1/1 scenarios.
+  Both fixed arms:7/7 validCI files,956frames each,--chk-cpu--chk-gpu--sim-gpu.
+    Exercises standaloneCPU emulation AND whole-buffer GPU-readback CPU replay.
+  All native/wrapper rc0; no skipped batches,failure assertions,device-removal,
+  scratch/capacity failure signatures. Unchanged PR156 previously passed same7/7.
+  All33 shader programs per old/fixed pair anchored to immutable manifest hashes
+  and verified embedded in respective demo.exe. DXIL executable and ALL non-ILDN
+  chunks are byte-identical. Full containers differ ONLY in relocated ILDN debug
+  filename source roots. Do not confuse debug-container hashes with GPU-code hashes.
+  Evidence:fixed-arm-gates.json,fixed-arm-shader-identity.json.
+  Historical failures retained ine4-final-blocker.txt/e4-cpu-gate-report.json;
+  they were fixed,not waived. CPU helper now stops after first failed case.
+
+Confirmation design,not screening
+  Three symmetric sessions:reference,candidate,baselinefixed,candidate,reference.
+  15 full ladders:6 candidate,6 freshPR156,3 centeredbaselinefixed.
+  Each ladder unchangedCI throughput:64,128,192,256,384,512,768,1024;run-cnt5;
+  exact32-file/14643-frame manifest selection,3754488832decompressed bytes.
+  --prf-lvl0 --seq-cnt; no--ext-mem. Total pooled P50 bandwidth per rung;
+  top-line exp(mean(log(eight bandwidths))). No reduced rungs or profile samples.
+  Corpus lock and selected-file SHA256 identical to bootstrap and every ladder.
+  All15 native returns0,one gtest throughput scenario each,no failures/skips.
+  Inference unit:one complete five-ladder session,NOT individual rungs,frames,
+  GPU submissions,or600 rung-sweeps. Candidate/control paired log ratios use
+  candidate mean ofpositions2/4,reference mean1/5,centeredbaselineposition3.
+
+Top-line results (GB/s,geometric mean of complete-ladder geomeans)
+  baselinefixed  8.409058682  n=3  max/min spread0.114216%
+  e4fixed        8.739402405  n=6  max/min spread0.157595%
+  freshPR156     8.698574322  n=6  max/min spread0.284290%
+
+Candidate versus baselinefixed
+  Gain +3.928426893%; paired mean log0.0385322732792;stderr0.000394537098170.
+  Operational Z=97.6645123; minimum+0.3% andZ>=3 gate PASSES.
+  Three-SE delta interval [+3.805488803%,+4.051510580%].
+  95% Student-t interval,df2: [+3.752152216%,+4.105001060%].
+
+Candidate versus SAME-SESSION freshPR156
+  Gain +0.469365224%; paired mean log0.00468267140150;stderr0.000350936066125.
+  Operational Z=13.3433746;95% Student-t interval,df2:
+    [+0.317775377%,+0.621184138%].
+  Interval lower bound is abovezero:full top-line restoration is verified.
+  The Student-t interval uses4.3026527299,not an unjustified normal95% interval
+  for onlythree session samples. Result does not use stale bootstrap8.702 score.
+
+Per-rung geometric means across each arm's complete observations
+Rung  baselinefixed  e4fixed     freshPR156  e4/baseline%  e4/PR156%
+  64     2.978766     2.980666     2.952899      +0.0638      +0.9403
+ 128     5.273565     5.272663     5.241049      -0.0171      +0.6032
+ 192     6.895292     6.898215     6.866095      +0.0424      +0.4678
+ 256     8.178465     8.310226     8.294711      +1.6111      +0.1870
+ 384    10.271190    10.678575    10.578695      +3.9663      +0.9442
+ 512    11.908260    12.587204    12.601813      +5.7015      -0.1159
+ 768    14.233926    15.846542    15.778939     +11.3294      +0.4284
+1024    16.211386    17.733067    17.679245      +9.3865      +0.3044
+Top-line restoration does not mean every rung individually exceedsPR156.
+
+Noise and scope
+  RX6900XT driver32.0.21037.1004,DSTESTPC2.30 current-load before/after samples:
+  max aggregate sampled CPU0.25891%;no conflicting CI/build/benchmark processes.
+  GPU counters returned no active-engine entries and no errors at sampled idle
+  boundaries;this is not a claim of continuously sampled in-run GPU utilization.
+  Small measured spreads and symmetric control comparisons support repeatability.
+  No global power/service/boost changes,reboot,or unrelated process termination.
+  No managed remote processes remain. Cross-GPU performance is NOT established.
+
+Disposition
+  Eligible for coordinator promotion:optimizationc4b3725 followed by separate
+  CPU-replay fix4777371. Evaluator has NOT promoted either into product branch.
+  e2 remains promising backup only;e1 rejected;e3 deprioritized. No loser repeats,
+  extra profiling,or unapproved e2/e4 combination. Stop campaign at verified goal.
+
+Durable evidence
+  e4fixed-final-summary.json:all120 rung observations,paired statistics,verdict.
+  e4fixed-final-schedule.json:all15 completed entries.
+  e4fixed-final-run-index.json:raw result/invocation hashes,exact arguments/identities.
+  e4fixed-final-health.json:30 current-noise samples.
+  candidate-results.csv,ledger.csv,coverage.csv,status.json,journal.txt.
+  Raw immutable artifacts:
+    C:\code\zg_campaign\rx6900-20260919-69e45d0f\results\e4fixed-final-*

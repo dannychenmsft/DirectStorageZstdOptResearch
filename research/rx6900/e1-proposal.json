@@ -1,0 +1,35 @@
+{
+  "id": "e1",
+  "base": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+  "commit": "54604812649247846f4bb3f38ebc56d30c161997",
+  "hypothesis": "Repeated fused Huffman table expansion can do less dependent LDS search work by inverting canonical rank construction instead of independently searching both symbols and both bit counts.",
+  "mechanism": "For each even-aligned state pair, retain one rightmost-predecessor search of RankIndex. Read that rank's existing RankCountPrefix and RankIndex, then compute symbolIndex0 = RankCountPrefix[r] + ((state0 - RankIndex[r]) >> r). The second symbol index is symbolIndex0 + (r == 0). Both entries use bitsMax - r. This removes both CodeAndSymbol binary searches and the second RankIndex binary search without allocating storage.",
+  "stage": "huffman-init",
+  "class": "table-expansion",
+  "expected": "Qualitatively fewer dependent LDS loads and search-loop instructions during per-group table expansion. Throughput benefit and compiler resource effects are unknown; no measured headroom or performance claim.",
+  "scope": {
+    "worktree": "C:\\code\\zg_campaign\\worktrees\\e1",
+    "branch": "research/rx6900-e1",
+    "file": "zstd\\zstdgpu\\zstdgpu_shaders.h",
+    "function": "zstdgpu_ShaderEntry_InitHuffmanTable_And_DecompressLiterals",
+    "editedLines": [2877, 2909],
+    "changedFiles": 1,
+    "globalScratchSavingsPreservedBytesPerCompressedBlock": 1076,
+    "additionalHlslLdsBytes": 0,
+    "buildsCompilesTestsMeasurementsRun": false
+  },
+  "correctnessArgument": [
+    "PreInit orders positive-bit symbols by r = bitsMax - bits, then original symbol ID. It stores canonical start R[r] + prefix * 2^r at position P[r] + prefix, with R = RankIndex and P = RankCountPrefix. Inverting this affine mapping selects the same symbol as the original predecessor search.",
+    "For a valid complete Huffman table with B = bitsMax >= 1, sum(n[r] * 2^r) = 2^B. Thus the r=0 count is even; all rank boundaries are even, including boundaries separated by empty ranks. The rightmost-predecessor search still skips empty ranks. States 2p and 2p+1 therefore belong to the same rank.",
+    "For r > 0 every symbol interval starts at an even address and has even width 2^r, so an even-aligned pair shares its symbol. For r = 0 each symbol occupies one state, so the second symbol is the immediately following rank-local symbol. Even rank size ensures this increment remains in bounds.",
+    "The existing RankCountPrefix data remains in its PreInit LDS region and is visible after the unchanged post-PreInit group barrier. The nested partition macro aliases the same region; it adds no HLSL allocation. Table output remains disjoint from all read regions.",
+    "Exactly one existing work item owns each packed 32-bit pair write, with identical symbol/bit-count packing. No atomics, overlapping writes, early exits, or group-divergent barriers are introduced. The final group barrier is unchanged.",
+    "Weight decoding, implicit last-weight reconstruction, zero-weight exclusion, table selection including treeless reuse, stream mapping, single-/four-stream literal decompression, global resource layout, corpus, and output handling are untouched."
+  ],
+  "risks": [
+    "The algebraic proof assumes valid complete Huffman weights, as requested. No new malformed-input validation is introduced.",
+    "The extra direct prefix load and dependent index arithmetic may limit the benefit; RDNA2 register usage and generated ISA require the singleton evaluator.",
+    "The existing shared C++/HLSL LDS partition macro is reopened in a nested scope. Its shadowed GS_Base and C++ fallback GS_Storage declarations are legal but may expose compiler-specific shadow/unused-local warnings; C++ optimization should remove the unused fallback storage because GS_PreInit is supplied.",
+    "Only source inspection and git diff whitespace/scope inspection were performed. Both language paths, valid-weight edge cases, byte equality, and throughput remain unbuilt and untested pending evaluator d9a9d2a0-609a-4b6a-afe6-fc61056adcb2."
+  ]
+}

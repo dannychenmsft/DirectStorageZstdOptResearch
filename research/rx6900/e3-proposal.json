@@ -1,0 +1,79 @@
+{
+  "id": "e3",
+  "base": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+  "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d",
+  "sourceRoot": "C:\\code\\zg_campaign\\worktrees\\e3",
+  "changedPaths": [
+    "zstd\\zstdgpu\\zstdgpu_structs.h"
+  ],
+  "scratchInvariant": "The only product edit changes the PC fused launch constant and its platform guard/comment. No resource declaration, size calculation, binding, descriptor, or allocation changes. Huffman tables remain ephemeral in the existing 6456-byte group-local LDS allocation; neither a persistent table nor an equivalent global buffer is introduced. Prefix buffers retain their existing per-table capacity; only their computed group counts change from ceil(N/32) to ceil(N/64). Therefore the base's full 1076-byte global scratch reduction per compressed block is preserved.",
+  "hypothesis": "A 64-thread fused Huffman group may recover part of the RX 6900 XT throughput loss by distributing group-local table construction across twice as many threads and allowing up to 64 streams to share that construction.",
+  "mechanism": "Change only the existing shared PC literal-group constant from 32 to 64. The host prefix pass already consumes that constant; HLSL numthreads and the fused entry-point tgSize argument consume it too. Table construction and scalar DWORD-store decoding already distribute work using tgSize. No decoder, table-generation algorithm, output cache, resource allocation, shader permutation, or wave-size attribute changes.",
+  "stage": "fused-huffman",
+  "class": "launch-geometry",
+  "expected": {
+    "status": "Unbuilt and unmeasured proposal; no asserted performance headroom or win.",
+    "target": "RX 6900 XT / RDNA2",
+    "metric": "Exact CI geometric mean of GB/s at rungs 64,128,192,256,384,512,768,1024; five sweeps per rung using the unchanged perf_manifest corpus and pooling.",
+    "benefit": "Per-thread table-expansion iterations change from ceil(statePairCount/32) to ceil(statePairCount/64). Tables shared by more than 32 streams need ceil(N/64) regenerations rather than ceil(N/32). This is static work distribution, not a claim that elapsed table-build time halves.",
+    "limitation": "Tables serving only one or four streams still require exactly one regeneration. Such cases receive only the table-build parallelism change, while their decode lane utilization decreases.",
+    "measurementOwner": "d9a9d2a0-609a-4b6a-afe6-fc61056adcb2"
+  },
+  "scope": {
+    "worktree": "C:\\code\\zg_campaign\\worktrees\\e3",
+    "branch": "research/rx6900-e3",
+    "productEdits": [
+      "zstd\\zstdgpu\\zstdgpu_structs.h:438-448"
+    ],
+    "wiredSurfaces": [
+      "zstdgpu.cpp:2767-2771 supplies kzstdgpu_TgSizeX_DecompressLiterals to the host prefix binding.",
+      "Shaders\\ZstdGpuComputePrefixSum.hlsl:59-69 computes ceil(streamCount/literalsPerGroup), per-table inclusive group ends, and total DecompressLiteralsGroups.",
+      "Shaders\\ZstdGpuUpdateDispatchArgs.hlsl:100 emits that group count into the existing DecompressLiterals dispatch slot.",
+      "Shaders\\ZstdGpuInitHuffmanTableAndDecompressLiterals.hlsl:35,42-45 uses the same constant for numthreads and tgSize and rejects surplus dispatch groups uniformly.",
+      "zstdgpu_shaders.h:2825-2918 passes tgSize through table pre-initialization, table expansion, and literal decoding.",
+      "zstdgpu_shaders.h:2949-2954 uses tgSize both for per-table stream offset and the partial-group bound."
+    ],
+    "unchanged": [
+      "Full 1076-byte per-compressed-block global scratch reduction; no restored or equivalent global Huffman table buffer.",
+      "Huffman Get/Consume protocol, table-generation implementation, scalar DWORD head/interior/tail output semantics, and all resource/SRT layouts.",
+      "Existing Xbox One 64-thread geometry and Scarlett/generic Xbox 32-thread geometry.",
+      "Unrelated FSE and sequence kernel launch constants; the only additional occurrence of this literal constant in InitFseTable is an existing comment, not executable code.",
+      "CPU emulation continues to recompute prefixes for one stream per group and passes tgSize=1."
+    ],
+    "vendorRouting": "The fused Huffman kernel is a shared runtime kernel, not a vendor-specialized permutation. Consequently this experiment changes every PC vendor. Adding AMD-only shader routing would require extra compiled variants/build changes beyond this surgical candidate; no such routing is introduced."
+  },
+  "correctnessArgument": {
+    "validation": "Read-only source tracing and reasoned bounds/mapping review only. No builds, compilation, tests, measurement, RDP, package operations, or subagents were used. git diff --check was clean.",
+    "groupPartition": "For a table with N streams, the prefix allocates G=ceil(N/64) groups. Local group j in [0,G) owns offsets 64*j through min(64*j+63,N-1). Every stream offset s has unique j=floor(s/64) and thread s mod 64. Since j<G implies 64*j<N, N-64*j cannot underflow for a dispatched nonempty table group.",
+    "oneAndFourStreams": "N=1 activates only thread 0 for decode; N=4 activates threads 0..3. All 64 threads complete the unchanged group-uniform table construction and barriers before the bounded decode loop. Inactive decode threads do not load LitRefs or write outputs.",
+    "multipleGroupsAndPartialTails": "N=64 has one full group; N=65 has one full group and a tail with only thread 0; N=128 has two full groups. In general remain=min(N-64*j,64) excludes inactive tail threads. Stream ranges have neither gaps nor overlap.",
+    "treeless": "HufLitIdToLitStreamId is recorded only for full-tree literal blocks. Each table's range still ends at the next full-tree stream start, or HUF_Streams for the last table; intervening treeless blocks therefore retain their inherited table. Only the partition of that unchanged stream range into groups changes.",
+    "unusedTableSlotsAndPaddedDispatch": "Unused table slots contribute zero groups to the existing prefix; binary-search table lookup is unchanged. The existing group-uniform check against DecompressLiteralsGroups rejects padded indirect groups before any group barrier.",
+    "tableBuild": "All FOR_WORK_ITEMS loops now enumerate threadId+64*k rather than threadId+32*k; the 64 residue classes cover each existing bounded work-item range once. LDS allocation and indices are unchanged. Maximum 11-bit tables have 1024 packed state pairs: 16 expansion iterations per thread rather than 32, with identical destinations and values.",
+    "wavesAndSynchronization": "PreInit already derives laneCnt=min(threadCnt,WaveGetLaneCount()), waveCnt=threadCnt/laneCnt, and waveOfs from wave index. For wave32, two waves write the alternating 32-bit ballot words; for wave64, one wave writes both ballot halves. With at most 256 weights, both cover exactly the existing eight ballot words per digit. Smaller waves retain the existing zero-initialize/atomic-OR path, while wider waves use laneCnt=64 and the first two ballot words. GroupMemoryBarrierWithGroupSync remains group-wide at every LDS handoff, including the final expansion-to-decode handoff.",
+    "output": "Each stream retains exactly one decoding owner. Its input segment, output segment, Get/Consume order, and aligned DWORD/byte stores are unchanged, so increasing group membership introduces no new inter-stream write ownership."
+  },
+  "risks": [
+    "All-PC portability impact: NVIDIA, Intel, and other AMD architectures may regress. RX 6900 XT success would not establish a cross-vendor win; promotion requires independent validation or a later vendor-specific routing change.",
+    "Wave size remains driver-selected. TG64 may use two wave32s or one wave64; it does not force wave64 or guarantee full-wave occupancy.",
+    "Two wave32s per group can increase cross-wave barrier overhead and allocated register footprint relative to TG32; table-build work redistribution may not compensate.",
+    "For one-/four-stream tables the second wave32 has no decode work, yet its group may retain resources until the active wave finishes.",
+    "Larger stream groups can worsen divergent long-tail retention or reduce independently schedulable groups, especially when streams sharing a table have uneven lengths.",
+    "The source mapping proof does not replace the evaluator's compilation, GPU correctness, and paired-control performance gates."
+  ],
+  "geometry-before-after": {
+    "pcThreadsPerGroup": [32, 64],
+    "pcStreamsPerGroup": [32, 64],
+    "perTableGroupCount": ["ceil(N/32)", "ceil(N/64)"],
+    "perThreadTableExpansionStride": [32, 64],
+    "maxPackedStatePairsPerThread": [32, 16],
+    "wave32WavesPerGroup": [1, 2],
+    "wave64ActiveThreadsPerGroup": [32, 64],
+    "waveSize": ["driver-selected", "driver-selected"],
+    "fusedLdsBytesPerGroup": [6456, 6456],
+    "globalScratchReductionBytesPerCompressedBlock": [1076, 1076],
+    "xboxOneThreadsPerGroup": [64, 64],
+    "scarlettThreadsPerGroup": [32, 32]
+  },
+  "nextIdea": "Only if evaluator profiling shows TG64 loses mainly to wave32 tail occupancy, consider a separate experiment retaining 64 cooperative build threads while decoupling a smaller stream-group stride. Do not stack it onto this proposal without measuring this candidate first."
+}

@@ -55,3 +55,17 @@ e1:table expansion; e2:cooperative literal stores; e3:consistent launch geometry
 Candidate intake remains coordinator-controlled; none built/measured/accepted yet.
 Confirmed again:original product baseline exactly a8572d7;reference60fb499.
 Acceptance perf never uses--ext-mem; unchanged prf-lvl0/seq-cnt manifest sweeps.
+
+2026-09-19 Authorized queue
+Coordinator authorized e1(54604812649247846f4bb3f38ebc56d30c161997),then
+e3(80dc139dc0a4d250266e1a39b5387c2d44a8c65d). Both are single-commit proposals
+directly on a8572d7. Evaluate independently in evaluation-* worktrees; never
+cherry-pick product into coordinator branch. Full correctness before exact-CI
+ABBAx3 against baseline. Statistical winners get a fresh PR156 comparison.
+Both candidate Release builds completed. Each observed missing NuGet imports in
+new evaluation worktree, then reused existing restored packages and exact gtest.
+e1 adds expected C++ shadow/unused partition-local warnings; HLSL /WX builds clean.
+e1-correctness-01:2/2 scenarios,rc0,0 skips/failures; e1-debug-01:1/1,rc0.
+e1-profile-1024(one-off):table+literals4045.43us,Stage2 16476.34us. This is only
+exploratory; no verdict from comparison to earlier baseline profiles.
+Beginning full fresh baseline/e1 ABBAx3. e3 built only; no product promotion.

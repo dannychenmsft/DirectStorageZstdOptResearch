@@ -1,11 +1,11 @@
 {
-  "phase": "ready-for-candidates",
+  "phase": "measuring-e1-versus-baseline",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
   "accepts": 0,
   "rejects": 0,
-  "ready": true,
+  "ready": false,
   "correctness": "both arms: ExternalMemory, ExternalMemorySeq, D3D12DebugLayerSeq all pass; no skips",
   "measurement": "bootstrap ABBA x3 complete, healthy spread",
   "baseline_geomean_gbps": 8.41105511445194,
@@ -18,6 +18,10 @@
   "device": "DSTESTPC2",
   "campaign_board_snapshot": "campaign-board.json",
   "in_flight_explorers": ["e1", "e2", "e3"],
-  "candidate_queue_state": "awaiting coordinator intake; no candidate measured",
+  "candidate_queue_state": "authorized e1 then e3; independent branches from a8572d7; no promotion",
+  "candidate_queue": [
+    {"id": "e1", "commit": "54604812649247846f4bb3f38ebc56d30c161997", "phase": "full correctness and debug passed; paired timing"},
+    {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "Release build complete; awaiting GPU slot"}
+  ],
   "goal_met": false
 }

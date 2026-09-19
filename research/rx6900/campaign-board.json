@@ -1,0 +1,44 @@
+{
+  "objective": "Recover RX 6900 XT CI throughput geomean versus PR156 without restoring persistent Huffman table scratch",
+  "branch": "research/rx6900-huffman-lds",
+  "startingPoint": "a8572d7792d186bf2977d9fac64ff3e701aa58d8",
+  "reference": "60fb499",
+  "measurementOwner": "d9a9d2a0-609a-4b6a-afe6-fc61056adcb2",
+  "device": "DSTESTPC2",
+  "rungs": [64, 128, 192, 256, 384, 512, 768, 1024],
+  "sweepsPerRung": 5,
+  "metric": "exp(mean(log(bandwidth_gbps))) across all eight throughput rungs",
+  "status": "Establishing reproducible controls; no measured candidate results yet",
+  "inFlight": [
+    {
+      "id": "e1",
+      "agent": "67334c29-40e4-4247-aa23-fa0f271e70c6",
+      "class": "table-expansion",
+      "stage": "huffman-init",
+      "hypothesis": "Avoid four binary searches per adjacent state pair during repeated fused table construction"
+    },
+    {
+      "id": "e2",
+      "agent": "c62fbbb1-d400-4045-ae5a-6b1dc103eacd",
+      "class": "cooperative-store-coalescing",
+      "stage": "literal-output",
+      "hypothesis": "Use the existing cooperative LDS output cache inside the fused kernel instead of distant per-lane DWORD stores"
+    },
+    {
+      "id": "e3",
+      "agent": "25a9e479-1ac1-4769-993f-b56f144349bd",
+      "class": "launch-geometry",
+      "stage": "fused-huffman",
+      "hypothesis": "Change group geometry consistently across host dispatch sizing and shader stream mapping"
+    }
+  ],
+  "constraints": [
+    "Explorers propose only and never build, measure, or access the remote GPU",
+    "Use the unchanged CI manifest, selected corpus, eight rungs, five sweeps, and pooling",
+    "No restored global Huffman table buffers or equivalent per-block storage",
+    "Reject correctness failures and missing or invalid measurement rungs",
+    "Pair fresh controls with candidates and record variance before accepting",
+    "Do not kill unrelated processes or change global machine settings",
+    "No cross-GPU performance claims without measurements"
+  ]
+}

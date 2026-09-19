@@ -14,5 +14,10 @@
   "paired_log_stderr": 0.0008109925796383737,
   "z": 41.938636004928995,
   "report": "bootstrap-report.txt",
+  "measurement_owner": "d9a9d2a0-609a-4b6a-afe6-fc61056adcb2",
+  "device": "DSTESTPC2",
+  "campaign_board_snapshot": "campaign-board.json",
+  "in_flight_explorers": ["e1", "e2", "e3"],
+  "candidate_queue_state": "awaiting coordinator intake; no candidate measured",
   "goal_met": false
 }

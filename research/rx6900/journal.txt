@@ -46,3 +46,12 @@ whitespace check clean. New remote matching-correctness/hash/lock path exercised
 by a separate successful profile smoke (not acceptance data). Existing-arm
 deployment deliberately rejected with RdpProxy rc10. No managed remote processes
 remain. bootstrap-summary SHA256575E1D2D9E39679F893CCFF919BDED765E758E12B34DD2D8B30D147AFF3AFE07.
+
+2026-09-19 Coordinator board snapshot
+Copied knowledge\campaign.json unchanged to campaign-board.json for ownership,
+constraints and Explorer hypotheses. Its source status predates finished controls;
+status.json and bootstrap-report.txt are authoritative for evaluator readiness.
+e1:table expansion; e2:cooperative literal stores; e3:consistent launch geometry.
+Candidate intake remains coordinator-controlled; none built/measured/accepted yet.
+Confirmed again:original product baseline exactly a8572d7;reference60fb499.
+Acceptance perf never uses--ext-mem; unchanged prf-lvl0/seq-cnt manifest sweeps.

@@ -1,10 +1,11 @@
 {
-  "phase": "bootstrap-tooling",
+  "phase": "bootstrap-abba",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
   "accepts": 0,
   "rejects": 0,
   "ready": false,
-  "measurement": null
+  "correctness": "both arms: ExternalMemory, ExternalMemorySeq, D3D12DebugLayerSeq all pass; no skips",
+  "measurement": "bootstrap ABBA x3 in progress"
 }

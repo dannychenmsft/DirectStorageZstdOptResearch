@@ -17,3 +17,13 @@ PowerShell Start-Process lost ExitCode after WaitForExit. Retain Handle before
 waiting; re-run under a new ID rather than retroactively fabricate an exit code.
 Corpus locked with SHA256 for 298 .zst and both manifests. Initial live GPU engine
 counter query succeeded and reported no engine >0.1%; no competing CI process.
+
+2026-09-19 Correctness gates complete
+reference-correctness-02: rc0, 2/2 scenario tests, 0 skips/failures; 98.07s.
+baseline-correctness-01: rc0, 2/2 scenario tests, 0 skips/failures; 98.94s.
+reference-debug-01: rc0, 1/1 D3D12DebugLayerSeq scenario, 0 skips/failures; 50.98s.
+baseline-debug-01: rc0, 1/1 D3D12DebugLayerSeq scenario, 0 skips/failures; 50.81s.
+All use the 298-file corpus, unchanged harness batching/adversarial expectations.
+The baseline arm records repository HEAD 78d3533 (tooling commit); its zstd source
+tree is unchanged from a8572d7. No product code was changed by evaluator.
+Starting paired baseline/reference ABBA x3, full eight-rung CI throughput.

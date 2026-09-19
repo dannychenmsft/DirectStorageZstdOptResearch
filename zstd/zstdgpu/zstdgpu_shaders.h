@@ -2742,6 +2742,22 @@ static inline void zstdgpu_DecompressHuffmanCompressedLiterals(ZSTDGPU_RO_RAW_BU
                                                                uint32_t bitsMax,
                                                                uint32_t tgSize);
 
+static void zstdgpu_DecompressHuffmanCompressedLiterals_StoreLdsCache(ZSTDGPU_RO_RAW_BUFFER(uint32_t) CompressedData,
+                                                                      ZSTDGPU_RO_BUFFER(zstdgpu_LitStreamInfo) LitRefs,
+                                                                      ZSTDGPU_RW_TYPED_BUFFER(uint32_t, uint8_t) DecompressedLiterals,
+                                                                      ZSTDGPU_RW_BUFFER(uint32_t) DecompressedLiteralsAsDwords,
+                                                                      ZSTDGPU_PARAM_LDS_IN(uint32_t) GS_HuffmanTable,
+                                                                      ZSTDGPU_PARAM_LDS_INOUT(uint32_t) GS_LiteralStoreCache,
+                                                                      uint32_t groupId,
+                                                                      uint32_t threadId,
+                                                                      uint32_t htGroupStart,
+                                                                      uint32_t htLiteralStart,
+                                                                      uint32_t htLiteralCount,
+                                                                      uint32_t bitsMax,
+                                                                      uint32_t tgSize,
+                                                                      uint32_t streamsPerGroup,
+                                                                      uint32_t cacheDwordsPerStream);
+
 
 static void zstdgpu_ConvertThreadgroupIdToDecompressLiteralsInputs(ZSTDGPU_RO_BUFFER(uint32_t) LitGroupEndPerHuffmanTable,
                                                                    ZSTDGPU_RO_BUFFER(uint32_t) HufWIdToHufLitId,
@@ -2902,6 +2918,36 @@ static void zstdgpu_ShaderEntry_InitHuffmanTable_And_DecompressLiterals(ZSTDGPU_
     }
     GroupMemoryBarrierWithGroupSync();
 
+    #if defined(__hlsl_dx_compiler) && ZSTDGPU_COALESCE_LITERAL_STORES
+    // CodeAndSymbol and PreInit are dead after the expansion barrier. Reuse 512 of
+    // their 578 dwords for 32 streams, without increasing the 1614-dword LDS allocation.
+    const uint32_t cacheDwordsPerStream = 16;
+    const uint32_t cacheDwordsAvailable = kzstdgpu_MaxCount_HuffmanWeights + kzstdgpu_PreInitHuffmanTable_LdsSize;
+    // The cache loop contains group barriers but terminates using a wave vote.
+    // Smaller waves (or a larger TG whose cache would not fit) retain the scalar path.
+    if (tgSize <= WaveGetLaneCount() && tgSize * cacheDwordsPerStream <= cacheDwordsAvailable)
+    {
+        zstdgpu_DecompressHuffmanCompressedLiterals_StoreLdsCache(
+            srt.inCompressedData,
+            srt.inLitRefs,
+            srt.inoutDecompressedLiterals,
+            srt.inoutDecompressedLiterals_Dwords,
+            GS_HuffmanTable,
+            GS_CodeAndSymbol,
+            groupId,
+            threadId,
+            htGroupStart,
+            htLiteralStart,
+            htLiteralCount,
+            bitsMax,
+            tgSize,
+            tgSize,
+            cacheDwordsPerStream
+        );
+        return;
+    }
+    #endif
+
     zstdgpu_DecompressHuffmanCompressedLiterals(
         srt.inCompressedData,
         srt.inLitRefs,
@@ -3056,6 +3102,11 @@ static void zstdgpu_DecompressHuffmanCompressedLiterals_StoreLdsCache(ZSTDGPU_RO
                                                                       uint32_t streamsPerGroup,
                                                                       uint32_t cacheDwordsPerStream)
 {
+    // All TG threads must enter together, and the TG must fit in one wave so the
+    // loop's wave vote is group-uniform at both producer/consumer barriers.
+    ZSTDGPU_ASSERT(tgSize <= WaveGetLaneCount());
+    ZSTDGPU_ASSERT(streamsPerGroup <= tgSize);
+    ZSTDGPU_ASSERT(cacheDwordsPerStream != 0 && (cacheDwordsPerStream & (cacheDwordsPerStream - 1u)) == 0);
     ZSTDGPU_UNUSED(threadId);
     //
     // The start of decompression of Huffman-compressed literals
@@ -3117,7 +3168,7 @@ static void zstdgpu_DecompressHuffmanCompressedLiterals_StoreLdsCache(ZSTDGPU_RO
         zstdgpu_HuffmanStream_ConditionalFetch(stream);
     }
 
-    const uint32_t kStoreCacheBankCount = 32;
+    const uint32_t kStoreCacheBankCount = zstdgpu_MinU32(32, cacheDwordsPerStream);
     const uint32_t kStoreCacheBankMask = kStoreCacheBankCount - 1u;
 
     const uint32_t storeCacheThreadOffset = threadId * cacheDwordsPerStream;
@@ -3162,10 +3213,11 @@ static void zstdgpu_DecompressHuffmanCompressedLiterals_StoreLdsCache(ZSTDGPU_RO
 
             const uint32_t dwordIdxInBatch = dwordIdx - dwordIdxBatchBeg;
 
-            // add 'threadId' to 'dwordIdx' to make sure there's no bank conflicts.
+            // Rotate within each tile; a sub-32-dword row must stay inside its stream.
             const uint32_t dwordIdxInCache = (dwordIdxInBatch & ~kStoreCacheBankMask) + ((dwordIdxInBatch + threadId) & kStoreCacheBankMask);
             zstdgpu_LdsStoreU32(GS_LiteralStoreCache + storeCacheThreadOffset + dwordIdxInCache, dword);
         }
+        GroupMemoryBarrierWithGroupSync();
 
         uint32_t i = streamBeg;
         const uint32_t streamEnd = zstdgpu_MinU32(i + laneCnt, thisGroupLiteralRemain);
@@ -3184,6 +3236,8 @@ static void zstdgpu_DecompressHuffmanCompressedLiterals_StoreLdsCache(ZSTDGPU_RO
                 DecompressedLiteralsAsDwords[dstDwordIdx + dwordIdxToStore] = dword;
             }
         }
+        // Finish every cross-lane read before a producer reuses its cache row.
+        GroupMemoryBarrierWithGroupSync();
     }
     while (WaveActiveAnyTrue(dwordIdx < dwordIdxEnd));
 

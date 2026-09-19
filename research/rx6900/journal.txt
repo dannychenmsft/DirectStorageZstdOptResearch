@@ -27,3 +27,22 @@ All use the 298-file corpus, unchanged harness batching/adversarial expectations
 The baseline arm records repository HEAD 78d3533 (tooling commit); its zstd source
 tree is unchanged from a8572d7. No product code was changed by evaluator.
 Starting paired baseline/reference ABBA x3, full eight-rung CI throughput.
+
+2026-09-19 Bootstrap completed / ready for candidates
+All12 complete exact-CI ladders valid:baselineGM8.411055,referenceGM8.702052GB/s.
+Fresh reference+3.459694% (stderr paired log0.000810992580,Z41.9386,
++/-3SE interval+3.208285..+3.711716%). Spreads0.199701%/0.355415%.
+Reference separation is conclusive; reference itself is NOT eligible because
+scratch must remain removed. Incumbent a8572d7; no accepted product candidates.
+Profiling seed at1024:table+literals+1844us baseline vs reference explains94.8%
+of Stage2+1945us in one-off profiles. Near-parity at256. See bootstrap-report.txt.
+Subsequent tooling adds strict corpus-list/config consistency, mandatory matching
+correctness gate, immutable deployment guard, explicit profiling CSV/rung, and
+exclusive remote measurement lock. Boundary CPU sample rounding fixed; early
+integer percentages were not treated as cumulative-load evidence or acceptance.
+Full raw artifacts outside repo; concise all-rung JSON and report committed.
+Final validation:10/10 analysis unit tests; all PowerShell scripts parse; diff
+whitespace check clean. New remote matching-correctness/hash/lock path exercised
+by a separate successful profile smoke (not acceptance data). Existing-arm
+deployment deliberately rejected with RdpProxy rc10. No managed remote processes
+remain. bootstrap-summary SHA256575E1D2D9E39679F893CCFF919BDED765E758E12B34DD2D8B30D147AFF3AFE07.

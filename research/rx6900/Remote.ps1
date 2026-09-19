@@ -1,10 +1,11 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Inventory', 'Health', 'Verify', 'Run', 'Profile')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Inventory', 'Health', 'CheckDeploy', 'Verify', 'Run', 'Profile')][string]$Action,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$Arm,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$RunId,
     [ValidateSet('Perf', 'Correctness', 'Debug')][string]$Kind = 'Perf',
     [string]$Content = 'C:\agent\data\zstd_content',
+    [string]$ExpectedManifestSha256,
     [int]$ProfileRung = 256
 )
 $ErrorActionPreference = 'Stop'
@@ -29,7 +30,7 @@ function Get-Health {
     $active = @(Get-Process | ForEach-Object {
         if ($before.ContainsKey($_.Id) -and $null -ne $_.CPU) {
             [pscustomobject]@{ pid = $_.Id; name = $_.Name
-                cpuPercent = [Math]::Max(0, 100 * ($_.CPU - $before[$_.Id]) / $clock.Elapsed.TotalSeconds / $logical) }
+                cpuPercent = [Math]::Max(0.0, 100.0 * ($_.CPU - $before[$_.Id]) / $clock.Elapsed.TotalSeconds / $logical) }
         }
     } | Sort-Object cpuPercent -Descending)
     $gpuCounters = @()
@@ -51,6 +52,9 @@ function Get-Health {
 function Assert-Arm {
     if (-not $Arm) { throw 'Arm required' }
     $path = "$root\arms\$Arm"
+    if ($ExpectedManifestSha256 -and (Get-FileHash "$path\arm.json" -Algorithm SHA256).Hash -ne $ExpectedManifestSha256) {
+        throw 'Deployed arm manifest differs from the local immutable arm'
+    }
     $manifest = Get-Content "$path\arm.json" -Raw | ConvertFrom-Json
     if ($manifest.arm -ne $Arm -or $manifest.configuration -ne 'Release' -or $manifest.platform -ne 'x64') {
         throw 'Unexpected arm configuration'
@@ -82,10 +86,31 @@ if ($Action -eq 'Inventory') {
     exit 0
 }
 if ($Action -eq 'Health') { Get-Health | ConvertTo-Json -Depth 8; exit 0 }
+if ($Action -eq 'CheckDeploy') {
+    if (-not $Arm -or (Test-Path "$root\arms\$Arm")) { throw 'Deployment requires a new, unique arm ID' }
+    exit 0
+}
 $manifest = Assert-Arm
 Assert-Corpus
-if ($Action -eq 'Verify') { $manifest | ConvertTo-Json -Depth 8; exit 0 }
+if ($Action -eq 'Verify') {
+    [ordered]@{ arm = $Arm; commit = $manifest.commit; configuration = $manifest.configuration
+        filesVerified = $manifest.files.Count; armManifestSha256 = (Get-FileHash "$root\arms\$Arm\arm.json" -Algorithm SHA256).Hash } |
+        ConvertTo-Json
+    exit 0
+}
 if (-not $RunId) { throw 'RunId required' }
+$measurementLock = [IO.File]::Open("$root\evaluator.lock", [IO.FileMode]::OpenOrCreate,
+    [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
+if ($Kind -eq 'Perf' -or $Action -eq 'Profile') {
+    $gates = @(Get-ChildItem "$root\results" -Filter result.json -Recurse -File | ForEach-Object {
+        $gate = Get-Content $_.FullName -Raw | ConvertFrom-Json
+        if ($gate.arm -eq $Arm -and $gate.commit -eq $manifest.commit -and $gate.kind -eq 'Correctness' -and $gate.exitCode -eq 0) {
+            $gateInvocation = Get-Content (Join-Path $_.DirectoryName invocation.json) -Raw | ConvertFrom-Json
+            if ($gateInvocation.armManifestSha256 -eq (Get-FileHash "$root\arms\$Arm\arm.json" -Algorithm SHA256).Hash) { $gate }
+        }
+    })
+    if (-not $gates.Count) { throw 'Matching successful full-corpus correctness gate required before timing/profiling' }
+}
 $run = "$root\results\$RunId"
 if (Test-Path $run) { throw "Run IDs are immutable: $RunId" }
 New-Item -ItemType Directory $run -Force | Out-Null
@@ -111,7 +136,7 @@ if ($Action -eq 'Profile') {
     Copy-Item $list.FullName "$run\profile-list.txt"
     $exe = "$armPath\zstdgpu_demo.exe"
     $arguments = @('--zst', "@$run\profile-list.txt", '--frame-batch-count', "$ProfileRung",
-        '--run-cnt', '5', '--prf-lvl', '2', '--seq-cnt')
+        '--run-cnt', '5', '--prf-lvl', '2', '--seq-cnt', '--out-csv', "$run\profile.csv")
 }
 $started = [DateTime]::UtcNow
 Save-Json ([ordered]@{ arm = $Arm; commit = $manifest.commit; action = $Action; kind = $Kind
@@ -141,7 +166,7 @@ if ($Action -eq 'Run') {
         disabled = [int]$xml.testsuites.disabled; errors = [int]$xml.testsuites.errors
         skipped = [int](($xml.testsuites.testsuite | Measure-Object skipped -Sum).Sum) }
     $expectedTests = if ($Kind -eq 'Correctness') { 2 } else { 1 }
-    if ($tests.tests -ne $expectedTests -or $tests.failures -ne 0 -or $tests.errors -ne 0) { $rc = 1 }
+    if ($tests.tests -ne $expectedTests -or $tests.failures -ne 0 -or $tests.errors -ne 0 -or $tests.skipped -ne 0) { $rc = 1 }
 }
 if ($failureLines.Count) { $rc = 1 }
 $result = [ordered]@{ runId = $RunId; arm = $Arm; commit = $manifest.commit; action = $Action; kind = $Kind

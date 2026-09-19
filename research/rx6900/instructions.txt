@@ -13,6 +13,7 @@ Local PowerShell entry points (run from repository root):
   .\research\rx6900\Invoke-Campaign.ps1 -Action Run -Arm baseline -Kind Debug -RunId baseline-debug-01
   .\research\rx6900\Invoke-Campaign.ps1 -Action Pair -Arm baseline -OtherArm reference -RunId bootstrap -Sessions 3
   .\research\rx6900\Invoke-Campaign.ps1 -Action Profile -Arm baseline -RunId baseline-profile-01
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Profile -Arm baseline -RunId baseline-profile-1024 -ProfileRung 1024
 
 Build-Arm always solution-target Rebuilds Release x64 (including shader headers),
 fails on uncommitted product sources, and checks fresh executable timestamps.
@@ -39,6 +40,8 @@ seq-cnt, NO ext-mem. Total pooled median bandwidth per rung is authoritative.
 All eight rungs must exist and be finite/positive; no partial geomeans.
 No extra warmup, data trimming, run-count overrides, or perf benchmark edits.
 Profiling is separate prf-lvl=2 and never acceptance data.
+Profile output includes the full per-dispatch internal-stage CSV; rung is explicit.
+The remote evaluator holds an exclusive file handle across each Run/Profile call.
 
 Three independent ABBA sessions give six full ladder observations per arm.
 Inference uses each session's mean paired log-ratio; rungs/sweeps are not treated
@@ -59,3 +62,6 @@ Candidate intake: committed SHA, isolated SourceRoot (evaluation-* worktree), ar
 hypothesis/mechanism, touched paths, scratch-invariant explanation, proposer.
 Build, deploy/hash-check, correctness, fresh paired incumbent comparison, then fresh
 PR156 comparison for finalists. Coordinator alone cherry-picks accepted product code.
+Remote Perf/Profile refuses to start without a matching successful full-corpus
+correctness result for the exact arm manifest. Deploy refuses an existing arm ID;
+verification compares remote arm.json SHA256 to the local immutable manifest.

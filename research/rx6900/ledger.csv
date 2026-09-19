@@ -1,1 +1,2 @@
 iteration,utc,proposer,arm,commit,baseline,correctness,sessions,delta_percent,stderr_log_ratio,z,verdict,artifact
+bootstrap,2026-09-19T20:21:25Z,evaluator,reference,60fb499,baseline,full-external-memory-and-debug-pass,3,3.4596941740240035,0.0008109925796383737,41.938636004928995,reference-gap-established-not-eligible,bootstrap-summary.json

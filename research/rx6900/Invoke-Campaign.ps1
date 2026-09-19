@@ -6,6 +6,7 @@ param(
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$RunId,
     [ValidateSet('Perf', 'Correctness', 'Debug')][string]$Kind = 'Perf',
     [ValidateRange(1, 20)][int]$Sessions = 3,
+    [ValidateSet(64, 128, 192, 256, 384, 512, 768, 1024)][int]$ProfileRung = 256,
     [string]$ArtifactRoot = 'C:\code\zg_campaign\rx6900-20260919-69e45d0f',
     [string]$Proxy = 'C:\tools\rdp_proxy\RdpProxy.Cli.exe'
 )
@@ -21,8 +22,12 @@ function Remote([string]$Operation, [string]$SelectedArm, [string]$Id, [string]$
     $args = @('exec', '--cwd', $remote, '--timeout', '14400', 'powershell.exe', '-NoProfile',
         '-ExecutionPolicy', 'Bypass', '-File', ".\tools\Remote.ps1", '-Action', $Operation)
     if ($SelectedArm) { $args += @('-Arm', $SelectedArm) }
+    if ($SelectedArm -and $Operation -ne 'CheckDeploy') {
+        $args += @('-ExpectedManifestSha256', (Get-FileHash "$ArtifactRoot\arms\$SelectedArm\arm.json" -Algorithm SHA256).Hash)
+    }
     if ($Id) { $args += @('-RunId', $Id) }
     if ($SelectedKind) { $args += @('-Kind', $SelectedKind) }
+    if ($Operation -eq 'Profile') { $args += @('-ProfileRung', "$ProfileRung") }
     & $Proxy @args '--dvc=DSTESTPC2'
     $rc = $LASTEXITCODE
     if ($Id) {
@@ -39,6 +44,7 @@ if ($Action -eq 'Inventory') {
 } elseif ($Action -eq 'Health') { Remote 'Health' '' '' ''
 } elseif ($Action -eq 'Deploy') {
     if (-not $Arm) { throw 'Arm required' }
+    Remote 'CheckDeploy' $Arm '' ''
     Proxy @('push', "$ArtifactRoot\arms\$Arm", "$remote\arms\$Arm")
     Remote 'Verify' $Arm '' ''
 } elseif ($Action -eq 'Pair') {

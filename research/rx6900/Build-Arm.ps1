@@ -12,6 +12,8 @@ $dirty = & git -C $SourceRoot status --porcelain -- zstd
 if ($LASTEXITCODE -ne 0 -or $dirty) { throw "Product sources must be committed before building: $dirty" }
 $commit = (& git -C $SourceRoot rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve source commit' }
+$productTree = (& git -C $SourceRoot rev-parse HEAD:zstd).Trim()
+if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve product tree' }
 $armPath = Join-Path $ArtifactRoot "arms\$Arm"
 if (Test-Path $armPath) { throw "Immutable arm already exists: $armPath" }
 New-Item -ItemType Directory -Force "$ArtifactRoot\builds" | Out-Null
@@ -44,7 +46,7 @@ $shaders = @(Get-ChildItem "$output\Shaders" -Filter *.h | Sort-Object Name | Fo
     [ordered]@{ name = $_.Name; sha256 = (Get-FileHash $_.FullName -Algorithm SHA256).Hash }
 })
 [ordered]@{
-    arm = $Arm; commit = $commit; sourceRoot = $SourceRoot; configuration = 'Release'; platform = 'x64'
+    arm = $Arm; commit = $commit; productTree = $productTree; sourceRoot = $SourceRoot; configuration = 'Release'; platform = 'x64'
     shaderOptions = '/nologo /WX /Ges /Zi /O3'; debugLayerForPerf = $false
     startedUtc = $started.ToString('o'); completedUtc = [DateTime]::UtcNow.ToString('o')
     buildCommand = (@($MSBuild) + $arguments); buildLog = $log

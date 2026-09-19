@@ -1,0 +1,114 @@
+RX6900 evaluator bootstrap - 2026-09-19
+READY FOR CANDIDATE QUEUE. No product optimization accepted, no recovery claim.
+
+Reproducibility
+Original product commit a8572d7; PR156 reference60fb499e311036e4d903725e3a2eaa05066b59ce.
+Baseline build HEAD78d3533 contains evaluator-only additions. Its zstd tree and
+a8572d7's are identical:569991eaa896d66377fcf787f3cdc18fc7abb636.
+Reference zstd tree:3d18769c8925b7f3d897a05a1449778f96aed633.
+Build Release|x64, DXC1.8.2505.32, /nologo /WX /Ges /Zi /O3, NDEBUG.
+No runtime D3D12 debug layer for throughput. Symbols do not imply /Od.
+VS2022 Enterprise MSBuild command, both roots:
+  MSBuild.exe <SourceRoot>\zstd\zstd.sln -t:zstdgpu_demo:Rebuild;zstdgpu_ci_tests:Rebuild -p:Configuration=Release -p:Platform=x64 -m -nr:false -v:quiet -fl
+Use Build-Arm.ps1 for quoted targets and full logging. Reference root:
+C:\code\zg_campaign\worktrees\reference. Existing restored packages shared through
+a junction only after actual missing-import build failure. Googletest initialized
+at73a63ea05dc8ca29ec1d2c1d66481dd0de1950f1 separately in reference worktree.
+
+Immutable self-contained arms each contain17 hashed runtime files plus arm.json.
+Baseline arm-manifest SHA256:
+9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27
+Reference arm-manifest SHA256:
+3BA634512AD6B21142DA1071EB91A65A8A50E956C820ED5FE10ADF776C98909C
+Perf manifest SHA256:
+AA94E9B07C945C8AAE79DB8955D67AA1B88E041C661C44A5E7C2E3F72BD83389
+Adversarial manifest SHA256:
+7A25FC84A3F0DA44591B42475FD2A20E5C9332A59C51A6F054C2975402C1CAB0
+Corpus lock SHA256 (298 .zst hashes plus2 manifest hashes):
+8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9
+Exact sorted selected throughput-list SHA256:
+df9a2980957be9cf59a02b43264685092b73ae84515393a72ae973c4d8a4df53
+Selected throughput corpus:32 files,14643 frames,3754488832 decompressed bytes.
+No ext-mem,5 sweeps,no extra warmup,prf-lvl0,seq-cnt; all8 fixed rungs.
+
+Correctness
+Unchanged full-corpus ExternalMemory/ExternalMemorySeq:2/2 gtest scenario tests
+on each arm,rc0,0 skips/failures. D3D12DebugLayerSeq:1/1 per arm,rc0,0 skips.
+These are scenario units, not counts of files/frames/submissions.
+Expected uppercase corruption rejection is not a failure; no lowercase error:
+assertion reasons. Fresh XML/stdout and output hashes retained for each run.
+First reference wrapper run lacked a captured process exit code and is INVALID
+despite clean XML; fixed retained process handle and reran as correctness-02.
+
+Fresh paired measurements
+Order baseline/reference/reference/baseline,3 complete sessions,6 full eight-rung
+observations per arm. Each row below is geometric mean across6 observations,GB/s.
+Rung        baseline        PR156
+64          2.976533        2.953099
+128         5.278347        5.241946
+192         6.891789        6.870956
+256         8.191063        8.291790
+384        10.277828       10.598192
+512        11.883022       12.607715
+768        14.255128       15.808740
+1024       16.222717       17.651103
+8-rung GM   8.411055        8.702052
+
+PR156 is+3.459694% relative to baseline; this is the measured recovery target,
+not the historical loss assumption. Baseline is about3.344% below fresh PR156.
+Paired session log ratios:0.035445961881,0.032638568138,0.033951237782.
+Mean log ratio0.034011922600; stderr0.000810992580; Z41.9386.
+Approximate +/-3 standard-error delta interval:+3.208285% to+3.711716%.
+Statistical unit is complete ABBA session, NOT eight rungs or GPU submissions.
+Geomean observation arithmetic stdev:baseline0.005981,reference0.010041GB/s.
+Per-arm max/min spread:baseline0.199701%,reference0.355415%.
+The numerical summary's accept=true denotes strong REFERENCE SEPARATION ONLY.
+PR156 restores removed scratch and is NOT an eligible optimization candidate.
+Incumbent remains a8572d7; accepts0. No product changes were made.
+
+Health
+RX6900 XT driver32.0.21037.1004,Ryzen5600X6c12t,16GB system RAM.
+No competing Agent.Worker/zstd/MSBuild/dxc processes at run boundaries.
+GPU engine counter query succeeded; no sampled active engine above0.1%.
+Early health snapshots rounded per-process CPU percentages to integral values
+because Math.Max selected the integer overload. Fixed to floating point.
+Final current CPU sample0.2585% total, no competing processes/GPU engines.
+Independent tiny ABBA spread is the readiness evidence; old absolute scores,
+cumulative CPU time, and any prior sevenfold slowdown are not causal evidence.
+No services, boost/power settings, other processes, or machine state modified.
+
+Exploratory profiler seed (NOT acceptance data)
+Separate prf-lvl2,--out-csv runs on the same selected corpus,5 sweeps,256/1024.
+Exclude partial trailing batches, matching pooling:285 dispatches at256,
+70 at1024. Full per-dispatch internal-stage CSVs retained.
+Mean timing(us),baseline/reference:
+  R256: table+literals813.470/808.018;Stage2 7689.123/7693.060.
+  R1024:table+literals3951.957/2107.929;Stage2 16374.457/14429.943.
+  R1024 sequence decode4747.757/4671.014;execute7191.157/7167.057.
+At1024 the table+literals+1844.029us explains about94.8% of Stage2+1944.514us
+in these one-off profiles. Prioritize large-window Huffman regeneration/literal
+cost, not generic fixed launch overhead. This steers proposals, never accepts.
+Compiled combined-kernel DXIL both32threads,6456 declared LDS bytes,6 barrier
+sites. Baseline/reference static instruction-line count1114/831,buffer-load
+sites21/19,store sites3/1. No RGA ISA/register/occupancy evidence was collected;
+these static counts must not be called dynamic instructions or proven occupancy.
+
+Artifacts and candidate interface
+Local:C:\code\zg_campaign\rx6900-20260919-69e45d0f
+Remote:C:\dannych\rdp_proxy\workspace\rx6900-20260919-69e45d0f
+Raw outputs:results\bootstrap-s[1-3]-p[1-4]-<arm>,correctness/debug IDs,
+and<arm>-profile-{256,1024}; build logs in builds; binaries/manifests in arms.
+Committed bootstrap-summary.json contains every acceptance observation/rung;
+profile-summary.json contains separate exploratory stage statistics.
+Every RdpProxy call MUST use--dvc=DSTESTPC2.
+Use Invoke-Campaign.ps1 Inventory/Deploy/Verify/Run/Profile/Pair as documented
+in instructions.txt. Run/Profile have an exclusive remote measurement lock;
+new arm/run IDs are required; Pair uses matched immutable prebuilt arms.
+Candidate intake:committed SHA,isolated evaluation-* worktree root,unique arm ID,
+hypothesis/mechanism,touched paths,scratch-invariant explanation,proposer.
+Correctness gate then fresh paired incumbent comparison:>=0.3% AND Z>=3,
+at least3 ABBA sessions,<=5% spread,all8 rungs. Inadequate results repeat/reject.
+Finalists additionally require fresh paired reference parity and full correctness.
+Coordinator owns product acceptance/cherry-picks; evaluator owns all measurement.
+Remaining limits:single device,only3 session-level replicates,profiles unreplicated,
+no continuous clock/power telemetry,health checks at boundaries not throughout.

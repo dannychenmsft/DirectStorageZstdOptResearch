@@ -17,9 +17,15 @@ def load(path):
 def parse_run(path):
     path = Path(path)
     result = load(path / "result.json")
+    invocation = load(path / "invocation.json")
     assert result["exitCode"] == 0, f"Failed run: {path}"
     assert result["action"] == "Run" and result["kind"] == "Perf", "Not acceptance data"
     assert result["tests"]["tests"] == 1 and result["tests"]["failures"] == 0
+    assert invocation["arm"] == result["arm"] and invocation["commit"] == result["commit"]
+    assert invocation["startedUtc"] == result["startedUtc"], "Invocation does not match result"
+    selected = list((path / "batch_lists").glob("*perf_throughput*.txt"))
+    assert len(selected) == 1, "Missing/ambiguous throughput corpus list"
+    selected_bytes = selected[0].read_bytes()
     raw = (path / "stdout.txt").read_bytes()
     assert hashlib.sha256(raw).hexdigest().upper() == result["stdoutSha256"].upper(), "Output changed"
     text = raw.decode("utf-8-sig", errors="strict")
@@ -49,6 +55,9 @@ def parse_run(path):
             current = None
     assert tuple(row["rung"] for row in rows) == RUNGS, f"Missing/duplicate/out-of-order rung: {path}"
     return {"runId": result["runId"], "arm": result["arm"], "commit": result["commit"],
+            "corpusLockSha256": invocation["corpusLockSha256"],
+            "armManifestSha256": invocation["armManifestSha256"],
+            "selectedListSha256": hashlib.sha256(selected_bytes).hexdigest(),
             "files": files, "rungs": rows,
             "geomean": math.exp(statistics.mean(math.log(row["gbps"]) for row in rows))}
 
@@ -70,6 +79,8 @@ def summarize(root, schedule, baseline, candidate, minimum_margin=0.003):
         logs = [math.log(row["geomean"]) for row in session]
         ratios.append((logs[1] + logs[2] - logs[0] - logs[3]) / 2)
     assert len(ratios) >= 2, "At least two independent ABBA sessions required"
+    assert len({row["corpusLockSha256"] for row in records}) == 1, "Corpus lock changed"
+    assert len({row["selectedListSha256"] for row in records}) == 1, "Selected throughput corpus changed"
     mean = statistics.mean(ratios)
     stderr = statistics.stdev(ratios) / math.sqrt(len(ratios))
     separation = mean / stderr if stderr else (1e300 if mean > 0 else 0)
@@ -78,6 +89,7 @@ def summarize(root, schedule, baseline, candidate, minimum_margin=0.003):
         selected = [row for row in records if row["arm"] == arm]
         values = [row["geomean"] for row in selected]
         assert len({row["commit"] for row in selected}) == 1, "Arm source changed"
+        assert len({row["armManifestSha256"] for row in selected}) == 1, "Arm binary/configuration changed"
         arms[arm] = {
             "commit": selected[0]["commit"], "n": len(values),
             "geomean": math.exp(statistics.mean(map(math.log, values))),

@@ -1,11 +1,18 @@
 {
-  "phase": "bootstrap-abba",
+  "phase": "ready-for-candidates",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
   "accepts": 0,
   "rejects": 0,
-  "ready": false,
+  "ready": true,
   "correctness": "both arms: ExternalMemory, ExternalMemorySeq, D3D12DebugLayerSeq all pass; no skips",
-  "measurement": "bootstrap ABBA x3 in progress"
+  "measurement": "bootstrap ABBA x3 complete, healthy spread",
+  "baseline_geomean_gbps": 8.41105511445194,
+  "reference_geomean_gbps": 8.70205189822058,
+  "reference_gain_percent": 3.4596941740240035,
+  "paired_log_stderr": 0.0008109925796383737,
+  "z": 41.938636004928995,
+  "report": "bootstrap-report.txt",
+  "goal_met": false
 }

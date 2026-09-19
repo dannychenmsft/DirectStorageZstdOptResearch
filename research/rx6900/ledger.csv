@@ -4,3 +4,4 @@ e1,2026-09-19T20:50:25.0742799Z,e1,e1-5460481,54604812649247846f4bb3f38ebc56d30c
 e2-screen,2026-09-19T21:06:02.6027398Z,e2,e2-3092b55,3092b55690dfc613a7681a3207a5515c936e0f6d,baseline,full-external-memory-pass,0,3.4783751345986103,,,screen-promising-not-accepted,policy2-screen-summary.json
 e3-screen,2026-09-19T21:06:02.6027398Z,e3,e3-80dc139,80dc139dc0a4d250266e1a39b5387c2d44a8c65d,baseline,full-external-memory-and-debug-pass,0,-2.694137622151005,,,screen-deprioritized,policy2-screen-summary.json
 e4-screen,2026-09-19T21:13:24.6681775Z,e4,e4-c4b3725,c4b372592b8da8f01a724d4159cc5348ec37bcad,baseline,full-external-memory-pass,0,3.8744262792357986,,,screen-promising-not-accepted,policy2-e4-screen-summary.json
+e4-final-cpu,2026-09-19T21:32:29.7306448Z,evaluator,e4-c4b3725,c4b372592b8da8f01a724d4159cc5348ec37bcad,baseline,debug-pass-cpu-replay-fails-on-baseline-and-e4-pr156-passes,0,,,,blocked-before-timing,e4-cpu-gate-report.json

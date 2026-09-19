@@ -111,5 +111,44 @@ class AnalysisTests(unittest.TestCase):
         self.assertFalse(summary["candidates"][0]["accepted"])
         self.assertIsNone(summary["candidates"][0]["z"])
 
+    def test_joint_shared_controls_and_linear_drift(self):
+        schedule = [{"session": session, "position": pos, "arm": arm, "runId": f"{session}-{pos}-{arm}"}
+                    for session in range(1, 4) for pos, arm in enumerate(("R", "C", "B", "C", "R"), 1)]
+
+        def fake_run(path):
+            session, position, arm = path.name.split("-")
+            score = {"B": 10, "R": 10.3, "C": 10.5}[arm] * analyze.math.exp(.0001 * int(position))
+            return {"runId": path.name, "arm": arm, "commit": arm, "geomean": score,
+                    "corpusLockSha256": "corpus", "selectedListSha256": "list", "armManifestSha256": arm,
+                    "rungs": [{"rung": rung, "gbps": score} for rung in analyze.RUNGS]}
+
+        with patch.object(analyze, "parse_run", side_effect=fake_run):
+            summary = analyze.summarize_joint("synthetic", schedule, "B", "C", "R")
+        self.assertEqual(summary["arms"]["B"]["n"], 3)
+        self.assertEqual(summary["arms"]["C"]["n"], 6)
+        self.assertEqual(summary["arms"]["R"]["n"], 6)
+        self.assertAlmostEqual(summary["comparisons"]["B"]["delta_percent"], 5)
+        self.assertAlmostEqual(summary["comparisons"]["R"]["delta_percent"], 100 * (10.5 / 10.3 - 1))
+        self.assertTrue(summary["fresh_reference_restoration_conclusive"])
+        with patch.object(analyze, "parse_run", side_effect=fake_run), self.assertRaises(AssertionError):
+            analyze.summarize_joint("synthetic", schedule[:-1], "B", "C", "R")
+
+    def test_joint_reference_regression_is_not_restoration(self):
+        schedule = [{"session": session, "position": pos, "arm": arm, "runId": f"{session}-{pos}-{arm}"}
+                    for session in range(1, 4) for pos, arm in enumerate(("R", "C", "B", "C", "R"), 1)]
+
+        def fake_run(path):
+            arm = path.name.split("-")[2]
+            score = {"B": 10, "R": 11, "C": 10.5}[arm]
+            return {"runId": path.name, "arm": arm, "commit": arm, "geomean": score,
+                    "corpusLockSha256": "corpus", "selectedListSha256": "list", "armManifestSha256": arm,
+                    "rungs": [{"rung": rung, "gbps": score} for rung in analyze.RUNGS]}
+
+        with patch.object(analyze, "parse_run", side_effect=fake_run):
+            summary = analyze.summarize_joint("synthetic", schedule, "B", "C", "R")
+        self.assertTrue(summary["incumbent_gate_passed"])
+        self.assertFalse(summary["fresh_reference_restoration_conclusive"])
+        self.assertEqual(summary["verdict"], "incumbent-win-reference-regression")
+
 if __name__ == "__main__":
     unittest.main()

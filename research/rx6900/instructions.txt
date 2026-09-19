@@ -77,3 +77,25 @@ candidate or repeat obvious losers. Reserve Pair(3 sessions) and all conclusive
 margin/Z/full-correctness gates for promising finalists versus incumbent and PR156.
 Remote pause-before-perf.json, if present, stops new Run Perf/Profile calls at
 complete-ladder boundaries; do not resume an obsolete campaign after a policy pause.
+
+Final shared-control confirmation (authorized 2026-09-19):
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Run -Arm e4-c4b3725 -Kind Debug -RunId e4-debug-01
+  .\research\rx6900\Invoke-Campaign.ps1 -Action ValidateCpu -Arm e4-c4b3725 -RunId e4-cpu-individual-01
+  .\research\rx6900\Invoke-Campaign.ps1 -Action Confirm -Arm baseline -OtherArm e4-c4b3725 -ReferenceArm reference -RunId e4-final -Sessions 3
+Run IDs above are illustrative; existing artifacts are immutable and may not be reused.
+Confirm requires matching successful candidate Debug and ValidateCpu artifacts.
+ValidateCpu invokes unchanged --chk-cpu --chk-gpu --sim-gpu on seven decisive files,
+individually and without tiling, so both standalone CPU emulation and GPU-readback
+CPU replay execute. It rejects native failures, [FAIL] assertions and missing path
+markers; these diagnostics never enter throughput acceptance.
+Three sessions order reference,candidate,baseline,candidate,reference (15 ladders).
+Per-session candidate logmean(two) minus reference logmean(two), or centered
+baseline logscore(one), yields three paired samples for each comparison.
+Incumbent gate remains >=0.3% and Z>=3 with healthy spread. The fresh-reference
+report additionally gives a 95% Student-t interval(df=2), not an implied Gaussian
+confidence interval from only three sessions. Full restoration is conclusive only
+when the reference interval lower bound is nonnegative and incumbent gate passes.
+No product is automatically promoted.
+
+CURRENT BLOCKER: baseline and e4 fail all seven GPU-readback CPU replay cases,
+whereas PR156 passes all seven. See e4-final-blocker.txt. No final timing ran.

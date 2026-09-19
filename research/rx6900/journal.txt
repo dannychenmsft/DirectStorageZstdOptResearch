@@ -132,3 +132,23 @@ verification is deferred; no weakened identity check or benchmark semantics chan
 The major latency improvement is already policy2'sone candidate ladder instead of
 six candidate plus six control ladders for every reject. Confirmation remains only
 for promising finalists. Durable compact table:candidate-results.csv.
+
+2026-09-19 e4 final confirmation BLOCKED before timing
+Coordinator authorized shared R,C,B,C,R x3 (15 total ladders),not separate24.
+Implemented session-level dual comparisons,>=0.3%/Z>=3 incumbent gate,and honest
+fresh-reference Student-t95%(df2) intervals. No product promotion path.
+e4-debug-01 passed1/1 full D3D12DebugLayerSeq,rc0,no skipped/failure signatures.
+Decisive CPU corpus7files/956frames tested unchanged--chk-cpu--chk-gpu--sim-gpu.
+Standalone CPU emulation and GPU validation return before the post-replay literal
+assertion fails. Both baseline and e4 fail the same assertion,not a new e4-only
+failure. Reproduced combined and separate files; removing--seq-cnt did not cure it.
+Per-file tests:baseline0/7,e4 0/7;PR1567/7,all with identical corpus and arguments.
+Failure is main.cpp597 baseline/596 e4,inside zstdgpu_Test_DecompressLiterals,
+the second Validate_DecompressedLiterals after CPU replay of GPU intermediates.
+This brackets a CPU-replay validation regression between60fb499 andoriginala8572d7.
+No product fix attempted; evaluator owns verification,not promotion/product repair.
+Fail-closed Confirm guard explicitly tested:refuses to launch without passing CPU
+gate. Therefore0/15 confirmation ladders ran; no fresh final-reference result exists.
+Diagnostic per-file input reading changed to IO.File.ReadAllLines to avoid serializing
+PowerShell-added filesystem properties into bloated JSON; executable/arguments
+unchanged. Raw failed-run artifacts retained; concise paired proofe4-cpu-gate-report.json.

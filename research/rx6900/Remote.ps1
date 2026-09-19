@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Inventory', 'Health', 'CheckDeploy', 'Verify', 'Run', 'Profile')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Inventory', 'Health', 'CheckDeploy', 'Verify', 'Run', 'Profile', 'ValidateCpu')][string]$Action,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$Arm,
     [ValidatePattern('^[a-zA-Z0-9_-]+$')][string]$RunId,
     [ValidateSet('Perf', 'Correctness', 'Debug')][string]$Kind = 'Perf',
@@ -145,6 +145,23 @@ if ($Action -eq 'Profile') {
     $arguments = @('--zst', "@$run\profile-list.txt", '--frame-batch-count', "$ProfileRung",
         '--run-cnt', '5', '--prf-lvl', '2', '--seq-cnt', '--out-csv', "$run\profile.csv")
 }
+if ($Action -eq 'ValidateCpu') {
+    $cpuFiles = @(
+        'public\silesia\dickens.zst',
+        'public\silesia\xml.zst',
+        'public\fuzz\blocktypes\compressed\concat_compressed.zst',
+        'public\fuzz\blocktypes\mixed\concat_mixed.zst',
+        'public\fuzz\concat\concat_001.zst',
+        'internal\GearsOfWar\zstd-12_complete-dds\Gears_Of_War_part01.DDS.zst',
+        'internal\GearsOfWar\zstd-17_64KB-slices\Gears_Of_War_part01.DDS.zst'
+    )
+    $paths = @($cpuFiles | ForEach-Object { (Get-Item "$Content\$_").FullName })
+    $paths | Set-Content "$run\cpu-decisive-list.txt" -Encoding ASCII
+    Save-Json $cpuFiles "$run\cpu-selected-files.json"
+    $exe = 'powershell.exe'
+    $arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "$PSScriptRoot\Validate-CpuFiles.ps1",
+        '-DemoPath', "$armPath\zstdgpu_demo.exe", '-ListPath', "$run\cpu-decisive-list.txt", '-OutputDirectory', $run)
+}
 $started = [DateTime]::UtcNow
 Save-Json ([ordered]@{ arm = $Arm; commit = $manifest.commit; action = $Action; kind = $Kind
     startedUtc = $started.ToString('o'); executable = $exe; arguments = $arguments
@@ -161,6 +178,7 @@ $retainedHandle = $process.Handle
 $process.WaitForExit()
 $rc = $process.ExitCode
 if ($null -eq $rc) { throw 'Missing process exit code' }
+$processExitCode = $rc
 $stdout = Get-Content "$run\stdout.txt" -Raw
 $stderr = if ((Get-Item "$run\stderr.txt").Length) { Get-Content "$run\stderr.txt" -Raw } else { '' }
 $failureLines = @([regex]::Matches($stdout + "`n" + $stderr, '(?m)^.*error: .*$') | ForEach-Object Value)
@@ -176,9 +194,18 @@ if ($Action -eq 'Run') {
     if ($tests.tests -ne $expectedTests -or $tests.failures -ne 0 -or $tests.errors -ne 0 -or $tests.skipped -ne 0) { $rc = 1 }
 }
 if ($failureLines.Count) { $rc = 1 }
+if ($Action -eq 'ValidateCpu') {
+    $failureLines += @([regex]::Matches($stdout + "`n" + $stderr, '(?m)^.*\[FAIL\].*$') | ForEach-Object Value)
+    if ($stdout -cnotmatch "Running GPU Decompression code on CPU" -or
+        $stdout -cnotmatch "Option '--sim-gpu' was set" -or
+        $stdout -cnotmatch 'CPU_CASES_PASSED=7' -or
+        ($stdout + $stderr) -cmatch '\[FAIL\]|Error:|error: |mismatch|DEVICE_REMOVED') {
+        $rc = 1
+    }
+}
 $result = [ordered]@{ runId = $RunId; arm = $Arm; commit = $manifest.commit; action = $Action; kind = $Kind
     startedUtc = $started.ToString('o'); completedUtc = [DateTime]::UtcNow.ToString('o')
-    exitCode = $rc; tests = $tests; failureReasons = $failureLines
+    exitCode = $rc; processExitCode = $processExitCode; tests = $tests; failureReasons = $failureLines
     stdoutSha256 = (Get-FileHash "$run\stdout.txt" -Algorithm SHA256).Hash
     stderrSha256 = (Get-FileHash "$run\stderr.txt" -Algorithm SHA256).Hash }
 Save-Json $result "$run\result.json"

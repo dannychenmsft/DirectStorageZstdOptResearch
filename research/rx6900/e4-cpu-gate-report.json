@@ -1,0 +1,311 @@
+{
+  "status": "blocked-before-performance-confirmation",
+  "confirmation_ladders_run": 0,
+  "required_confirmation_ladders": 15,
+  "cases": {
+    "baseline": {
+      "runId": "baseline-cpu-individual-01",
+      "commit": "78d3533ed0665dcef620276f11fe798719d30b0d",
+      "exitCode": 1,
+      "passed": 0,
+      "total": 7,
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "9EBBD39E13E269140B296A81886F2EBB60782637D692086F564654A6D87A9E27",
+      "stdoutSha256": "EB0B6D5FD8A6E027E7E740DBA28EE1B3FA575AEC1E9774555B15AC5BC54F8898",
+      "cases": [
+        {
+          "index": 0,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+          "frames": 78,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "981BF40FD5683DCA4A28334ACFDC7C48ED9976F4B1EB821092779C6CFBE34C71"
+        },
+        {
+          "index": 1,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+          "frames": 41,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "4C39BC7DAA0F0CCBD23955F8A7DCE8131C1D4616801EFA7F08EF28274D90C304"
+        },
+        {
+          "index": 2,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+          "frames": 57,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "7AFF53760D20D22556FF8B6E8584B4E8A95FC2A2FC79333A7525175ACED837FB"
+        },
+        {
+          "index": 3,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+          "frames": 58,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "EC1341E5D810B2EEA4F47D6FFCFEF596C35CEF144BCA92F0E5751FDF98AC3581"
+        },
+        {
+          "index": 4,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+          "frames": 322,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "CBCB42971B8AB406018FF3EBC4619734F8B81F8552C69B6FAD30CEF9C61F6ACF"
+        },
+        {
+          "index": 5,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+          "frames": 200,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "47A2D451F50D6428193B780A9BA7FEF8E07054E50F88021908C58143C09E1910"
+        },
+        {
+          "index": 6,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+          "frames": 200,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\GH_DirectStorage3\\zstd\\zstdgpu_demo\\main.cpp:597 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "46AA46B7356AF2DE9D3449EF5056AB14736B2AE4F02A8616C5D2C17DEE35DE43"
+        }
+      ]
+    },
+    "e4": {
+      "runId": "e4-cpu-individual-01",
+      "commit": "c4b372592b8da8f01a724d4159cc5348ec37bcad",
+      "exitCode": 1,
+      "passed": 0,
+      "total": 7,
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "2FB85D5CF9E6C3C344861070559EE2C353B5B5C57558C740C56E0F06DE68E5CB",
+      "stdoutSha256": "D295DDCF6DAEB2AF51F68C3BADBC88877A20145E6EFF7F5A5DC04065291A84F0",
+      "cases": [
+        {
+          "index": 0,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+          "frames": 78,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "ED0D23B68A8C7A4265D3EF44BCA77E30E56F0CA79148E387C6A17F23E9BB5354"
+        },
+        {
+          "index": 1,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+          "frames": 41,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "AD0B1A8659E7CB458D5EE281758452D2E4BB51FE9D0C62570112DE1E09546BE2"
+        },
+        {
+          "index": 2,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+          "frames": 57,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "09BBADD246468BE0867F69A2A8BAC79D81A26DCDE4BA22075AB193E3FD138E90"
+        },
+        {
+          "index": 3,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+          "frames": 58,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "A52A236E881EED3856716425E934977EE93EE02B1A8C9E19D6FB2FE5782187A1"
+        },
+        {
+          "index": 4,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+          "frames": 322,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "A3104B71EA27B526DCF70173621F95AA8CE163DCC0A1C8C514E23C73B801762B"
+        },
+        {
+          "index": 5,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+          "frames": 200,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "489F98B0587CEBA9A987471AD57CDAD6FC8D995C650F5F98ED478C0962208288"
+        },
+        {
+          "index": 6,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+          "frames": 200,
+          "processExitCode": 1,
+          "passed": false,
+          "failure_lines": [
+            "[FAIL] (__pragma(warning(push)) __pragma(warning(disable : 26812)) kzstdgpu_Validate_Success __pragma(warning(pop)) == zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)) at C:\\code\\zg_campaign\\worktrees\\evaluation-e4\\zstd\\zstdgpu_demo\\main.cpp:596 in void __cdecl zstdgpu_Test_DecompressLiterals(struct zstdgpu_ResourceDataCpu &,struct zstdgpu_ResourceDataCpu &,unsigned int,bool,bool)"
+          ],
+          "stdoutSha256": "CAB342BCCC28D07527297E995FDA260B2AF8A1B2EB689E6F34794BB2452B20BA"
+        }
+      ]
+    },
+    "reference": {
+      "runId": "reference-cpu-individual-01",
+      "commit": "60fb499e311036e4d903725e3a2eaa05066b59ce",
+      "exitCode": 0,
+      "passed": 7,
+      "total": 7,
+      "corpusLockSha256": "8FDB54EE29977B087E7228B6DF758E1B759DB08243784E78CADFD718C98581D9",
+      "armManifestSha256": "3BA634512AD6B21142DA1071EB91A65A8A50E956C820ED5FE10ADF776C98909C",
+      "stdoutSha256": "4D984453103D4578B9E33D89D0AEA6C0A43F37587657C1591C203AFDB59445E2",
+      "cases": [
+        {
+          "index": 0,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+          "frames": 78,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "4213C01A38AE40DCD64108561711D8D173767B07EBFDF06D89CB18A479193AEC"
+        },
+        {
+          "index": 1,
+          "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+          "frames": 41,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "C4624C97973D4408D291D993F20C51E0E012FE91D8E88CF82A05598C149A72FA"
+        },
+        {
+          "index": 2,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+          "frames": 57,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "96E5A877AFA9880D0E1FDFAD8E5297D76056C199A302432AE8B954B4E6118FA7"
+        },
+        {
+          "index": 3,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+          "frames": 58,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "ADA3C34D76F11A409D256325A001A61374734A9A04802550F070828DA8722CC1"
+        },
+        {
+          "index": 4,
+          "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+          "frames": 322,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "7688B2C59C2F2A12470BB5B80216EFFA530BDA612DA4EFB6EE97791C6012B950"
+        },
+        {
+          "index": 5,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+          "frames": 200,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "8B0F1EDC5914AFC0F7D23AEED30B5C3663F5F40500A0A1C0A1ECAE11F967E5CF"
+        },
+        {
+          "index": 6,
+          "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+          "frames": 200,
+          "processExitCode": 0,
+          "passed": true,
+          "failure_lines": [],
+          "stdoutSha256": "37935F37BC8E432293CD7A70D4BABA5A0855477985A8C9B14750665D2AFA9F74"
+        }
+      ]
+    }
+  },
+  "matrix": [
+    {
+      "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\dickens.zst",
+      "frames": 78,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    },
+    {
+      "file": "C:\\agent\\data\\zstd_content\\public\\silesia\\xml.zst",
+      "frames": 41,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    },
+    {
+      "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\compressed\\concat_compressed.zst",
+      "frames": 57,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    },
+    {
+      "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\blocktypes\\mixed\\concat_mixed.zst",
+      "frames": 58,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    },
+    {
+      "file": "C:\\agent\\data\\zstd_content\\public\\fuzz\\concat\\concat_001.zst",
+      "frames": 322,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    },
+    {
+      "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-12_complete-dds\\Gears_Of_War_part01.DDS.zst",
+      "frames": 200,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    },
+    {
+      "file": "C:\\agent\\data\\zstd_content\\internal\\GearsOfWar\\zstd-17_64KB-slices\\Gears_Of_War_part01.DDS.zst",
+      "frames": 200,
+      "baseline": false,
+      "e4": false,
+      "reference": true
+    }
+  ]
+}

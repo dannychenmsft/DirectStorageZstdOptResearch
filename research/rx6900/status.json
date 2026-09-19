@@ -1,11 +1,11 @@
 {
-  "phase": "screening-complete-finalist-unconfirmed",
+  "phase": "e4-final-confirmation-blocked-cpu-replay",
   "baseline": "a8572d7",
   "reference": "60fb499",
   "best": "a8572d7",
   "accepts": 0,
   "rejects": 1,
-  "ready": true,
+  "ready": false,
   "correctness": "both arms: ExternalMemory, ExternalMemorySeq, D3D12DebugLayerSeq all pass; no skips",
   "measurement": "bootstrap ABBA x3 complete, healthy spread",
   "baseline_geomean_gbps": 8.41105511445194,
@@ -19,13 +19,16 @@
   "campaign_board_snapshot": "campaign-board.json",
   "in_flight_explorers": ["e1", "e2", "e3"],
   "policyVersion": 2,
-  "candidate_queue_state": "e1 rejected; e2/e4 promising; e3 deprioritized; no active GPU process",
-  "pending_finalist": "e4-c4b3725 strongest screen; paired confirmation, fresh reference, debug and changed CPU validation paths still required",
+  "candidate_queue_state": "final e4 debug passed; CPU replay gate blocked before timing; no active GPU process",
+  "pending_finalist": "e4-c4b3725 blocked: PR156 CPU replay 7/7 passes, original baseline and e4 0/7",
+  "confirmation_ladders_run": 0,
+  "confirmation_ladders_planned": 15,
+  "blocker_report": "e4-final-blocker.txt",
   "candidate_queue": [
     {"id": "e1", "commit": "54604812649247846f4bb3f38ebc56d30c161997", "phase": "rejected", "delta_percent": -0.11104700776003841, "z": -7.6928834374108614},
     {"id": "e2", "commit": "3092b55690dfc613a7681a3207a5515c936e0f6d", "phase": "promising single-ladder screen", "screen_delta_percent": 3.4783751345986103},
     {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "deprioritized after screen", "screen_delta_percent": -2.694137622151005},
-    {"id": "e4", "commit": "c4b372592b8da8f01a724d4159cc5348ec37bcad", "phase": "strongest promising single-ladder screen", "screen_delta_percent": 3.8744262792357986}
+    {"id": "e4", "commit": "c4b372592b8da8f01a724d4159cc5348ec37bcad", "phase": "final correctness blocked by inherited GPU-readback CPU replay failure", "screen_delta_percent": 3.8744262792357986}
   ],
   "goal_met": false
 }

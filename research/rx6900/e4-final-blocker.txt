@@ -1,0 +1,73 @@
+e4 final confirmation: BLOCKED BEFORE PERFORMANCE TIMING
+
+Candidate c4b372592b8da8f01a724d4159cc5348ec37bcad remains unaccepted/unpromoted.
+Its +3.874426% screening result is unchanged and is not final confirmation.
+The new gate exposes a failure inherited from original a8572d7,not an established
+e4-specific regression. PR15660fb499 passes the identical tests.
+
+Completed final checks
+Full D3D12DebugLayerSeq:e4-debug-01,1/1 gtest scenario,rc0,0 skips/failures.
+Earlier full298-file ExternalMemory and ExternalMemorySeq remain passed2/2.
+Decisive CPU corpus contains7 valid CI files,956 frames:
+  silesia dickens78,xml41;
+  fuzz compressed concat57,mixed concat58,concat_001322;
+  GearsOfWar complete-dds part01200,64KB-slices part01200.
+Both changed CPU paths are entered with the unchanged demo flags:
+  --zst <file> --run-cnt1 --prf-lvl0 --chk-cpu --chk-gpu --sim-gpu
+No frame-batch-count is supplied:whole-buffer execution is necessary to reach
+the GPU-readback replay. --sim-gpu also enables --chk-cpu automatically.
+
+Matched per-file results
+                         baseline a8572d7       e4 c4b3725       PR15660fb499
+Native cases passing         0/7                  0/7                7/7
+Native exit codes           all1                 all1               all0
+Failure reason             same post-replay literal assertion       none
+
+The standalone CPU shader emulation completed without assertions before GPU
+execution. GPU frame status and first reference literal validation also completed.
+The subsequent CPU replay of GPU-readback inputs fails:
+  zstdgpu_ReferenceStore_Validate_DecompressedLiterals(&gpuReadbackRes)
+inside zstdgpu_Test_DecompressLiterals,at main.cpp597 onbaseline and596 one4,
+the SECOND validation after the simGpu reconstruction loop.
+Release retains instrumented ZSTDGPU_ASSERT checks; these are real native failures,
+not disabled debug assertions or expected adversarial corruption rejections.
+
+Reproduction variants
+The first seven-file concatenated invocation failed onboth baseline/e4 with
+--seq-cnt. Removing--seq-cnt onbaseline stillfailed. Testing allseven files
+individually produced the same failure onboth arms,so no data was excluded to
+manufacture a pass. PR156 then passed every identical individual-file case.
+This establishes the failure predates e4 and is present after the original
+scratch-reduction branch,but does not by itself prove the internal root cause.
+No product code or CI benchmark semantics were changed to bypass the gate.
+
+Performance confirmation
+Coordinator-authorized shared schedule implemented and unit-tested:
+  reference,candidate,baseline,candidate,reference, repeated3sessions.
+That is15exactCI ladders,not24. Each session contributes one candidate/reference
+and one candidate/baseline log-ratio. Incumbent margin>=0.3% andZ>=3 remain required.
+Fresh-reference95% Student-t(df2) intervals are reported separately from the
+operational Z gate. Restoration requires a nonnegative reference interval bound.
+The local Confirm command was explicitly tested to refuse this candidate while
+the CPU gate is failing. ZERO of15confirmation ladders were launched.
+Thus there is no new final candidate-vs-PR156 performance result or uncertainty
+to report; claiming restoration would be unsupported.
+
+Artifacts
+Committed concise paired matrix and hashes:e4-cpu-gate-report.json.
+Raw local root:C:\code\zg_campaign\rx6900-20260919-69e45d0f\results
+RunIDs:
+  e4-debug-01
+  e4-cpu-paths-01,baseline-cpu-paths-01 (combined,seq-cnt)
+  baseline-cpu-staged-01 (combined,no seq-cnt)
+  baseline-cpu-individual-01,e4-cpu-individual-01,reference-cpu-individual-01
+Per-file stdout/stderr and cpu-cases.json are retained. The first per-file
+diagnostic JSONs carried verbose PowerShell string properties; serialization
+was fixed without changing native executable/arguments,and raw evidence retained.
+
+Required next action
+Resolve the inherited GPU-readback CPU literal-replay mismatch in a separately
+reviewed product/harness fix,then rebuild a new immutable candidate arm and rerun
+this gate. Evaluator did not edit product code. Resume shared-control timing only
+after the required gate passes. No e2/e4 combination is proposed or measured.
+GPU is idle; no managed remote process remained at handoff.

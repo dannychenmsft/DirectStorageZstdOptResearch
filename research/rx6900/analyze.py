@@ -140,6 +140,71 @@ def summarize_screen(root, schedule, baseline):
         "runs": records}
 
 
+def summarize_joint(root, schedule, baseline, candidate, reference):
+    records, sessions = [], {}
+    for entry in schedule:
+        run = parse_run(Path(root) / entry["runId"])
+        assert run["arm"] == entry["arm"]
+        run.update(session=entry["session"], position=entry["position"])
+        records.append(run)
+        sessions.setdefault(entry["session"], []).append(run)
+    assert len(sessions) == 3, "Exactly three complete confirmation sessions required"
+    assert len({row["corpusLockSha256"] for row in records}) == 1
+    assert len({row["selectedListSha256"] for row in records}) == 1
+    comparisons = {baseline: [], reference: []}
+    for session in sessions.values():
+        session.sort(key=lambda row: row["position"])
+        assert [row["position"] for row in session] == [1, 2, 3, 4, 5]
+        assert [row["arm"] for row in session] == [reference, candidate, baseline, candidate, reference]
+        logs = [math.log(row["geomean"]) for row in session]
+        candidate_log = (logs[1] + logs[3]) / 2
+        comparisons[baseline].append(candidate_log - logs[2])
+        comparisons[reference].append(candidate_log - (logs[0] + logs[4]) / 2)
+    arms = {}
+    for arm in (baseline, candidate, reference):
+        selected = [row for row in records if row["arm"] == arm]
+        values = [row["geomean"] for row in selected]
+        assert len({row["commit"] for row in selected}) == 1
+        assert len({row["armManifestSha256"] for row in selected}) == 1
+        arms[arm] = {
+            "commit": selected[0]["commit"], "n": len(values),
+            "geomean": math.exp(statistics.mean(map(math.log, values))),
+            "stdev": statistics.stdev(values),
+            "spread_percent": 100 * (max(values) / min(values) - 1),
+            "rungs": {str(rung): math.exp(statistics.mean(math.log(row["rungs"][i]["gbps"])
+                                                        for row in selected))
+                      for i, rung in enumerate(RUNGS)}}
+    stats = {}
+    for control, ratios in comparisons.items():
+        mean = statistics.mean(ratios)
+        stderr = statistics.stdev(ratios) / math.sqrt(3)
+        z = mean / stderr if stderr else (1e300 if mean > 0 else -1e300 if mean < 0 else 0)
+        stats[control] = {
+            "session_log_ratios": ratios, "mean_log_ratio": mean, "stderr_log_ratio": stderr,
+            "delta_percent": 100 * math.expm1(mean), "z": z,
+            "three_standard_error_interval_percent": [100 * math.expm1(mean - 3 * stderr),
+                                                       100 * math.expm1(mean + 3 * stderr)],
+            "student_t_95_interval_percent": [100 * math.expm1(mean - 4.3026527299 * stderr),
+                                              100 * math.expm1(mean + 4.3026527299 * stderr)],
+            "student_t_degrees_of_freedom": 2}
+    healthy = all(arm["spread_percent"] <= 5 for arm in arms.values())
+    incumbent_gate = healthy and stats[baseline]["mean_log_ratio"] >= math.log1p(.003) and stats[baseline]["z"] >= 3
+    restored = incumbent_gate and stats[reference]["student_t_95_interval_percent"][0] >= 0
+    reference_regression = stats[reference]["student_t_95_interval_percent"][1] < 0
+    return {
+        "mode": "shared-control-confirmation", "order": [reference, candidate, baseline, candidate, reference],
+        "sessions": 3, "ladder_count": 15, "baseline": baseline, "candidate": candidate, "reference": reference,
+        "arms": arms, "comparisons": stats, "healthy_spread": healthy, "incumbent_gate_passed": incumbent_gate,
+        "minimum_incumbent_margin_percent": .3, "minimum_incumbent_z": 3,
+        "fresh_reference_restoration_conclusive": restored,
+        "verdict": ("performance-goal-verified" if restored else
+                    "incumbent-win-reference-regression" if incumbent_gate and reference_regression else
+                    "incumbent-win-reference-unresolved" if incumbent_gate else "reject"),
+        "inference_unit": "complete symmetric five-ladder session; three paired log-ratio samples per comparison",
+        "interval_note": "95% Student-t interval (df=2) is distinct from the operational Z>=3 gate",
+        "promotion_performed": False, "runs": records}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
@@ -148,8 +213,12 @@ if __name__ == "__main__":
     parser.add_argument("--candidate")
     parser.add_argument("--output")
     parser.add_argument("--screen", action="store_true")
+    parser.add_argument("--joint", action="store_true")
+    parser.add_argument("--reference")
     args = parser.parse_args()
-    if args.screen:
+    if args.joint:
+        value = summarize_joint(args.root, load(args.schedule), args.baseline, args.candidate, args.reference)
+    elif args.screen:
         value = summarize_screen(args.root, load(args.schedule), args.baseline)
     else:
         value = summarize(args.root, load(args.schedule), args.baseline, args.candidate) if args.schedule else parse_run(args.root)

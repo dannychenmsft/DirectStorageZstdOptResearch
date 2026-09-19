@@ -564,6 +564,7 @@ static void zstdgpu_Test_DecompressLiterals(zstdgpu_ResourceDataCpu & cpuRes, zs
         zstdgpu_Srt_Fill(srt, gpuReadbackRes, /* tgOffset */0, /* workItemCount */ 0);
         srt.inCompressedData            = cpuRes.CompressedData;
         srt.inoutDecompressedLiterals   = cpuRes.DecompressedLiterals;
+        zstdgpu_Srt_FillBindGroup_LiteralDwords(srt, cpuRes);
         const uint32_t htSlotCount = gpuReadbackRes.Counters->Blocks_CMP;
         const uint32_t hufLitCount = gpuReadbackRes.Counters->HufLit;
         const uint32_t hufLitStreamCountTotal = gpuReadbackRes.Counters->HUF_Streams;

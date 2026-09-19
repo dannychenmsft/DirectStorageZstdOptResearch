@@ -2,3 +2,4 @@ id,class,stage,outcome,delta_percent,commit,evidence
 e1,table-expansion,huffman-init,reject-regression,-0.11104700776003841,54604812649247846f4bb3f38ebc56d30c161997,e1-vs-baseline-summary.json
 e2,cooperative-store-coalescing,literal-output,screen-promising-not-accepted,3.4783751345986103,3092b55690dfc613a7681a3207a5515c936e0f6d,policy2-screen-summary.json
 e3,launch-geometry,fused-huffman,screen-deprioritized,-2.694137622151005,80dc139dc0a4d250266e1a39b5387c2d44a8c65d,policy2-screen-summary.json
+e4,stream-density,fused-huffman,screen-promising-not-accepted,3.8744262792357986,c4b372592b8da8f01a724d4159cc5348ec37bcad,policy2-e4-screen-summary.json

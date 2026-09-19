@@ -1,0 +1,109 @@
+RX6900 candidate batch - 2026-09-19
+
+No product promotion, no statistical acceptance of a winning candidate, and no
+recovery-goal claim. Best verified product remains a8572d7. All candidate worktrees
+are independent children of a8572d7; coordinator product tree was not modified.
+
+Policy
+Original request authorized e1 thene3 ABBA. Coordinator/user policyVersion2 arrived
+through the authoritative knowledge\campaign.json and a safe-boundary remote pause:
+reuse completed e1 data,screen remaining candidates once,confirm only promising
+finalists. e3's old repeated schedule stopped after one complete baseline ladder;
+the incomplete ABBA schedule was never scored. That valid ladder was reused as
+the leading screening control. Updated board additionally authorized e2 ande4.
+Full8rung/5sweep CI semantics remained unchanged throughout. No ext-mem in perf.
+Remote pause hook remains installed; its acknowledged policy2 pause record is
+archived as pause-before-perf.policy2-acknowledged.json.
+
+Verdicts
+e1 54604812649247846f4bb3f38ebc56d30c161997: REJECT (conclusive regression).
+  Fresh baseline8.406578070 vs e1 8.397242817GB/s,delta-0.111047008%.
+  ABBAx3,six full-ladder observations per arm; stderr(log)0.000144430514,
+  Z-7.692883,three-SE interval[-0.154318671,-0.067756591]%.
+  Baseline/candidate max-min spreads0.221049%/0.129686%.
+  Fails>=0.3% margin and positiveZ>=3. No further measurements warranted.
+
+e2 3092b55690dfc613a7681a3207a5515c936e0f6d: PROMISING SCREEN ONLY.
+  Single full-ladder GM8.704175352GB/s; bracketbaselineGM8.411588741.
+  Provisional delta+3.478375135%; bracket control drift+0.118502839%.
+
+e3 80dc139dc0a4d250266e1a39b5387c2d44a8c65d: DEPRIORITIZE AFTER SCREEN.
+  Single full-ladder GM8.184968964GB/s;same bracketbaseline8.411588741.
+  Provisional delta-2.694137622%; no additional repeated loser campaign.
+
+e4 c4b372592b8da8f01a724d4159cc5348ec37bcad: STRONGEST PROMISING SCREEN.
+  Single full-ladder GM8.742254209GB/s;bracketbaselineGM8.416175686.
+  Provisional delta+3.874426279%;control drift-0.009399454%.
+
+No standard error or Z exists for a single candidate screening observation.
+Ranking e4 above e2 is provisional; they were not directly paired against each
+other. No new PR156 comparison was run in this candidate batch. Historical
+bootstrap reference scores cannot establish current parity or a completed recovery.
+
+Every rung (GB/s)
+          e2 screen    e3 screen    e4 screen
+64          2.9320       2.9784       2.9830
+128         5.2034       5.2703       5.2746
+192         6.9181       6.8835       6.9068
+256         8.2933       8.1694       8.3149
+384        10.5858      10.0022      10.6892
+512        12.7821      11.5545      12.5712
+768        15.6848      13.3441      15.8407
+1024       17.7358      14.7973      17.7384
+
+e2/e3 leading control:
+2.9756,5.2771,6.8894,8.1891,10.2440,11.8862,14.2937,16.1779;GM8.406609181.
+e2/e3 closing control (also e4 leading control):
+2.9784,5.2789,6.9051,8.2054,10.2714,11.9272,14.2476,16.1948;GM8.416571251.
+e4 closing control:
+2.9786,5.2763,6.8955,8.1694,10.2864,11.9233,14.2990,16.2066;GM8.415780140.
+Complete e1 per-run/rung observations are in e1-vs-baseline-summary.json.
+
+Correctness and builds
+All four candidates built locally Release|x64 with the same full solution-target
+Rebuild command and matched dependencies as bootstrap. Immutable runtime manifests
+and source trees recorded; SHA256s verified remotely before each run.
+All four passed full298-file ExternalMemory and ExternalMemorySeq(2 gtest scenario
+units per candidate),rc0,0 skipped/failed. Expected adversarial rejections retained.
+e1/e3 also passed full D3D12DebugLayerSeq(1 scenario each),rc0,0 skips.
+e2/e4 have NOT yet run debug-layer gates. e4 changes CPU group-boundary reconstruction;
+both changed CPU-validation paths still need exercise before final acceptance.
+e4 demo diff was inspected:CPU group prefix and replay comments only,no throughput
+argument selection,manifest,run-count,marker,pooling,or timing-path modification.
+No additional e2/e4 profiling was run under the faster screening policy.
+
+Exploratory seed already collected (not acceptance)
+One-off R1024 table+literals/Stage2 means(us):
+  original3951.96/16374.46;PR1562107.93/14429.94;
+  e1 4045.43/16476.34;e3 5018.94/17370.16.
+These separate profiles cannot substitute for the paired/screen metric.
+e1 reduced static combined-kernel DXIL instruction lines1114->1073 but lost the
+metric. e3 TG64 retained6456B LDS and6 barrier sites but screened slower.
+Store organization(e2) and more independent16-stream groups(e4) both merit
+confirmation; less table search work or larger groups did not improve this device.
+Do not infer ISA register pressure,actual wave size,or occupancy from these counts.
+Combining e2/e4 requires a NEW candidate:cache-helper stream count must use the
+decoupled16-stream stride rather than assuming streamsPerGroup=tgSize.
+
+Next verification
+Recommend e4 first:complete debug and changed CPU-path checks; then reserve
+three-session full-CI ABBA for e4 versus incumbent and a fresh immutable PR156 arm.
+Require>=0.3% improvement andZ>=3 against incumbent; document uncertainty in
+reference comparison. No coordinator cherry-pick before deterministic gates.
+e2 remains a second promising independent direction,not an accepted optimization.
+Cross-PC impact remains unvalidated; no NVIDIA/Intel/other-AMD performance claim.
+
+Artifacts
+Committed:
+  e1-vs-baseline-summary.json (conclusive paired evidence)
+  policy2-screen-summary.json (e2/e3 and all control rungs)
+  policy2-e4-screen-summary.json (e4 and all control rungs)
+  e1/e2/e3/e4-proposal.json,ledger.csv,coverage.csv,journal.txt,status.json
+Raw logs,binaries,build manifests,XML and health:
+  C:\code\zg_campaign\rx6900-20260919-69e45d0f
+Remote:
+  C:\dannych\rdp_proxy\workspace\rx6900-20260919-69e45d0f
+RunIDs: eN-correctness-01,e1/e3-debug-01,e1-vs-baseline-s*-p*-<arm>,
+policy2-screen-p1-e2-3092b55,policy2-screen-p2-e3-80dc139,
+policy2-screen-p3-baseline,policy2-e4-p1-e4-c4b3725,policy2-e4-p2-baseline.
+All11 evaluator tests pass; no managed remote processes remained after this batch.

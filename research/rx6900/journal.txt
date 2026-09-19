@@ -105,3 +105,17 @@ Fresh reference parity is NOT established by comparing e2 to old reference score
 Updated coordinator board now authorizes e4c4b372592b8da8f01a724d4159cc5348ec37bcad
 atfixed32 buildthreads/16 streams,independent of other candidates. Screen next
 using just-completed trailingbaseline asleadingcontrol,thenone newclosingbaseline.
+
+2026-09-19 Screening batch complete / no product promotion
+e4 isolated Release build and full ExternalMemory+Seq2/2 pass(rc0,no skips).
+e4 exact8rung screenGM8.742254209 vsbracketbaseline8.416175686GB/s:
++3.874426279%,control drift-0.009399454%. Strongest provisional screen.
+e4 debug and both changed CPU-validation paths remain pending before acceptance.
+Do not infer fresh PR156 parity from the old bootstrap reference score.
+Stop obsolete e3repeat schedule; no further obvious-loser measurements. Recommend
+confirm e4 first,retaining e2 asanother promising direction. Pairing e2/e4 would
+require a distinct reviewed candidate that reconciles cache stream-count assumptions.
+Finalevidence in screening-report.txt,policy2-screen-summary.json,
+policy2-e4-screen-summary.json,and e1-vs-baseline-summary.json.
+11/11 evaluator tests pass; no active managed remote processes; coordinator product
+tree remains exactlya8572d7. Ledger UTCs normalized to closing-control completion.

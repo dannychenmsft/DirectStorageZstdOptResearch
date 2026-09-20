@@ -26,10 +26,57 @@ No SRT layout, root signature, GPU buffer, per-block scratch, or LDS allocation
 changes. The 1076-byte/compressed-block scratch saving and 6456-byte LDS remain.
 The existing shader wildcard build includes the new specialization.
 
-Validation of the gated source is pending. Required checks are: Release build,
-compiled AMD program versus the measured 16-stream winner, default program versus
-the original 32-stream baseline, and actual AMD/NVIDIA correctness including CPU
-replay. Historical all-PC performance results are not a new cross-GPU claim.
+Validation completed on 2026-09-20
+----------------------------------
+
+Source: 912a3a433a24afa19040d07fa810445245f1962e.
+Product (zstd) tree: 0378fa58f73b783a365007d0f8da68904351b3f3.
+Immutable arm: amdgate-912a3a4, Release|x64, shader flags /WX /Ges /Zi /O3.
+The solution rebuild produced 34 shader programs, including the new AMD variant.
+
+All 33 original programs match the baselinefixed03c2135 arm in every non-ILDN
+DXBC chunk. The new default fused shader is the original 32-stream program.
+The extra AMD program matches the measured e4fixed4777371 16-stream winner.
+Only ILDN debug filenames differ, reflecting source-root relocation and the new
+AMD shader filename. Embedded containers and runtime hashes match arm manifests.
+
+Fused shader DXIL SHA256:
+  Default: 9b39f4ec157a51f9e9228db97f660deea6a79b40e94b534928bac7fcc5b74fef
+  AMD:     62d0970b2afe6974a9305a1e1b11a09a17035753929c128cf5d33d1f4adc5b40
+Demo executable SHA256:
+  A5860C5C79219D91C7392E7906F5068852E8CD9ABF4D1E93170EA18EE2EE3AB6
+CI test executable SHA256:
+  A6358F68A5FBFBB417128A79568BD089173FBFBF5C5907518079AAFDFC866B50
+
+Actual hardware:
+  NVIDIA RTX 4080 SUPER, VendorId 0x10de, driver 32.0.16.1088.
+  AMD RX 6900 XT, VendorId 0x1002, driver 32.0.21037.1004.
+Each device passed the full 298-file ExternalMemory and ExternalMemorySeq corpus
+scenarios (2/2 gtest scenario units), D3D12DebugLayerSeq (1/1), and seven valid
+CPU cases (7/7 files, 956 frames). Both standalone CPU emulation and whole-buffer
+GPU-readback replay ran. All native/wrapper return codes were zero, with no gtest
+failures or skips. Expected adversarial rejections are not counted as failures.
+
+Source routing and DXGI adapter probes support the selected 16/32-stream paths;
+PSO/root-constant telemetry and partial/treeless branch counts were not separately
+instrumented. CPU replay recomputes default-32 prefixes even on the AMD device.
+AMD validation started only after fleet completion and a clear live-load check.
+Other physical vendors and console builds/runtime were not tested.
+
+No new performance ladders were run. Shader identity preserves the previously
+measured RX 6900 program and restores the original program on non-AMD devices;
+this is not a new timing, confidence, or cross-GPU performance claim.
+
+Full commands, manifests, matched-program hashes, invocation records and raw
+results are retained under C:\code\zg_campaign\amd-gating-20260919:
+  amd-gating-validation.txt and amd-gating-validation.json
+  gpu-program-identity.json
+  arms\amdgate-912a3a4\arm.json
+  results\nvidia-*-01 and amd-results\amd-*-01
 
 The cooperative-store branch remains a separate experimental alternative; it is
-not included in this preferred fix.
+not included in this preferred fix and has not been AMD-gated. Its unpaired fleet
+screen improved RX 6900 XT by 3.472% versus the original branch but reduced the
+other eight measured GPUs by 0.428% to 3.877%. A separate five-ladder RTX 4080 SUPER
+screen measured -2.151% versus baselinefixed, with 0.665% baseline spread (above
+the drift-warning threshold); it is provisional, not statistical acceptance.

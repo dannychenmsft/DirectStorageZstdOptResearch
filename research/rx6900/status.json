@@ -1,8 +1,9 @@
 {
-  "phase": "completed-goal-verified-and-promoted",
+  "phase": "completed-goal-verified-amd-gated",
   "baseline": "a8572d7",
   "reference": "60fb499",
-  "best": "a1827ed312643d64c65141d10bd7b378a25e0455",
+  "best": "912a3a433a24afa19040d07fa810445245f1962e",
+  "original_promoted_best": "a1827ed312643d64c65141d10bd7b378a25e0455",
   "accepts": 1,
   "rejects": 1,
   "ready": false,
@@ -20,7 +21,7 @@
   "campaign_board_snapshot": "campaign-board.json",
   "in_flight_explorers": [],
   "policyVersion": 2,
-  "candidate_queue_state": "STOP: goal verified; coordinator promoted the exact measured product tree on the isolated research branch",
+  "candidate_queue_state": "STOP: RX6900 goal verified; AMD-only gate preserves measured GPU programs and restores non-AMD defaults",
   "pending_finalist": null,
   "best_measured": "477737183bc549e16fc21bdca0055f27ed247e7f",
   "promotion_performed": true,
@@ -47,5 +48,19 @@
     {"id": "e3", "commit": "80dc139dc0a4d250266e1a39b5387c2d44a8c65d", "phase": "deprioritized after screen", "screen_delta_percent": -2.694137622151005},
     {"id": "e4", "commit": "477737183bc549e16fc21bdca0055f27ed247e7f", "phase": "accepted and promoted as a2b898d plus a1827ed", "screen_delta_percent": 3.8744262792357986, "confirmed_gain_vs_baselinefixed_percent": 3.9284268928174644}
   ],
-  "goal_met": true
+  "goal_met": true,
+  "amd_gating": {
+    "source": "912a3a433a24afa19040d07fa810445245f1962e",
+    "product_tree": "0378fa58f73b783a365007d0f8da68904351b3f3",
+    "validated": true,
+    "report": "amd-gating.txt",
+    "vendor_id": "0x1002",
+    "amd_pc_streams_per_group": 16,
+    "default_pc_streams_per_group": 32,
+    "gpu_program_identity": "All 33 original programs match baselinefixed; extra AMD program matches e4fixed; only ILDN debug filenames differ",
+    "hardware_gates": "RTX4080SUPER and RX6900XT each: full298-file correctness2/2 scenarios, debug1/1, CPU7/7 files/956frames; rc0/no skips",
+    "performance": "No new timing; historical confirmation above applies to the preserved RX6900 GPU program",
+    "limitations": "No separate PSO/root-constant telemetry or partial/treeless branch counts; other vendors and consoles not hardware-tested",
+    "raw_artifacts": "C:\\code\\zg_campaign\\amd-gating-20260919"
+  }
 }

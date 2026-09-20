@@ -1,8 +1,12 @@
 RX 6900 XT campaign completion
 =============================
 
-Follow-up: the user reported regressions on other GPUs. The preferred fix is
-being AMD-gated; see amd-gating.txt for the current implementation and validation.
+Follow-up: the user reported regressions on other GPUs. The preferred fix is now
+AMD-gated in 912a3a433a24afa19040d07fa810445245f1962e; see amd-gating.txt.
+Both AMD and NVIDIA hardware gates passed. The AMD program matches the measured
+winner, while the default program matches the original 32-stream baseline.
+Integrate the gating commit after the two product commits listed below; do not
+promote the original all-PC stream-density change without its vendor gate.
 The product-tree identity and performance results below describe the original
 measured all-PC candidate, before that follow-up.
 
@@ -41,10 +45,12 @@ LDS remains 6456 bytes/group. The alias fix changes only CPU replay, not GPU
 programs or the timed performance path. It also fixes that validation mode on
 the original scratch-reduction branch and is intentionally a separate commit.
 
-Performance is verified only on DSTESTPC2 / RX 6900 XT. The stream-density
-constant applies to PC builds; console geometry is unchanged. Cross-GPU
-performance must be revalidated before promoting this research into the shared
-baseline. No claim is made that every rung independently exceeds PR156.
+The timing results above are verified only on DSTESTPC2 / RX 6900 XT and describe
+the pre-gate candidate. The follow-up limits reduced stream density to AMD PC
+adapters; non-AMD defaults and console geometry are unchanged. Gated source was
+not re-timed: shader identity and two-vendor hardware correctness are the new
+evidence, not a new performance confidence claim. No claim is made that every
+rung independently exceeds PR156.
 
 Campaign stopped at the verified goal. No further candidates or GPU runs are
 scheduled; unaccepted experiments remain on their isolated research branches.

@@ -1,0 +1,35 @@
+AMD-only stream density
+=======================
+
+The cross-GPU follow-up reported regressions from applying 16-stream groups to
+every PC GPU. The preferred stream-density change is now vendor-selected:
+
+  AMD (DXGI VendorId 0x1002): 16 literal streams, 32 construction threads on PC.
+  Other PC GPUs:            32 literal streams, 32 construction threads.
+  Consoles:                 Existing platform geometry, unchanged.
+
+The default fused Huffman shader uses the original threadgroup-sized stream
+density. A small _AMD.hlsl wrapper compiles the same implementation with the AMD
+stream-density constant. The existing vendor-selection block selects both that
+compiled kernel and its matching stream count.
+
+The selected count is copied from the persistent context into each request and
+passed to ComputePrefixSum. Host group boundaries and indirect dispatch counts
+therefore match the selected shader, including partial and treeless stream
+ranges. No vendor test or new runtime branch is added to the decoding shader.
+
+CPU emulation uses the default shader's grouping and explicitly rebuilds its
+prefixes, rather than reusing GPU prefixes that may have the AMD stride. Both
+CPU output aliases still target CPU storage during replay.
+
+No SRT layout, root signature, GPU buffer, per-block scratch, or LDS allocation
+changes. The 1076-byte/compressed-block scratch saving and 6456-byte LDS remain.
+The existing shader wildcard build includes the new specialization.
+
+Validation of the gated source is pending. Required checks are: Release build,
+compiled AMD program versus the measured 16-stream winner, default program versus
+the original 32-stream baseline, and actual AMD/NVIDIA correctness including CPU
+replay. Historical all-PC performance results are not a new cross-GPU claim.
+
+The cooperative-store branch remains a separate experimental alternative; it is
+not included in this preferred fix.

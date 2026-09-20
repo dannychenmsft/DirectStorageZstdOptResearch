@@ -571,7 +571,8 @@ static void zstdgpu_Test_DecompressLiterals(zstdgpu_ResourceDataCpu & cpuRes, zs
 
         uint32_t *tmpLitGroupEndPerHuffmanTable = gpuReadbackRes.LitGroupEndPerHuffmanTable;
 
-        // Recompute group boundaries in CPU storage using the shared stream stride.
+        // CPU replay uses the default shader stride, independently of the device's variant.
+        // Recompute its group boundaries rather than reusing the GPU's prefixes.
         // CPU emulation still uses tgSize == 1, but processes every stream in each group.
         gpuReadbackRes.LitGroupEndPerHuffmanTable = cpuRes.LitGroupEndPerHuffmanTable;
         const uint32_t groupCount = zstdgpu_HufLitStreamCountToGroupCount(gpuReadbackRes, hufLitCount, hufLitStreamCountTotal, htSlotCount);

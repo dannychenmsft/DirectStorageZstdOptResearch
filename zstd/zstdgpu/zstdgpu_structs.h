@@ -443,13 +443,19 @@ static const uitn32_t kzstdgpu_TgSizeX_DecompressLiterals = 64;
 static const uint32_t kzstdgpu_TgSizeX_DecompressLiterals = 32;
 #endif
 
-// Smaller PC stream groups trade additional table builds for independently schedulable groups.
-// This stride must match host prefixes and both GPU/CPU literal mapping.
+// AMD's smaller PC stream groups trade table builds for independently schedulable groups.
+// Console geometry is unchanged.
 #if defined(_GAMING_XBOX) || defined(_GAMING_XBOX_SCARLETT) || defined(_GAMING_XBOX_XBOXONE) \
     || defined(__XBOX_SCARLETT) || defined(__XBOX_ONE)
-static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals = kzstdgpu_TgSizeX_DecompressLiterals;
+static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals_AMD = kzstdgpu_TgSizeX_DecompressLiterals;
 #else
-static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals = 16;
+static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals_AMD = 16;
+#endif
+
+#if defined(ZSTDGPU_AMD_LITERAL_STREAM_DENSITY)
+static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals = kzstdgpu_StreamsPerGroup_DecompressLiterals_AMD;
+#else
+static const uint32_t kzstdgpu_StreamsPerGroup_DecompressLiterals = kzstdgpu_TgSizeX_DecompressLiterals;
 #endif
 
 #if defined(_GAMING_XBOX) || defined(__XBOX_SCARLETT) || defined(__XBOX_ONE)

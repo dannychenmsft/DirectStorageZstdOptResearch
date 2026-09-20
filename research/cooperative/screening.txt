@@ -1,0 +1,42 @@
+Cooperative-store alternative: cross-GPU CI screening
+=====================================================
+
+This branch contains the standalone cooperative-store experiment plus the CPU
+replay alias fix, based on a8572d7. It does NOT include stream-density changes.
+It is the ungated experiment used for comparison, not a cross-GPU production fix.
+
+Source build 2609.1903 (158104899) triggered fleet 20260919.3 (158105512).
+Original-branch control: 20260918.9 (158027464).
+PR156 control: 20260919.1 (158055220).
+
+All nine measured GPUs have the exact eight throughput rungs, five sweeps,
+32 selected files, 14643 frames and 3754488832 decompressed bytes. These are
+unpaired historical CI comparisons, not statistical acceptance measurements.
+
+GPU                   vs original branch   vs PR156
+RX 6900 XT                  +3.472%          +0.092%
+RTX 5080                    -1.655%          +0.381%
+Adreno X1-85                -2.289%         +11.901%
+GTX 1060 6GB                -2.921%          +1.461%
+Arc B580                    -1.988%          +0.786%
+RTX 3070                    -0.428%          +0.039%
+RTX 4070 Ti SUPER           -2.302%          +0.365%
+RTX 3060 Ti                 -3.877%          +0.709%
+RTX 5070                    -0.993%          +0.655%
+
+RX 9070 has no valid ladder: its legacy test timed out before performance
+measurement in the candidate and controls. Other recorded provisioning/harness
+issues also occur in controls. No new CI gtest failure was identified; skipped
+tests remain and are not counted as successful coverage.
+
+Conclusion: cooperative stores also need vendor gating. They recover RX 6900 XT
+throughput but give up existing gains on every other measured GPU in this screen.
+The preferred fix remains AMD-gated stream density, not this global alternative.
+
+Provenance limitation: source-resource IDs and downloaded artifact IDs match,
+and the published branch ancestry is 8cbf9fd -> 4f22da8 -> a8572d7. Checkout logs
+do not print the exact product SHA; branch identity is corroborated, not a
+recorded built-SHA proof.
+
+Detailed rungs, failure reasons and raw captures are retained locally under
+C:\code\zg_campaign\cooperative-20260919\fleet.

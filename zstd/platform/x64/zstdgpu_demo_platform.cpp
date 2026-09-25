@@ -32,6 +32,7 @@
 #include <dxgidebug.h>
 
 #include "zstdgpu_assert.h"
+#include "zstdgpu_cpu_timing.h"
 
 #define D3D12AID_CHECK(call)                            \
     do                                                  \
@@ -154,7 +155,9 @@ ID3D12Device *zstdgpu_Demo_PlatformInit(uint32_t gpuVenId, uint32_t gpuDevId, bo
 
         if ((firstVenId && matchDevId) || (matchVenId && matchDevId))
         {
+            const auto timing = zstdgpu_CpuTiming::Mark(zstdgpu_CpuTiming::Phase::CreateDevice);
             D3D12AID_CHECK(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_12_0, D3D12AID_IID_PPV_ARGS(&device)));
+            zstdgpu_CpuTiming::Restore(timing);
             adapter->Release();
             factory->Release();
 

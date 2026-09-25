@@ -43,6 +43,9 @@
 #endif
 
 #include "zstdgpu_assert.h"
+#include "zstdgpu_cpu_timing.h"
+
+namespace CpuTiming = zstdgpu_CpuTiming;
 
 #define D3D12AID_CHECK(call)                            \
     do                                                  \
@@ -1250,6 +1253,7 @@ int wmain(int argc, wchar_t **argv)
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 #endif
 {
+    CpuTiming::Begin();
 #ifdef _GAMING_XBOX
     UNREFERENCED_PARAMETER(hInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -1275,9 +1279,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE, _In_ LPWSTR lp
         asserted = tta_AssertCallAndCatch(&demoRun, &ctx);
     }
 
+    CpuTiming::Mark(CpuTiming::Phase::Cleanup);
     demoCleanup(&ctx);
 
-    return asserted ? 1 : ctx.retv;
+    const int exitCode = asserted ? 1 : ctx.retv;
+    CpuTiming::Finish(true, exitCode);
+    return exitCode;
 }
 
 // -----------------------------------------------------------------------------
@@ -1649,6 +1656,7 @@ static int demoRun(void *demoCtx)
 
     // A leading '@' selects batch mode: zstFilePath names a text file listing
     // .zst files (one per line) to load concatenated into a single buffer.
+    CpuTiming::Mark(CpuTiming::Phase::InputLoad);
     if (L'@' == zstFilePath[0])
     {
         loadFileBatchAligned(&zstdData, &zstdDataSize, &zstdCompressedFramesMemorySizeInBytes, 2u, zstdOffs, zstFilePath + 1);
@@ -1668,6 +1676,7 @@ static int demoRun(void *demoCtx)
         debugPrint(L"[INFO] Loaded '%s' -- %u bytes.\n", zstFilePath, zstdDataSize);
     }
 
+    CpuTiming::Mark(CpuTiming::Phase::InputSetup);
     ZSTDGPU_ASSERT(zstdCompressedFramesMemorySizeInBytes >= zstdOffs);
 
     zstdgpu_CountFramesAndBlocksInfo fbInfo;
@@ -1831,7 +1840,9 @@ static int demoRun(void *demoCtx)
     static const uint32_t kFrameInterval = 1;
 #endif
 
+    CpuTiming::Mark(CpuTiming::Phase::PlatformSetup);
     device = zstdgpu_Demo_PlatformInit(gpuVenId, gpuDevId, d3dDbg, d3dGbv);
+    CpuTiming::Mark(CpuTiming::Phase::DeviceQueueSetup);
     if (NULL == device)
     {
         debugPrint(L"[FAIL] Couldn't load create D3D12 device with venId=%u, devId=%u. Early Out.\n", gpuVenId, gpuDevId);
@@ -1868,6 +1879,7 @@ static int demoRun(void *demoCtx)
 
     if ((chkCpu || chkGpu) && !skipRefValidation)
     {
+        CpuTiming::Mark(CpuTiming::Phase::ReferenceSetup);
         debugPrint(L"[INFO] Running Reference Decompression and building Reference Uncompressed data ('--chk-cpu' or '--chk-gpu' was set).\n");
 
         zstdReferenceUncompressedDataSize = (uint32_t)ZSTD_get_decompressed_size((char *)zstdData + zstdOffs, zstdDataSize);
@@ -1881,12 +1893,15 @@ static int demoRun(void *demoCtx)
         zstdgpu_ReferenceStore_AllocateMemory();
 
         // NOTE(pamartis): this call to reference ZSTD decompressor populates zstdgpu_ReferenceStore with ground-truth data.
+        CpuTiming::Mark(CpuTiming::Phase::ReferenceDecompress);
         int r = ZSTD_decompress(zstdReferenceUncompressedData, zstdReferenceUncompressedDataSize, zstdData, zstdDataSize);
+        CpuTiming::Mark(CpuTiming::Phase::ReferenceSetup);
         debugPrint(L"[INFO] ZSTD_decompress  input size: %d  output size: %d   result: %d\n", zstdDataSize, zstdReferenceUncompressedDataSize, r); 
     }
 
     if (chkCpu && !skipRefValidation)
     {
+        CpuTiming::Mark(CpuTiming::Phase::CpuReplay);
         debugPrint(L"[INFO] Running GPU Decompression code on CPU ('--chk-cpu' option was set).\n");
 
         // NOTE(pamartis): We run GPU Decompression pipeline on CPU to catch possible errors/assert early
@@ -1899,6 +1914,7 @@ static int demoRun(void *demoCtx)
         }
     }
 
+    CpuTiming::Mark(CpuTiming::Phase::PersistentSetup);
     debugPrint(L"[INFO] Initializing 'zstdgpu' Persistent Context.\n");
     {
         const uint32_t persistentMemorySize = zstdgpu_GetPersistentContextRequiredMemorySizeInBytes();
@@ -1906,6 +1922,7 @@ static int demoRun(void *demoCtx)
         ZSTDGPU_ASSERT(ZSTDGPU_ENUM_CONST(StatusSuccess) == status);
     }
 
+    CpuTiming::Mark(CpuTiming::Phase::RequestSetup);
     debugPrint(L"[INFO] Initializing 'zstdgpu' PerRequest Context.\n");
     {
         const uint32_t perRequestMemorySize = zstdgpu_GetPerRequestContextRequiredMemorySizeInBytes();
@@ -2005,6 +2022,7 @@ static int demoRun(void *demoCtx)
 
         for (uint32_t b = 0; b < numBatches; ++b)
         {
+            CpuTiming::Mark(CpuTiming::Phase::BatchSetup);
             const uint32_t bLo = workingLo + b * effBatchFrames;
             uint32_t       bHi = bLo + effBatchFrames - 1;
             if (bHi > workingHi) bHi = workingHi;
@@ -2119,6 +2137,7 @@ static int demoRun(void *demoCtx)
             #undef ZSTDGPU_TS
 
 
+            CpuTiming::Mark(CpuTiming::Phase::CommandRecording);
             ID3D12GraphicsCommandList *cmdList = d3d12aid_CmdQueue_StartCmdList(&cmdQueue, 0 /** cmdListId */);
 
             {
@@ -2237,8 +2256,11 @@ static int demoRun(void *demoCtx)
                         if (stageIndex < 2 && zstdgpu_IsReadbackRequired(perRequestContext, stageIndex))
                         {
                             d3d12aid_Timestamp_PushScope(*ReadbackTimestamp[stageIndex], timestamps, cmdList,
+                                CpuTiming::Mark(CpuTiming::Phase::CloseAndSubmit);
                                 d3d12aid_CmdQueue_SubmitCmdList(&cmdQueue, 0);
+                                CpuTiming::Mark(CpuTiming::Phase::GpuWait);
                                 d3d12aid_CmdQueue_CpuWaitForGpuIdle(&cmdQueue);
+                                CpuTiming::Mark(CpuTiming::Phase::CommandRecording);
                                 cmdList = d3d12aid_CmdQueue_StartCmdList(&cmdQueue, 0/** cmdListId */);
                             );
                         }
@@ -2259,8 +2281,11 @@ static int demoRun(void *demoCtx)
                     zstdgpu_ReadbackGpuResults(perRequestContext, cmdList);
                 }
                 d3d12aid_Timestamps_AdvanceFrame(&timestamps, cmdList);
+                CpuTiming::Mark(CpuTiming::Phase::CloseAndSubmit);
                 d3d12aid_CmdQueue_SubmitCmdList(&cmdQueue, 0);
+                CpuTiming::Mark(CpuTiming::Phase::GpuWait);
                 d3d12aid_CmdQueue_CpuWaitForGpuIdle(&cmdQueue);
+                CpuTiming::Mark(CpuTiming::Phase::ReadbackValidation);
 
                 if (sweep == 0)
                 {
@@ -2268,6 +2293,7 @@ static int demoRun(void *demoCtx)
                     // and report a per-frame accept/reject summary. The GPU is idle here, so bufGpu
                     // has decayed to COMMON and COMMON->COPY_SOURCE is a valid transition regardless
                     // of which stage produced the writes.
+                    CpuTiming::Mark(CpuTiming::Phase::CommandRecording);
                     cmdList = d3d12aid_CmdQueue_StartCmdList(&cmdQueue, 0 /** cmdListId */);
                     {
                         D3D12_RESOURCE_BARRIER barrier;
@@ -2275,8 +2301,11 @@ static int demoRun(void *demoCtx)
                         cmdList->ResourceBarrier(1u, &barrier);
                         d3d12aid_MappedBuffer_Transfer(cmdList, &zstdFrameStatus, 0);
                     }
+                    CpuTiming::Mark(CpuTiming::Phase::CloseAndSubmit);
                     d3d12aid_CmdQueue_SubmitCmdList(&cmdQueue, 0);
+                    CpuTiming::Mark(CpuTiming::Phase::GpuWait);
                     d3d12aid_CmdQueue_CpuWaitForGpuIdle(&cmdQueue);
+                    CpuTiming::Mark(CpuTiming::Phase::ReadbackValidation);
 
                     const uint32_t *frameStatus = (const uint32_t *)zstdFrameStatus.bufMem[0];
                     uint32_t statusFailCount = 0;
@@ -2416,6 +2445,7 @@ static int demoRun(void *demoCtx)
                     free(buffer);
                 }
 
+                CpuTiming::Mark(CpuTiming::Phase::StatisticsOutput);
                 if (freqGpuClocks == 0)
                 {
                     cmdQueue.queue->GetTimestampFrequency(&freqGpuClocks);
@@ -2631,6 +2661,7 @@ static int demoRun(void *demoCtx)
         }
     } // for (sweep)
 
+    CpuTiming::Mark(CpuTiming::Phase::StatisticsOutput);
     // Emit performance data if requested
     if (prfLevelSpecified)
     {

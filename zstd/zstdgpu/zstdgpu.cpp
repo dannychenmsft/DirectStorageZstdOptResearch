@@ -31,6 +31,7 @@
 #endif
 
 #include "zstdgpu_assert.h"
+#include "zstdgpu_cpu_timing.h"
 
 #define D3D12AID_CHECK(call)                            \
     do                                                  \
@@ -966,9 +967,15 @@ ZSTDGPU_ENUM(Status) zstdgpu_CreatePersistentContext(zstdgpu_PersistentContext *
 
         /** NOTE(pamartis): generate PipelineState / RootSignature initialisation through macro list */
         #define ZSTDGPU_KERNEL(name) \
-            d3d12aid_ComputeRsPs_Create(&context->name, device, shader##name->code, shader##name->size);\
+        { \
+            const auto timing = zstdgpu_CpuTiming::Mark(zstdgpu_CpuTiming::Phase::RootSignature, shader##name->desc); \
+            context->name.rs = d3d12aid_RootSignature_Create(device, shader##name->code, shader##name->size); \
+            zstdgpu_CpuTiming::Mark(zstdgpu_CpuTiming::Phase::PipelineState, shader##name->desc); \
+            context->name.ps = d3d12aid_PipelineState_CreateCompute(device, context->name.rs, shader##name->code, shader##name->size); \
+            zstdgpu_CpuTiming::Restore(timing); \
             context->name.rs->SetName(shader##name->desc);\
-            context->name.ps->SetName(shader##name->desc);
+            context->name.ps->SetName(shader##name->desc); \
+        }
             ZSTDGPU_RUNTIME_KERNEL_LIST()
         #undef ZSTDGPU_KERNEL
 

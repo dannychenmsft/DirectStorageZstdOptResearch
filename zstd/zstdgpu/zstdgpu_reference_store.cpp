@@ -104,7 +104,7 @@ void zstdgpu_ReferenceStore_AllocateMemory(void)
     // Pre-populate 256 dense RLE entries at the beginning of FSE element buffers
     for (uint32_t i = 0; i < kzstdgpu_FseRleTableCount; ++i)
     {
-        GZstd.FseElems[i] = zstdgpu_PackFseElem(i, 0, 0);
+        zstdgpu_StorePackedFseElem(GZstd.FseElems, i, 0, zstdgpu_PackFseElem(i, 0, 0));
         GZstd.FseInfos[i].fseProbCountAndAccuracyLog2 = 0;
     }
 }
@@ -351,7 +351,7 @@ void zstdgpu_ReferenceStore_Report_FseTable(const int16_t *probs, uint32_t symCo
         GZstd.FseInfos[fseIndex] = zstdgpu_CreateFseInfo(symCount, accuracyLog2);                           \
         memcpy(&GZstd.FseProbs[fseProbStart], probs, sizeof(probs[0]) * symCount);                          \
         for (uint32_t e = 0; e < elemCount; ++e)                                                            \
-            GZstd.FseElems[fseElemStart + e] = zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e]);        \
+            zstdgpu_StorePackedFseElem(GZstd.FseElems, fseElemStart, e, zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e])); \
     }
 
     STORE(HufW, localIdx)
@@ -385,7 +385,7 @@ void zstdgpu_ReferenceStore_Report_FseDefaultTable(const int16_t *probs, uint32_
             GZstd.FseInfos[fseIndex] = zstdgpu_CreateFseInfo(symCount, accuracyLog2);                       \
             memcpy(&GZstd.FseProbs[fseProbStart], probs, sizeof(probs[0]) * symCount);                      \
             for (uint32_t e = 0; e < elemCount; ++e)                                                        \
-                GZstd.FseElems[fseElemStart + e] = zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e]);    \
+                zstdgpu_StorePackedFseElem(GZstd.FseElems, fseElemStart, e, zstdgpu_PackFseElem(symbol[e], bitcnt[e], nstate[e])); \
             GFseProbDefaultTable##name##Stored = 1;                                                         \
         }                                                                                                   \
     }
@@ -735,8 +735,13 @@ static ZSTDGPU_ENUM(Validate_Result) izstdgpu_ReferenceStore_Validate_FseTable(u
             const uint32_t refElemStart = elemOffsetFn(refFseTableIndex, cmpBlockCount);
             const uint32_t tstElemStart = elemOffsetFn(tstFseTableIndex, cmpBlockCount);
 
-            if (0 != memcmp(&refFseElems[refElemStart], &tstFseElems[tstElemStart], symbolCount * sizeof(refFseElems[0])))
-                return ZSTDGPU_ENUM_CONST(Validate_Failed);
+            for (uint32_t i = 0; i < symbolCount; ++i)
+            {
+                const uint32_t refFseElem = zstdgpu_LoadPackedFseElem(refFseElems, refElemStart, i);
+                const uint32_t tstFseElem = zstdgpu_LoadPackedFseElem(tstFseElems, tstElemStart, i);
+                if (refFseElem != tstFseElem)
+                    return ZSTDGPU_ENUM_CONST(Validate_Failed);
+            }
 
         }
     }

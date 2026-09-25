@@ -1666,6 +1666,12 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
 
     const uint32_t tblAllDataCountAligned = zstdgpu_AlignUp(tblAllDataCount, kzstdgpu_TgSizeX_InitFseTable);
 
+    ZSTDGPU_FOR_WORK_ITEMS(workItemId, srt.tableDataCount, i, kzstdgpu_TgSizeX_InitFseTable)
+    {
+        srt.inoutFseElems[tblDataOffset + workItemId] = 0;
+    }
+    DeviceMemoryBarrierWithGroupSync();
+
     // initialize the index in the `table` array where symbols with negative frequencies are stored
     uint32_t negativeFrqSymStart = tblAllDataCount;
     uint32_t positiveFrqSymCount = 0;
@@ -1796,7 +1802,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
 #if IS_MULTI_WAVE && (ZSTD_BITCNT_NSTATE_METHOD == ZSTD_BITCNT_NSTATE_METHOD_DEFAULT)
             zstdgpu_LdsStoreU32(GS_SpreadSymbols + negativeFrqSymIndex, symbol);
 #else
-            srt.inoutFseElems[tblDataOffset + negativeFrqSymIndex] = zstdgpu_PackFseElem(symbol, 0, 0);
+            zstdgpu_StorePackedFseElem(srt.inoutFseElems, tblDataOffset, negativeFrqSymIndex, zstdgpu_PackFseElem(symbol, 0, 0));
 #endif
         }
 
@@ -1903,10 +1909,12 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
 #if IS_MULTI_WAVE && (ZSTD_BITCNT_NSTATE_METHOD == ZSTD_BITCNT_NSTATE_METHOD_DEFAULT)
             zstdgpu_LdsStoreU32(GS_SpreadSymbols + positiveFrqSymIndex, symbol);
 #else
-            srt.inoutFseElems[tblDataOffset + positiveFrqSymIndex] = zstdgpu_PackFseElem(symbol, 0, 0);
+            zstdgpu_StorePackedFseElem(srt.inoutFseElems, tblDataOffset, positiveFrqSymIndex, zstdgpu_PackFseElem(symbol, 0, 0));
 #endif
         }
     }
+
+    DeviceMemoryBarrierWithGroupSync();
 
     // Problem: After storing "symbols", we also need to compute, for all sequences with identical "symbols", indices of elements within every sequence.
     //
@@ -1954,7 +1962,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
 
             for (uint32_t j = 0; j < tblAllDataCount; ++j)
             {
-                if (symbol == zstdgpu_FseElem_Symbol(srt.inoutFseElems[tblDataOffset + j]))
+                if (symbol == zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElemRW(srt.inoutFseElems, tblDataOffset, j)))
                 {
                     uint32_t nstate = counter ++;
                     uint32_t bitcnt = accuracyLog2 - zstdgpu_FindFirstBitHiU32(nstate);
@@ -1962,7 +1970,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
                     nstate <<= bitcnt;
                     nstate  -= tblAllDataCount;
 
-                    srt.inoutFseElems[tblDataOffset + j] = zstdgpu_PackFseElem(symbol, bitcnt, nstate);
+                    zstdgpu_StorePackedFseElem(srt.inoutFseElems, tblDataOffset, j, zstdgpu_PackFseElem(symbol, bitcnt, nstate));
                 }
             }
         }
@@ -2089,7 +2097,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
     uint32_t waveOffset = 0;
     ZSTDGPU_FOR_WORK_ITEMS(workItemId, tblAllDataCount, i, kzstdgpu_TgSizeX_InitFseTable)
     {
-        const uint32_t symbol = zstdgpu_FseElem_Symbol(srt.inoutFseElems[tblDataOffset + workItemId]);
+        const uint32_t symbol = zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElemRW(srt.inoutFseElems, tblDataOffset, workItemId));
 
         const uint32_t symbolAndIndex = symbol | (workItemId << 8);
         GS_CompactedPositiveFrqPrefixSumAndSymbols[workItemId] = symbolAndIndex;
@@ -2187,7 +2195,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
         nstate <<= bitcnt;
         nstate  -= tblAllDataCount;
 
-        srt.inoutFseElems[tblDataOffset + workItemId] = zstdgpu_PackFseElem(symbol, bitcnt, nstate);
+        zstdgpu_StorePackedFseElem(srt.inoutFseElems, tblDataOffset, workItemId, zstdgpu_PackFseElem(symbol, bitcnt, nstate));
     }
 
 #elif ZSTD_BITCNT_NSTATE_METHOD == ZSTD_BITCNT_NSTATE_METHOD_DEFAULT
@@ -2213,7 +2221,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
         // ZSTDGPU_INIT_FSE_TABLE_LDS_MULTI_WAVE).
         const uint32_t symbol = zstdgpu_LdsLoadU32(GS_SpreadSymbols + workItemId);
 #else
-        const uint32_t symbol = zstdgpu_FseElem_Symbol(srt.inoutFseElems[tblDataOffset + workItemId]);
+        const uint32_t symbol = zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElemRW(srt.inoutFseElems, tblDataOffset, workItemId));
 #endif
 
         zstdgpu_GroupBallotLdsStore(laneCnt, symbol, GS_SymbolBitMasks, kzstdgpu_MaxCount_FseElemsOneDigitBits, waveOfs, 0);
@@ -2238,7 +2246,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
         // Multi-wave: read the symbol from the LDS handoff (see the transpose loop above).
         const uint32_t symbol = zstdgpu_LdsLoadU32(GS_SpreadSymbols + workItemId);
 #else
-        const uint32_t symbol = zstdgpu_FseElem_Symbol(srt.inoutFseElems[tblDataOffset + workItemId]);
+        const uint32_t symbol = zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElemRW(srt.inoutFseElems, tblDataOffset, workItemId));
 #endif
 
         #define FetchBitsAndAccumulateMask(mask, bits, storage, bitIdx, uintId) \
@@ -2285,7 +2293,7 @@ static void zstdgpu_ShaderEntry_InitFseTable(ZSTDGPU_PARAM_INOUT(zstdgpu_InitFse
         nstate <<= bitcnt;
         nstate  -= tblAllDataCount;
 
-        srt.inoutFseElems[tblDataOffset + workItemId] = zstdgpu_PackFseElem(symbol, bitcnt, nstate);
+        zstdgpu_StorePackedFseElem(srt.inoutFseElems, tblDataOffset, workItemId, zstdgpu_PackFseElem(symbol, bitcnt, nstate));
     }
 
 #endif
@@ -2346,10 +2354,7 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
     //                          Q: do we want LDS consumption? if our workload on Async in low-pri mode, the user might prefer to not use LDS at all
     while (1)
     {
-        uint32_t offsetState0 = fseTableOffset + state0;
-        uint32_t offsetState1 = fseTableOffset + state1;
-
-        const uint32_t fseElem0 = srt.inFseElems[offsetState0];
+        const uint32_t fseElem0 = zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state0);
         // peek
         zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem0));
 
@@ -2362,13 +2367,11 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
         }
         else
         {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState1]));
+            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state1)));
             break;
         }
 
-        offsetState0 = fseTableOffset + state0;
-
-        const uint32_t fseElem1 = srt.inFseElems[offsetState1];
+        const uint32_t fseElem1 = zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state1);
         // peek
         zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem1));
 
@@ -2381,13 +2384,13 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
         }
         else
         {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState0]));
+            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state0)));
             break;
         }
 #if 0
         offsetState1 = fseTableOffset + state1;
 
-        const uint32_t fseElem0 = srt.inFseElems[offsetState0];
+        const uint32_t fseElem0 = zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state0);
         // peek
         zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem0));
 
@@ -2400,13 +2403,13 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
         }
         else
         {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState1]));
+            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state1)));
             break;
         }
 
         offsetState0 = fseTableOffset + state0;
 
-        const uint32_t fseElem1 = srt.inFseElems[offsetState1];
+        const uint32_t fseElem1 = zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state1);
         // peek
         zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(fseElem1));
 
@@ -2419,7 +2422,7 @@ static void zstdgpu_ShaderEntry_DecompressHuffmanWeights(ZSTDGPU_PARAM_INOUT(zst
         }
         else
         {
-            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(srt.inFseElems[offsetState0]));
+            zstdgpu_TypedStoreU8(srt.inoutDecompressedHuffmanWeights, hufWeightIndex++, zstdgpu_FseElem_Symbol(zstdgpu_LoadPackedFseElem(srt.inFseElems, fseTableOffset, state0)));
             break;
         }
 #endif
@@ -3174,9 +3177,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream(ZSTDGPU_PARAM_IN
         uint32_t stateMLen = ZSTDGPU_BACKWARD_BITBUF(GetNoRefill)(bitBuffer, initBitcntMLen);
 
         // Preload the first sequence's FSE elements and prepare the bit buffer for the initial reads.
-        uint32_t fseElemLLen = srt.inFseElems[stateLLen + startLLen];
-        uint32_t fseElemOffs = srt.inFseElems[stateOffs + startOffs];
-        uint32_t fseElemMLen = srt.inFseElems[stateMLen + startMLen];
+        uint32_t fseElemLLen = zstdgpu_LoadPackedFseElem(srt.inFseElems, startLLen, stateLLen);
+        uint32_t fseElemOffs = zstdgpu_LoadPackedFseElem(srt.inFseElems, startOffs, stateOffs);
+        uint32_t fseElemMLen = zstdgpu_LoadPackedFseElem(srt.inFseElems, startMLen, stateMLen);
 
         if (!bitBuffer.hadlastrefill)
         {
@@ -3204,9 +3207,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream(ZSTDGPU_PARAM_IN
             // There is always a next sequence here: advance the states and prefetch the next symbol's
             // FSE elements and bit-buffer refill to overlap with the scattered sequence stores below.
             zstdgpu_ReadExtraBitsAndUpdateState(bitBuffer, fseElemLLen, fseElemOffs, fseElemMLen, stateLLen, stateOffs, stateMLen);
-            fseElemLLen = srt.inFseElems[stateLLen + startLLen];
-            fseElemOffs = srt.inFseElems[stateOffs + startOffs];
-            fseElemMLen = srt.inFseElems[stateMLen + startMLen];
+            fseElemLLen = zstdgpu_LoadPackedFseElem(srt.inFseElems, startLLen, stateLLen);
+            fseElemOffs = zstdgpu_LoadPackedFseElem(srt.inFseElems, startOffs, stateOffs);
+            fseElemMLen = zstdgpu_LoadPackedFseElem(srt.inFseElems, startMLen, stateMLen);
 
             if (!bitBuffer.hadlastrefill)
             {
@@ -3311,7 +3314,7 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
         const uint32_t fseElemCount = 1u << fseAccuracyLog2;                                                    \
         ZSTDGPU_FOR_WORK_ITEMS(i, fseElemCount, threadId, tgSize)                                               \
         {                                                                                                       \
-            zstdgpu_LdsStoreU32(GS_FsePacked##name + i, srt.inFseElems[start##name + i]);                       \
+            zstdgpu_LdsStoreU32(GS_FsePacked##name + i, zstdgpu_LoadPackedFseElem(srt.inFseElems, start##name, i)); \
         }                                                                                                       \
     }
 
@@ -3360,9 +3363,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_SingleStream(ZSTDGPU_PARAM_I
     #   define ZSTDGPU_SS_FSE_OFFS(s) zstdgpu_LdsLoadU32(GS_FsePackedOffs + (s))
     #   define ZSTDGPU_SS_FSE_MLEN(s) zstdgpu_LdsLoadU32(GS_FsePackedMLen + (s))
     #else
-    #   define ZSTDGPU_SS_FSE_LLEN(s) srt.inFseElems[startLLen + (s)]
-    #   define ZSTDGPU_SS_FSE_OFFS(s) srt.inFseElems[startOffs + (s)]
-    #   define ZSTDGPU_SS_FSE_MLEN(s) srt.inFseElems[startMLen + (s)]
+    #   define ZSTDGPU_SS_FSE_LLEN(s) zstdgpu_LoadPackedFseElem(srt.inFseElems, startLLen, (s))
+    #   define ZSTDGPU_SS_FSE_OFFS(s) zstdgpu_LoadPackedFseElem(srt.inFseElems, startOffs, (s))
+    #   define ZSTDGPU_SS_FSE_MLEN(s) zstdgpu_LoadPackedFseElem(srt.inFseElems, startMLen, (s))
     #endif
 
     uint32_t packedFseElemLLen = ZSTDGPU_SS_FSE_LLEN(stateLLen);
@@ -3538,13 +3541,9 @@ static void zstdgpu_ShaderEntry_DecompressSequences_MultiStream_LdsOutCache(ZSTD
             // Decode phase: each active thread decodes up to cacheDwordsPerStream sequences into its LDS cache
             for (; seqIdx < seqIdxBatchEnd; )
             {
-                stateLLen += startLLen;
-                stateOffs += startOffs;
-                stateMLen += startMLen;
-
-                const uint32_t fseElemLLen = srt.inFseElems[stateLLen];
-                const uint32_t fseElemOffs = srt.inFseElems[stateOffs];
-                const uint32_t fseElemMLen = srt.inFseElems[stateMLen];
+                const uint32_t fseElemLLen = zstdgpu_LoadPackedFseElem(srt.inFseElems, startLLen, stateLLen);
+                const uint32_t fseElemOffs = zstdgpu_LoadPackedFseElem(srt.inFseElems, startOffs, stateOffs);
+                const uint32_t fseElemMLen = zstdgpu_LoadPackedFseElem(srt.inFseElems, startMLen, stateMLen);
 
                 uint32_t llen = 0, offs = 0, mlen = 0;
                 zstdgpu_ReadSeqBitsAndDecompress(

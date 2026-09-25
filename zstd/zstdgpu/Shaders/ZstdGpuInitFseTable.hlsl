@@ -67,19 +67,19 @@ void main(uint2 groupId2 : SV_GroupId, uint32_t i : SV_GroupThreadId)
     const uint32_t cmpBlockCount = srt.inCounters[0].Blocks_CMP;
     if (srt.tableType == 1u) // LLen
     {
-        zstdgpu_Srt_FillInline(srt, cmpBlockCount, zstdgpu_ComputeFseDataStartLLen(0, cmpBlockCount), kzstdgpu_FseElemMaxCount_LLen);
+        zstdgpu_Srt_FillInline(srt, cmpBlockCount, zstdgpu_ComputeFseDataStartLLen(0, cmpBlockCount), kzstdgpu_FseElemPackedCount_LLen);
     }
     else if (srt.tableType == 2u) // Offs
     {
-        zstdgpu_Srt_FillInline(srt, 2u * cmpBlockCount + 1u, zstdgpu_ComputeFseDataStartOffs(0, cmpBlockCount), kzstdgpu_FseElemMaxCount_Offs);
+        zstdgpu_Srt_FillInline(srt, 2u * cmpBlockCount + 1u, zstdgpu_ComputeFseDataStartOffs(0, cmpBlockCount), kzstdgpu_FseElemPackedCount_Offs);
     }
     else if (srt.tableType == 3u) // MLen
     {
-        zstdgpu_Srt_FillInline(srt, 3u * cmpBlockCount + 2u, zstdgpu_ComputeFseDataStartMLen(0, cmpBlockCount), kzstdgpu_FseElemMaxCount_MLen);
+        zstdgpu_Srt_FillInline(srt, 3u * cmpBlockCount + 2u, zstdgpu_ComputeFseDataStartMLen(0, cmpBlockCount), kzstdgpu_FseElemPackedCount_MLen);
     }
     else // 0 == HufW
     {
-        zstdgpu_Srt_FillInline(srt, 0u, zstdgpu_ComputeFseDataStartHufW(0, cmpBlockCount), kzstdgpu_FseElemMaxCount_HufW);
+        zstdgpu_Srt_FillInline(srt, 0u, zstdgpu_ComputeFseDataStartHufW(0, cmpBlockCount), kzstdgpu_FseElemPackedCount_HufW);
     }
     zstdgpu_ShaderEntry_InitFseTable(srt, groupId, i);
 }

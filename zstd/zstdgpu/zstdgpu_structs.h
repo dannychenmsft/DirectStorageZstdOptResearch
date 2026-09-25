@@ -263,6 +263,13 @@ static const uint32_t kzstdgpu_FseElemMaxCount_LLen = 1u << kzstdgpu_FseProbMaxA
 static const uint32_t kzstdgpu_FseElemMaxCount_Offs = 1u << kzstdgpu_FseProbMaxAccuracy_Offs;
 static const uint32_t kzstdgpu_FseElemMaxCount_MLen = 1u << kzstdgpu_FseProbMaxAccuracy_MLen;
 
+static const uint32_t kzstdgpu_FseElemPackedBitCount = 21u;
+static const uint32_t kzstdgpu_FseElemPackedMask = (1u << kzstdgpu_FseElemPackedBitCount) - 1u;
+static const uint32_t kzstdgpu_FseElemPackedCount_HufW = ((kzstdgpu_FseElemMaxCount_HufW + 2u) / 3u) * 2u;
+static const uint32_t kzstdgpu_FseElemPackedCount_LLen = ((kzstdgpu_FseElemMaxCount_LLen + 2u) / 3u) * 2u;
+static const uint32_t kzstdgpu_FseElemPackedCount_Offs = ((kzstdgpu_FseElemMaxCount_Offs + 2u) / 3u) * 2u;
+static const uint32_t kzstdgpu_FseElemPackedCount_MLen = ((kzstdgpu_FseElemMaxCount_MLen + 2u) / 3u) * 2u;
+
 static const uint32_t kzstdgpu_FseDefaultProbCount_LLen = 36;
 static const uint32_t kzstdgpu_FseDefaultProbCount_Offs = 29;
 static const uint32_t kzstdgpu_FseDefaultProbCount_MLen = 53;
@@ -280,15 +287,74 @@ static const uint32_t kzstdgpu_FrameStatusFlag_ChecksumBitSet = 1u << 1u;
 static const uint32_t kzstdgpu_FrameStatusFlag_DictionaryUsed = 1u << 2u;
 static const uint32_t kzstdgpu_FrameStatusFlag_ContentSizeAbsent = 1u << 3u;
 
-// FSE element packing: symbol(8) | bitcnt(8) | nstate(16) -> uint32_t
+// FSE element packing: symbol(8) | bitcnt(4) | nstate(9) -> 21-bit logical entry.
 static inline uint32_t zstdgpu_PackFseElem(uint32_t symbol, uint32_t bitcnt, uint32_t nstate)
 {
-    return (nstate << 16) | (bitcnt << 8) | symbol;
+    return ((nstate & 0x1ffu) << 12) | ((bitcnt & 0xfu) << 8) | (symbol & 0xffu);
 }
 
 static inline uint32_t zstdgpu_FseElem_Symbol(uint32_t packed) { return packed & 0xffu; }
-static inline uint32_t zstdgpu_FseElem_Bitcnt(uint32_t packed) { return (packed >> 8) & 0xffu; }
-static inline uint32_t zstdgpu_FseElem_NState(uint32_t packed) { return packed >> 16; }
+static inline uint32_t zstdgpu_FseElem_Bitcnt(uint32_t packed) { return (packed >> 8) & 0xfu; }
+static inline uint32_t zstdgpu_FseElem_NState(uint32_t packed) { return (packed >> 12) & 0x1ffu; }
+
+#ifndef __hlsl_dx_compiler
+static inline void InterlockedOr(uint32_t & dst, uint32_t x);
+#endif
+
+static inline uint32_t zstdgpu_LoadPackedFseElemDwords(uint32_t packed0, uint32_t packed1, uint32_t elemIndex)
+{
+    const uint32_t slot = elemIndex % 3u;
+    if (slot == 0u)
+        return packed0 & kzstdgpu_FseElemPackedMask;
+    if (slot == 1u)
+        return ((packed0 >> 21u) | ((packed1 & 0x3ffu) << 11u)) & kzstdgpu_FseElemPackedMask;
+    return (packed1 >> 10u) & kzstdgpu_FseElemPackedMask;
+}
+
+static inline uint32_t zstdgpu_LoadPackedFseElem(ZSTDGPU_RO_BUFFER(uint32_t) elems, uint32_t tableDataStart, uint32_t elemIndex)
+{
+    if (tableDataStart < kzstdgpu_FseRleTableCount)
+        return elems[tableDataStart + elemIndex];
+
+    const uint32_t packedGroupStart = tableDataStart + (elemIndex / 3u) * 2u;
+    return zstdgpu_LoadPackedFseElemDwords(elems[packedGroupStart], elems[packedGroupStart + 1u], elemIndex);
+}
+
+static inline uint32_t zstdgpu_LoadPackedFseElemRW(ZSTDGPU_RW_BUFFER(uint32_t) elems, uint32_t tableDataStart, uint32_t elemIndex)
+{
+    if (tableDataStart < kzstdgpu_FseRleTableCount)
+        return elems[tableDataStart + elemIndex];
+
+    const uint32_t packedGroupStart = tableDataStart + (elemIndex / 3u) * 2u;
+    return zstdgpu_LoadPackedFseElemDwords(elems[packedGroupStart], elems[packedGroupStart + 1u], elemIndex);
+}
+
+static inline void zstdgpu_StorePackedFseElem(ZSTDGPU_RW_BUFFER(uint32_t) elems, uint32_t tableDataStart, uint32_t elemIndex, uint32_t packed)
+{
+    packed &= kzstdgpu_FseElemPackedMask;
+
+    if (tableDataStart < kzstdgpu_FseRleTableCount)
+    {
+        elems[tableDataStart + elemIndex] = packed;
+        return;
+    }
+
+    const uint32_t packedGroupStart = tableDataStart + (elemIndex / 3u) * 2u;
+    const uint32_t slot = elemIndex % 3u;
+    if (slot == 0u)
+    {
+        InterlockedOr(elems[packedGroupStart], packed);
+    }
+    else if (slot == 1u)
+    {
+        InterlockedOr(elems[packedGroupStart], (packed & 0x7ffu) << 21u);
+        InterlockedOr(elems[packedGroupStart + 1u], packed >> 11u);
+    }
+    else
+    {
+        InterlockedOr(elems[packedGroupStart + 1u], packed << 10u);
+    }
+}
 
 // We define some special indices to classify FSE table indices referred by compressed blocks:
 //  "Unused" - special index showing the compressed block doesn't use FSE table
@@ -1532,22 +1598,22 @@ static uint32_t zstdgpu_ComputeFseIndexMLen(uint32_t indexMLen, uint32_t cmpBloc
 
 static uint32_t zstdgpu_ComputeFseDataStartHufW(uint32_t indexHufW, uint32_t /* cmpBlockCount */)
 {
-    return kzstdgpu_FseRleTableCount + indexHufW * kzstdgpu_FseElemMaxCount_HufW;
+    return kzstdgpu_FseRleTableCount + indexHufW * kzstdgpu_FseElemPackedCount_HufW;
 }
 
 static uint32_t zstdgpu_ComputeFseDataStartLLen(uint32_t indexLLen, uint32_t cmpBlockCount)
 {
-    return kzstdgpu_FseRleTableCount + cmpBlockCount * kzstdgpu_FseElemMaxCount_HufW + indexLLen * kzstdgpu_FseElemMaxCount_LLen;
+    return kzstdgpu_FseRleTableCount + cmpBlockCount * kzstdgpu_FseElemPackedCount_HufW + indexLLen * kzstdgpu_FseElemPackedCount_LLen;
 }
 
 static uint32_t zstdgpu_ComputeFseDataStartOffs(uint32_t indexOffs, uint32_t cmpBlockCount)
 {
-    return (kzstdgpu_FseRleTableCount + kzstdgpu_FseElemMaxCount_LLen) + cmpBlockCount * (kzstdgpu_FseElemMaxCount_HufW + kzstdgpu_FseElemMaxCount_LLen) + indexOffs * kzstdgpu_FseElemMaxCount_Offs;
+    return (kzstdgpu_FseRleTableCount + kzstdgpu_FseElemPackedCount_LLen) + cmpBlockCount * (kzstdgpu_FseElemPackedCount_HufW + kzstdgpu_FseElemPackedCount_LLen) + indexOffs * kzstdgpu_FseElemPackedCount_Offs;
 }
 
 static uint32_t zstdgpu_ComputeFseDataStartMLen(uint32_t indexMLen, uint32_t cmpBlockCount)
 {
-    return (kzstdgpu_FseRleTableCount + kzstdgpu_FseElemMaxCount_LLen + kzstdgpu_FseElemMaxCount_Offs) + cmpBlockCount * (kzstdgpu_FseElemMaxCount_HufW + kzstdgpu_FseElemMaxCount_LLen + kzstdgpu_FseElemMaxCount_Offs) + indexMLen * kzstdgpu_FseElemMaxCount_MLen;
+    return (kzstdgpu_FseRleTableCount + kzstdgpu_FseElemPackedCount_LLen + kzstdgpu_FseElemPackedCount_Offs) + cmpBlockCount * (kzstdgpu_FseElemPackedCount_HufW + kzstdgpu_FseElemPackedCount_LLen + kzstdgpu_FseElemPackedCount_Offs) + indexMLen * kzstdgpu_FseElemPackedCount_MLen;
 }
 
 static uint32_t zstdgpu_ComputeFseDataStartFromFseIndexLLen(uint32_t fseIndex, uint32_t cmpBlockCount)

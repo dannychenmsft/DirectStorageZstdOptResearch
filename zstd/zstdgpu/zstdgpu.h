@@ -117,7 +117,7 @@ ZSTDGPU_API void zstdgpu_CountCompressedLiteralsAndSequences(zstdgpu_CountLitera
 typedef enum zstdgpu_Status
 {
     kzstdgpu_StatusSuccess                  = 0,
-    kzstdgpu_StatusInvalidArgument          = 1,
+    kzstdgpu_StatusInvalidArgument          = 1, /**< An argument or the request state is invalid, or a stage of the request needs 4 GiB or more of default heap memory. */
     kzstdgpu_StatusResourceCreationFailed   = 2, /**< A D3D12 heap, resource or descriptor heap could not be created, or a resource could not be mapped (for example, after device removal). */
     kzstdgpu_StatusForceInt                 = 0x7fffffff
 } zstdgpu_Status;
@@ -242,6 +242,9 @@ ZSTDGPU_API uint32_t zstdgpu_IsAnyStageReadbackRequired(zstdgpu_PerRequestContex
  *
  *  @note       Returns `kzstdgpu_StatusResourceCreationFailed` if the stage is sized from counters read back after the
  *              previous stage and that stage failed with `kzstdgpu_StatusResourceCreationFailed`.
+ *
+ *  @note       Returns `kzstdgpu_StatusInvalidArgument` without writing the outputs if the stage needs 4 GiB or more of
+ *              default heap memory. Submit fewer frames per request.
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_GetGpuMemoryRequirement(uint64_t *outDefaultHeapByteCount, uint64_t *outUploadHeapByteCount, uint64_t *outReadbackHeapByteCount, uint32_t *outShaderVisibleDescriptorCount, zstdgpu_PerRequestContext inPerRequestContext, uint32_t stageIndex);
 
@@ -249,6 +252,9 @@ ZSTDGPU_API zstdgpu_Status zstdgpu_GetGpuMemoryRequirement(uint64_t *outDefaultH
  *  @brief      Returns memory requirement for each heap type for all submission stages for a given `zstdgpu_PerRequestContext`
  *
  *  @note       It's valid to call this function only when `zstdgpu_IsAnyStageReadbackRequired` returns `0`
+ *
+ *  @note       Returns `kzstdgpu_StatusInvalidArgument` without writing the outputs if any stage on its own needs 4 GiB
+ *              or more of default heap memory. Submit fewer frames per request.
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_GetAllStageGpuMemoryRequirement(uint64_t *outDefaultHeapByteCount, uint64_t *outUploadHeapByteCount, uint64_t *outReadbackHeapByteCount, uint32_t *outShaderVisibleDescriptorCount, zstdgpu_PerRequestContext inPerRequestContext);
 
@@ -309,6 +315,9 @@ ZSTDGPU_API zstdgpu_Status zstdgpu_SubmitAllStagesWithExternalMemory(zstdgpu_Per
  *  @note       Returns `kzstdgpu_StatusResourceCreationFailed` without recording any commands if a heap, resource or
  *              descriptor heap could not be created, or a resource could not be mapped (for example, after device
  *              removal). Do not submit later stages of the request after a failure.
+ *
+ *  @note       Returns `kzstdgpu_StatusInvalidArgument` without recording any commands if the stage needs 4 GiB or more of
+ *              default heap memory. Do not submit later stages of the request; submit fewer frames per request instead.
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_SubmitWithInternalMemory(zstdgpu_PerRequestContext inPerRequestContext, uint32_t stageIndex, struct ID3D12GraphicsCommandList *cmdList);
 
@@ -321,5 +330,8 @@ ZSTDGPU_API zstdgpu_Status zstdgpu_SubmitWithInternalMemory(zstdgpu_PerRequestCo
  *  @note       Returns `kzstdgpu_StatusResourceCreationFailed` without recording any commands if a heap, resource or
  *              descriptor heap could not be created, or a resource could not be mapped (for example, after device
  *              removal).
+ *
+ *  @note       Returns `kzstdgpu_StatusInvalidArgument` without recording any commands if any stage on its own needs 4 GiB
+ *              or more of default heap memory. Submit fewer frames per request.
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_SubmitAllStagesWithInternalMemory(zstdgpu_PerRequestContext inPerRequestContext, struct ID3D12GraphicsCommandList *cmdList);

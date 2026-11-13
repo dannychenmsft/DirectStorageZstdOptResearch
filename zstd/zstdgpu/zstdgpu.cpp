@@ -1477,6 +1477,17 @@ static void zstdgpu_RecomputeAndRetrieveBlockInfoConstants(uint32_t *outCntLit, 
     *outCntLit = cntLit;
 }
 
+// Buffer sizing saturates an oversized buffer instead of letting it wrap, which pushes the stage that owns it to at least
+// `kzstdgpu_MaxScratchHeapByteCount`. Reject such a stage before any of its resources are created.
+static uint32_t zstdgpu_IsStageScratchSupported(const zstdgpu_ResourceInfo *resInfo, uint32_t stageIndex)
+{
+    const uint64_t byteCount = resInfo->gpuOnly_ByteCount[stageIndex];
+    const uint32_t supported = (byteCount < kzstdgpu_MaxScratchHeapByteCount) ? 1u : 0u;
+    ZSTDGPU_ASSERT_MSG(supported, "zstdgpu: stage %u needs %llu bytes of scratch memory, which must be less than %llu. Submit fewer frames per request.",
+                       stageIndex, (unsigned long long)byteCount, (unsigned long long)kzstdgpu_MaxScratchHeapByteCount);
+    return supported;
+}
+
 ZSTDGPU_ENUM(Status) zstdgpu_GetGpuMemoryRequirement(uint64_t *outDefaultHeapByteCount, uint64_t *outUploadHeapByteCount, uint64_t *outReadbackHeapByteCount, uint32_t *outShaderVisibleDescriptorCount, zstdgpu_PerRequestContext req, uint32_t stageIndex)
 {
     uint32_t proceed = 1;
@@ -1518,6 +1529,12 @@ ZSTDGPU_ENUM(Status) zstdgpu_GetGpuMemoryRequirement(uint64_t *outDefaultHeapByt
             zstdgpu_RecomputeAndRetrieveBlockInfoConstants(&cntLit, &cntSeq, req);
             zstdgpu_ResourceInfo_Stage_2_Init(&req->resInfo, cntLit, cntSeq, req->zstdUncompressedFramesByteCount, req->zstdUncompressedFrameCount);
         }
+
+        if (!zstdgpu_IsStageScratchSupported(&req->resInfo, stageIndex))
+        {
+            return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
+        }
+
         *outDefaultHeapByteCount            = req->resInfo.gpuOnly_ByteCount[stageIndex];
         *outUploadHeapByteCount             = req->resInfo.cpu2Gpu_ByteCount[stageIndex];
         *outReadbackHeapByteCount           = req->resInfo.gpu2Cpu_ByteCount[stageIndex];
@@ -1528,10 +1545,10 @@ ZSTDGPU_ENUM(Status) zstdgpu_GetGpuMemoryRequirement(uint64_t *outDefaultHeapByt
     return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
 }
 
-static void zstdgpu_GetAllStageGpuMemoryRequirementInternal(uint64_t *outDefaultHeapByteCount,
-                                                            uint64_t *outUploadHeapByteCount,
-                                                            uint64_t *outReadbackHeapByteCount,
-                                                            zstdgpu_PerRequestContext req)
+static uint32_t zstdgpu_GetAllStageGpuMemoryRequirementInternal(uint64_t *outDefaultHeapByteCount,
+                                                                uint64_t *outUploadHeapByteCount,
+                                                                uint64_t *outReadbackHeapByteCount,
+                                                                zstdgpu_PerRequestContext req)
 {
     uint32_t cntRaw, cntRle, cntCmp, cntLit, cntSeq;
     zstdgpu_ResourceInfo_Stage_0_Init(&req->resInfo, req->zstdFrameCount, req->zstdCompressedFramesByteCount, zstdgpu_HasFlag(req->setupFlags, kzstdgpu_SetupFlags_InputsGpuMemory) ? 1u : 0u);
@@ -1541,6 +1558,13 @@ static void zstdgpu_GetAllStageGpuMemoryRequirementInternal(uint64_t *outDefault
 
     zstdgpu_RecomputeAndRetrieveBlockInfoConstants(&cntLit, &cntSeq, req);
     zstdgpu_ResourceInfo_Stage_2_Init(&req->resInfo, cntLit, cntSeq, req->zstdUncompressedFramesByteCount, req->zstdUncompressedFrameCount);
+
+    if (!zstdgpu_IsStageScratchSupported(&req->resInfo, 0) ||
+        !zstdgpu_IsStageScratchSupported(&req->resInfo, 1) ||
+        !zstdgpu_IsStageScratchSupported(&req->resInfo, 2))
+    {
+        return 0;
+    }
 
     *outDefaultHeapByteCount    = req->resInfo.gpuOnly_ByteCount[0]
                                 + req->resInfo.gpuOnly_ByteCount[1]
@@ -1553,6 +1577,8 @@ static void zstdgpu_GetAllStageGpuMemoryRequirementInternal(uint64_t *outDefault
     *outReadbackHeapByteCount   = req->resInfo.gpu2Cpu_ByteCount[0]
                                 + req->resInfo.gpu2Cpu_ByteCount[1]
                                 + req->resInfo.gpu2Cpu_ByteCount[2];
+
+    return 1;
 }
 
 ZSTDGPU_ENUM(Status) zstdgpu_GetAllStageGpuMemoryRequirement(uint64_t *outDefaultHeapByteCount,
@@ -1578,7 +1604,10 @@ ZSTDGPU_ENUM(Status) zstdgpu_GetAllStageGpuMemoryRequirement(uint64_t *outDefaul
 
     if (proceed)
     {
-        zstdgpu_GetAllStageGpuMemoryRequirementInternal(outDefaultHeapByteCount, outUploadHeapByteCount, outReadbackHeapByteCount, req);
+        if (!zstdgpu_GetAllStageGpuMemoryRequirementInternal(outDefaultHeapByteCount, outUploadHeapByteCount, outReadbackHeapByteCount, req))
+        {
+            return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
+        }
 
         *outShaderVisibleDescriptorCount    = zstdgpu_Count_SRTs_Stage(0)
                                             + zstdgpu_Count_SRTs_Stage(1)
@@ -1867,6 +1896,11 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitWithInternalMemory(zstdgpu_PerRequestContext 
             zstdgpu_ResourceInfo_Stage_2_Init(&req->resInfo, cntLit, cntSeq, req->zstdUncompressedFramesByteCount, req->zstdUncompressedFrameCount);
         }
 
+        if (!zstdgpu_IsStageScratchSupported(&req->resInfo, stageIndex))
+        {
+            return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
+        }
+
         // NOTE(pamartis): if at least one heap from a given stage is too small, release all heaps and recreate
         // TODO(pamartis): consider releasing only single heap
         if (req->resData.gpuOnly_ByteCount[stageIndex] < req->resInfo.gpuOnly_ByteCount[stageIndex] ||
@@ -1968,7 +2002,10 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitAllStagesWithInternalMemory(zstdgpu_PerReques
         uint32_t success = 1;
         uint64_t dflt, upld, rdbk;
         uint64_t dfltP, upldP, rdbkP;
-        zstdgpu_GetAllStageGpuMemoryRequirementInternal(&dflt, &upld, &rdbk, req);
+        if (!zstdgpu_GetAllStageGpuMemoryRequirementInternal(&dflt, &upld, &rdbk, req))
+        {
+            return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
+        }
 
         dfltP = req->resData.gpuOnly_ByteCount[0]
               + req->resData.gpuOnly_ByteCount[1]

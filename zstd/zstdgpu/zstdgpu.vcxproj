@@ -262,7 +262,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Direct3D.DXC.1.8.2505.32\build\native\Microsoft.Direct3D.DXC.targets'))" />
   </Target>
   <!-- The CompileShaders target compiles all the shaders to ShaderDirectory -->
-  <Target Name="CompileShaders" BeforeTargets="PrepareForBuild" DependsOnTargets="CollectShaders;MakeShaderDirectory" Inputs="%(Shader.FullPath)" Outputs="$(ShaderDirectory)%(Shader.Filename).h">
+  <Target Name="CompileShaders" BeforeTargets="PrepareForBuild" DependsOnTargets="CollectShaders;MakeShaderDirectory" Inputs="%(Shader.FullPath);@(ShaderDependency)" Outputs="$(ShaderDirectory)%(Shader.Filename).h">
     <Message Importance="High" Text="Compiling %(Shader.FullPath) to %(Shader.Filename)" />
     <Exec Command="&quot;$(MSBuildBinPath)\Tracker.exe&quot; /d &quot;$(MSBuildBinPath)\FileTracker64.dll&quot; /i $(TLogLocation) /r &quot;%(Shader.FullPath)&quot; /c dxc.exe --version" />
     <Exec Command="&quot;$(MSBuildBinPath)\Tracker.exe&quot; /d &quot;$(MSBuildBinPath)\FileTracker64.dll&quot; /i $(TLogLocation) /r &quot;%(Shader.FullPath)&quot; /c dxc.exe %(Shader.FullPath) $(DxcOpts) /I &quot;srt_headers&quot; /T%(Shader.ShaderModel) %(Shader.Opts) /Emain /Fh$(ShaderDirectory)%(Shader.Filename).h /Fd$(ShaderDirectory)%(Shader.Filename).pdb /Vn g_%(Shader.Filename)" />
@@ -274,6 +274,9 @@
         <Opts>
         </Opts>
       </Shader>
+      <!-- Files the shaders can include. Every shader lists all of them as inputs, so editing any of them recompiles every shader. -->
+      <ShaderDependency Include="$(MSBuildThisFileDirectory)Shaders\*.hlsl;$(MSBuildThisFileDirectory)Shaders\*.hlsli;$(MSBuildThisFileDirectory)srt_headers\*.h" />
+      <ShaderDependency Include="$(MSBuildThisFileDirectory)zstdgpu_shaders.h;$(MSBuildThisFileDirectory)zstdgpu_structs.h;$(MSBuildThisFileDirectory)zstdgpu_shared_structs.h;$(MSBuildThisFileDirectory)zstdgpu_assert.h;$(MSBuildThisFileDirectory)zstdgpu_lds*.h" />
     </ItemGroup>
     <Message Text="%(Shader.FullPath)" />
   </Target>

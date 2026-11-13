@@ -591,3 +591,122 @@ TEST_F(ZstdDecompressionTests, RequestTooLargeStatusTest)
         }
     }
 }
+
+// Verifies the default heap memory limit: when a stage needs 4 GiB or more, the memory queries return
+// kzstdgpu_StatusInvalidArgument without writing their outputs, and the internal memory submits return
+// the same status. Stage 1 is sized from the frame info constants and the command list is never executed,
+// so the request needs no frame data.
+TEST_F(ZstdDecompressionTests, OversizedStageScratchRejectedTest)
+{
+    com_ptr<ID3D12Device> device = FindDefaultAdapter().Device;
+    ASSERT_TRUE(device != nullptr);
+
+    auto createBuffer = [&](uint64_t size) {
+        com_ptr<ID3D12Resource> resource;
+        D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+        CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_DEFAULT);
+        check_hresult(device->CreateCommittedResource(
+            &heapProperties,
+            D3D12_HEAP_FLAG_NONE,
+            &desc,
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr,
+            IID_PPV_ARGS(resource.put())));
+        return resource;
+    };
+
+    const uint32_t bufferSize = 4096u;
+    com_ptr<ID3D12Resource> input = createBuffer(bufferSize);
+    com_ptr<ID3D12Resource> inputRefs = createBuffer(bufferSize);
+    com_ptr<ID3D12Resource> output = createBuffer(bufferSize);
+    com_ptr<ID3D12Resource> outputRefs = createBuffer(bufferSize);
+    com_ptr<ID3D12Resource> frameStatus = createBuffer(bufferSize);
+
+    void* persistent = nullptr;
+    ASSERT_EQ(AllocatePersistentContext(device.get(), &persistent), S_OK);
+    std::unique_ptr<void, decltype(&FreePersistentContext)> persistentGuard(persistent, &FreePersistentContext);
+
+    void* request = nullptr;
+    ASSERT_EQ(AllocatePerRequestContext(persistent, &request), S_OK);
+    std::unique_ptr<void, decltype(&FreePerRequestContext)> requestGuard(request, &FreePerRequestContext);
+
+    uint32_t stageCount = 0;
+    ASSERT_EQ(
+        SetupDecompressionStages(
+            request,
+            input.get(),
+            bufferSize,
+            inputRefs.get(),
+            output.get(),
+            bufferSize,
+            outputRefs.get(),
+            frameStatus.get(),
+            1u,
+            &stageCount),
+        S_OK);
+
+    com_ptr<ID3D12CommandAllocator> commandAllocator;
+    check_hresult(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(commandAllocator.put())));
+    com_ptr<ID3D12GraphicsCommandList> commandList;
+    check_hresult(device->CreateCommandList(
+        0,
+        D3D12_COMMAND_LIST_TYPE_COMPUTE,
+        commandAllocator.get(),
+        nullptr,
+        IID_PPV_ARGS(commandList.put())));
+
+    uint64_t defaultBytes = 0;
+    uint64_t uploadBytes = 0;
+    uint64_t readbackBytes = 0;
+    uint32_t descriptorCount = 0;
+    auto resetOutputs = [&]() {
+        defaultBytes = uploadBytes = readbackBytes = ~0ull;
+        descriptorCount = ~0u;
+    };
+    auto expectOutputsUnchanged = [&]() {
+        EXPECT_EQ(defaultBytes, ~0ull);
+        EXPECT_EQ(uploadBytes, ~0ull);
+        EXPECT_EQ(readbackBytes, ~0ull);
+        EXPECT_EQ(descriptorCount, ~0u);
+    };
+
+    const zstdgpu_PerRequestContext req = reinterpret_cast<zstdgpu_PerRequestContext>(request);
+
+    // 8,388,608 compressed blocks need far more than 4 GiB of stage 1 memory.
+    ASSERT_EQ(zstdgpu_SetupFrameInfoConstants(req, 0u, 0u, 8388608u), kzstdgpu_StatusSuccess);
+
+    // Stage 0 does not depend on the block count, and the stages are submitted in order.
+    ASSERT_EQ(zstdgpu_SubmitWithInternalMemory(req, 0u, commandList.get()), kzstdgpu_StatusSuccess);
+
+    resetOutputs();
+    EXPECT_EQ(
+        GetHeapMemorySizesForStage(request, 1u, &defaultBytes, &uploadBytes, &readbackBytes, &descriptorCount),
+        E_INVALIDARG);
+    expectOutputsUnchanged();
+    EXPECT_EQ(zstdgpu_SubmitWithInternalMemory(req, 1u, commandList.get()), kzstdgpu_StatusInvalidArgument);
+
+    // The all-stages functions also need the block info constants, so that no stage needs a readback.
+    ASSERT_EQ(zstdgpu_SetupBlockInfoConstants(req, 1u << 20, 1u << 16), kzstdgpu_StatusSuccess);
+
+    resetOutputs();
+    EXPECT_EQ(
+        zstdgpu_GetAllStageGpuMemoryRequirement(&defaultBytes, &uploadBytes, &readbackBytes, &descriptorCount, req),
+        kzstdgpu_StatusInvalidArgument);
+    expectOutputsUnchanged();
+    EXPECT_EQ(zstdgpu_SubmitAllStagesWithInternalMemory(req, commandList.get()), kzstdgpu_StatusInvalidArgument);
+
+    // The same request is accepted again once the frame info constants fit.
+    ASSERT_EQ(zstdgpu_SetupFrameInfoConstants(req, 0u, 0u, 1000u), kzstdgpu_StatusSuccess);
+
+    resetOutputs();
+    EXPECT_EQ(
+        GetHeapMemorySizesForStage(request, 1u, &defaultBytes, &uploadBytes, &readbackBytes, &descriptorCount),
+        S_OK);
+    EXPECT_GT(defaultBytes, 0u);
+    EXPECT_LT(defaultBytes, 4ull << 30);
+    EXPECT_EQ(
+        zstdgpu_GetAllStageGpuMemoryRequirement(&defaultBytes, &uploadBytes, &readbackBytes, &descriptorCount, req),
+        kzstdgpu_StatusSuccess);
+
+    EXPECT_EQ(commandList->Close(), S_OK);
+}

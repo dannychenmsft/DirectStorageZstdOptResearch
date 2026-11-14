@@ -1374,6 +1374,8 @@ static const wchar_t *zstdgpu_Demo_FrameStatusName(uint32_t status)
     case kzstdgpu_FrameStatus_WindowTooLarge:        return L"WindowTooLarge";
     case kzstdgpu_FrameStatus_MissingContentSize:    return L"MissingContentSize";
     case kzstdgpu_FrameStatus_RequestTooLarge:       return L"RequestTooLarge";
+    case kzstdgpu_FrameStatus_BlockCountExceeded:    return L"BlockCountExceeded";
+    case kzstdgpu_FrameStatus_ScratchExceeded:       return L"ScratchExceeded";
     default:                                         return L"Unknown";
     }
 }

@@ -62,3 +62,28 @@ static const uint32_t kzstdgpu_FrameStatus_RequestTooLarge       = 0xA07A0006u; 
 // kzstdgpu_FrameStatus_RequestTooLarge and its output is undefined; split such
 // requests into smaller batches.
 static const uint32_t kzstdgpu_MaxRequestUncompressedByteSize    = 0x3FFFFFFFu;
+
+// -----------------------------------------------------------------------------
+// Scratch-overflow status.
+//
+// Unlike the codes above, these do not describe anything wrong with a frame. They
+// report that the request's scratch memory was sized for fewer blocks, literal
+// bytes or sequences than the content has, so the decode was abandoned. The
+// library sizes scratch from counts it cannot verify in two cases: counts supplied
+// with zstdgpu_SetupFrameInfoConstants or zstdgpu_SetupBlockInfoConstants, and the
+// estimates that single submission (zstdgpu_SetupAllStageSubmission) derives from
+// the decompressed size when they are not supplied. The GPU compares the actual
+// counts with that sizing and skips the rest of the decode when they exceed it.
+//
+// The comparison uses request-wide totals, so the overflow cannot be attributed to
+// one frame:
+//   * kzstdgpu_FrameStatus_BlockCountExceeded is found before any frame status is
+//     written, and replaces the status of EVERY frame of the request.
+//   * kzstdgpu_FrameStatus_ScratchExceeded replaces the status of every accepted
+//     frame; a frame that already reports a failure keeps it.
+// Either way the output of every frame is undefined. Retry with counts that cover
+// the content, or with staged submission, which sizes each stage from counts read
+// back from the GPU.
+// -----------------------------------------------------------------------------
+static const uint32_t kzstdgpu_FrameStatus_BlockCountExceeded    = 0xA07A0007u; // more blocks than the request's scratch was sized for
+static const uint32_t kzstdgpu_FrameStatus_ScratchExceeded       = 0xA07A0008u; // more literal bytes or sequences than the request's scratch was sized for

@@ -1371,6 +1371,14 @@ static uint32_t zstdgpu_AreReadbackCountersMissing(zstdgpu_PerRequestContext req
     return (stageIndex > 0 && zstdgpu_IsReadbackRequired(req, stageIndex - 1) && NULL == req->resData.gpu2Cpu.CountersCpu) ? 1u : 0u;
 }
 
+// Stage 2 is predicated whenever either earlier stage skips its readback. A block-count overflow found by stage 0 also
+// skips stage 1 through its own predication, so stage 2 would otherwise run with buffers sized from counters that stage 1
+// never produced.
+static uint32_t zstdgpu_IsStage2Predicated(zstdgpu_PerRequestContext req)
+{
+    return (0 == zstdgpu_IsReadbackRequired(req, 0) || 0 == zstdgpu_IsReadbackRequired(req, 1)) ? 1u : 0u;
+}
+
 static uint32_t zstdgpu_OutputSizeToBlockCount(uint32_t size)
 {
     // NOTE(pamartis): We compute the number of 4KiB blocks -- which is the minimal size of the block
@@ -2473,9 +2481,13 @@ void zstdgpu_SubmitStage0(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
     // UpdateDispatchArgs needs it in state UAV, otherwise the debug later will flag RESOURCE_BARRIER_BEFORE_AFTER_MISMATCH.
     {
         PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"[Barrier for ExecuteIndirectWorkaround]");
-        D3D12_RESOURCE_BARRIER barriers[1];
+        D3D12_RESOURCE_BARRIER barriers[2];
         uint32_t bc = 0;
         setResourceState(barriers, bc++, req->resData.gpuOnly.DispatchArgs, NON_PIXEL_SHADER_RESOURCE, UNORDERED_ACCESS);
+
+        // last written by an earlier request sharing the caller's status buffer
+        // next written by [Update Dispatch Args :: Stage 0] when it reports a block-count overflow
+        setResourceUavSync(barriers, bc++, req->resData.gpuOnly.FrameStatus);
         ZSTDGPU_ASSERT(bc <= _countof(barriers));
         cmdList->ResourceBarrier(bc, barriers);
         PIXEndEvent(cmdList);
@@ -2489,7 +2501,13 @@ void zstdgpu_SubmitStage0(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
             req->zstdRleBlockCountMax,
             /* litByteCountMax, unused for stage 0 */0,
             /* seqElemCountMax, unused for stage 0 */0,
-            req->executeIndirectWorkaround
+            req->executeIndirectWorkaround,
+            req->zstdFrameCount,
+            // Report only when the overflow would otherwise be acted on SILENTLY. This matches the
+            // `SetPredication` condition of stage 1 exactly: where readback is required the host re-sizes
+            // from the counters it read back, so predication is never applied and there is nothing to
+            // hide. Reporting there would be a false alarm.
+            (0 == zstdgpu_IsReadbackRequired(req, 0)) ? 1u : 0u
         );
         ZSTDGPU_KERNEL_SCOPE(UpdateDispatchArgs_Stage0, cmdList,
             cmdList->Dispatch(1, 1, 1);
@@ -2532,6 +2550,10 @@ void zstdgpu_SubmitStage0(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
             setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.PerFrameBlockCountCMPLookback);
             setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.PerFrameBlockCountAll);
             setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.PerFrameBlockCountAllLookback);
+
+            // last written by [Update Dispatch Args :: Stage 0] when it reports a block-count overflow
+            // next written by [Parse Frames :: Collect Blocks]
+            setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.FrameStatus);
         }
         ZSTDGPU_ASSERT(bc <= _countof(barriers));
         cmdList->ResourceBarrier(bc, barriers);
@@ -2756,12 +2778,15 @@ void zstdgpu_SubmitStage1(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
 
     {
         PIXBeginEvent(cmdList, PIX_COLOR_DEFAULT, L"Barrier for [Readback Counters :: After Block Parse] and [Update Dispatch Args] and [Compute `Per-Huffman Table` Literal Stream Count Prefix]");
-        D3D12_RESOURCE_BARRIER barriers[19];
+        D3D12_RESOURCE_BARRIER barriers[20];
         uint32_t bc = 0;
         {
             // last written by [Parse Compressed Blocks]
             // next read by [Update Dispatch Args :: Stage 1] as UAV
             setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.Counters);
+            // last written by [Parse Frames :: Collect Blocks] (every frame's status)
+            // next read and conditionally overwritten by [Update Dispatch Args :: Stage 1]
+            setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.FrameStatus);
             // last written by [Parse Compressed Blocks]
             // next written/updated by [Decompress Sequences]
             setResourceUavSync(barriers, bc ++, req->resData.gpuOnly.BlockSizePrefix);
@@ -2826,7 +2851,11 @@ void zstdgpu_SubmitStage1(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
             req->zstdRleBlockCountMax,
             req->zstdUncompressedLitByteCountMax,
             req->zstdUncompressedSeqElemCountMax,
-            req->executeIndirectWorkaround
+            req->executeIndirectWorkaround,
+            req->zstdFrameCount,
+            // Report only when stage 2 would otherwise run against undersized buffers. Where readback is
+            // required the host sizes stage 2 from the counters it reads back, so there is nothing to report.
+            (0 == zstdgpu_IsReadbackRequired(req, 1)) ? 1u : 0u
         );
         ZSTDGPU_KERNEL_SCOPE(UpdateDispatchArgs_Stage1, cmdList,
             cmdList->Dispatch(1, 1, 1);
@@ -2843,13 +2872,14 @@ void zstdgpu_SubmitStage1(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
         setResourceState(barriers, bc ++, req->resData.gpuOnly.DispatchArgs, UNORDERED_ACCESS, INDIRECT_AND_SRV);
         setResourceState(barriers, bc ++, req->resData.gpuOnly.DispatchCnts, UNORDERED_ACCESS, INDIRECT_ARGUMENT);
 
-        if (0 == zstdgpu_IsReadbackRequired(req, 1))
+        if (zstdgpu_IsStage2Predicated(req))
         {
             // last written by [Update Dispatch Args :: Stage 1]
             // next read by SetPredication as PREDICATION
             setResourceState(barriers, bc ++, req->resData.gpuOnly.Predicate, UNORDERED_ACCESS, PREDICATION);
         }
-        else
+
+        if (zstdgpu_IsReadbackRequired(req, 1))
         {
             // last read by [Update Dispatch Args :: Stage 1] as UAV
             // next read by [Readback Counters :: After Block Parse]
@@ -2920,7 +2950,8 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
 #endif
     // NOTE(pamartis): enable predication for stage2 in case when either single submission mode is requested or
     // block information is specified
-    if (0 == zstdgpu_IsReadbackRequired(req, 1))
+    // It is also enabled when only frame information is specified (see `zstdgpu_IsStage2Predicated`).
+    if (zstdgpu_IsStage2Predicated(req))
     {
         cmdList->SetPredication(req->resData.gpuOnly.Predicate, sizeof(uint64_t) /* Stage 2 predicate */, D3D12_PREDICATION_OP_NOT_EQUAL_ZERO);
     }
@@ -2966,7 +2997,9 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
             req->zstdRleBlockCountMax,
             /* litByteCountMax, unused for stage == 2 */0,
             /* seqElemCountMax, unused for stage == 2 */0,
-            req->executeIndirectWorkaround
+            req->executeIndirectWorkaround,
+            req->zstdFrameCount,
+            /* reportsScratchOverflow, stage 2 performs no overflow check */0
         );
         ZSTDGPU_KERNEL_SCOPE(UpdateDispatchArgs_DecompressLiterals, cmdList,
             cmdList->Dispatch(1, 1, 1);
@@ -3310,7 +3343,7 @@ void zstdgpu_SubmitStage2(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandLi
     }
 
     // Unset predication
-    if (0 == zstdgpu_IsReadbackRequired(req, 1))
+    if (zstdgpu_IsStage2Predicated(req))
     {
         cmdList->SetPredication(NULL, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
     }

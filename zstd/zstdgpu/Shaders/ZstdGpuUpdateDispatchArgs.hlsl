@@ -19,6 +19,34 @@
 #include "../zstdgpu_shaders.h"
 #include "../srt_headers/ZstdGpuSrt_UpdateDispatchArgs.h"
 
+/**
+ *  Marks every frame of the request as failed because the request ran out of scratch.
+ *
+ *  The overflow is a per-DISPATCH condition computed from request-wide counters, so it cannot be
+ *  attributed to one frame. Every frame is marked, because once predicated work is skipped no
+ *  frame's output can be trusted.
+ *
+ *  `keepSpecificFailures` decides whether a frame that already reports a failure (bad magic,
+ *  dictionary, reserved bit, ...) keeps it. That is only meaningful once
+ *  [Parse Frames :: Collect Blocks] has written this request's statuses (stage 1). Before that
+ *  (stage 0) the buffer holds whatever an earlier request or the caller left there, so every frame
+ *  must be overwritten: a stale code would otherwise survive, and stale non-negative garbage would
+ *  read as success.
+ *
+ *  Single-threaded, and that is deliberate -- this loop only ever runs when the decode has already
+ *  failed, so its cost is irrelevant. On the success path it is one comparison.
+ */
+static void zstdgpu_MarkAllFramesFailed(ZSTDGPU_RW_BUFFER(uint32_t) inoutFrameStatus, uint32_t frameCount, uint32_t status, uint32_t keepSpecificFailures)
+{
+    for (uint32_t frameIdx = 0; frameIdx < frameCount; ++frameIdx)
+    {
+        if (0 == keepSpecificFailures || kzstdgpu_FrameStatus_Success == inoutFrameStatus[frameIdx])
+        {
+            inoutFrameStatus[frameIdx] = status;
+        }
+    }
+}
+
 [RootSignature(ZSTDGPU_SRT_RS_UpdateDispatchArgs)]
 [numthreads(1, 1, 1)]
 void main()
@@ -61,10 +89,30 @@ void main()
                                      | (rawBlockCount > srt.rawBlockCountMax ? (1u << 1u) : 0u)
                                      | (rleBlockCount > srt.rleBlockCountMax ? (1u << 2u) : 0u);
 
-        srt.inoutPredicate[0] = predicateMask; // lower 32-bits of Stage 1 predicate
-        srt.inoutPredicate[1] = 0;             // upper 32-bits of Stage 1 predicate
-        srt.inoutPredicate[2] = predicateMask; // lower 32-bits of Stage 2 predicate
-        srt.inoutPredicate[3] = 0;             // upper 32-bits of Stage 2 predicate
+        // `reportsScratchOverflow` is set exactly when the host enforces this stage's checks with
+        // predication. When it is clear, stage 0 needs a readback: the maxima above are not yet
+        // known (they are typically zero), and the host sizes stage 1 from the counts it reads
+        // back. The bits must then not reach the stage-2 predicate either, which IS applied when
+        // stage 1 needs no readback (block constants supplied without frame constants) and would
+        // otherwise skip stage 2 silently on a correctly sized request.
+        const uint32_t enforcedMask = (0 != srt.reportsScratchOverflow) ? predicateMask : 0u;
+
+        srt.inoutPredicate[0] = enforcedMask; // lower 32-bits of Stage 1 predicate
+        srt.inoutPredicate[1] = 0;            // upper 32-bits of Stage 1 predicate
+        srt.inoutPredicate[2] = enforcedMask; // lower 32-bits of Stage 2 predicate
+        srt.inoutPredicate[3] = 0;            // upper 32-bits of Stage 2 predicate
+
+        // Report the overflow instead of skipping silently.
+        //
+        // ORDERING, and it is load-bearing: [Parse Frames :: Collect Blocks] writes every frame's
+        // status in stage 1, i.e. AFTER this pass, with an unconditional assignment that would
+        // overwrite these marks. It cannot: that pass is predicated on exactly the mask written
+        // above, so it runs only when this mask is zero and there was nothing to mark. For the same
+        // reason no status of this request exists yet, so every frame is overwritten.
+        if (0 != predicateMask && 0 != srt.reportsScratchOverflow)
+        {
+            zstdgpu_MarkAllFramesFailed(srt.inoutFrameStatus, srt.frameCount, kzstdgpu_FrameStatus_BlockCountExceeded, /* keepSpecificFailures */ 0u);
+        }
     }
     else if (srt.stage == 1)
     {
@@ -94,7 +142,20 @@ void main()
                                      | (litByteCount > srt.litByteCountMax ? (1u << 3u) : 0u)
                                      | (seqElemCount > srt.seqElemCountMax ? (1u << 4u) : 0u);
 
-        srt.inoutPredicate[2] = srt.inoutPredicate[2] | predicateMask; // lower 32-bits of Stage 2 predicate
+        // As in stage 0, the maxima are real limits only when the host enforces them with
+        // predication. Otherwise they are placeholders, and the host sizes stage 2 from the
+        // counts it reads back after this stage.
+        const uint32_t enforcedMask = (0 != srt.reportsScratchOverflow) ? predicateMask : 0u;
+
+        srt.inoutPredicate[2] = srt.inoutPredicate[2] | enforcedMask; // lower 32-bits of Stage 2 predicate
+
+        // Report the overflow instead of skipping silently. Unlike the stage 0 case above, the
+        // per-frame statuses have ALREADY been written by [Parse Frames :: Collect Blocks] at this
+        // point, so a frame that already reports a failure keeps it.
+        if (0 != predicateMask && 0 != srt.reportsScratchOverflow)
+        {
+            zstdgpu_MarkAllFramesFailed(srt.inoutFrameStatus, srt.frameCount, kzstdgpu_FrameStatus_ScratchExceeded, /* keepSpecificFailures */ 1u);
+        }
     }
     else
     {

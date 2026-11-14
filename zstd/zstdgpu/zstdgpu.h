@@ -200,9 +200,24 @@ ZSTDGPU_API zstdgpu_Status zstdgpu_SetupInputsAsFramesInGpuMemory(uint32_t *outS
  *                                      NOTE: The accepted frames of one request must decompress to at most
  *                                            `kzstdgpu_MaxRequestUncompressedByteSize` bytes in total; otherwise
  *                                            they report `kzstdgpu_FrameStatus_RequestTooLarge`.
+ *                                      NOTE: When the content needs more scratch memory than the request was sized
+ *                                            for, frames report `kzstdgpu_FrameStatus_BlockCountExceeded` or
+ *                                            `kzstdgpu_FrameStatus_ScratchExceeded` instead (see
+ *                                            `zstdgpu_SetupAllStageSubmission`, `zstdgpu_SetupFrameInfoConstants`
+ *                                            and `zstdgpu_SetupBlockInfoConstants`).
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_SetupOutputs(zstdgpu_PerRequestContext inPerRequestContext, struct ID3D12Resource *framesMemory, uint32_t framesMemorySizeInBytes, struct ID3D12Resource *frames, uint32_t frameCount, struct ID3D12Resource *frameStatus);
 
+/**
+ *  @brief      Selects single-submission mode: no stage requires a CPU readback, so all stages can be recorded
+ *              without a CPU fence between them (see `zstdgpu_SubmitAllStagesWithExternalMemory` and
+ *              `zstdgpu_SubmitAllStagesWithInternalMemory`).
+ *
+ *  @note       Counts not supplied with `zstdgpu_SetupFrameInfoConstants` or `zstdgpu_SetupBlockInfoConstants` are
+ *              estimated from the total decompressed size. The estimates are not bounds: when the content exceeds
+ *              them, its frames report `kzstdgpu_FrameStatus_BlockCountExceeded` or
+ *              `kzstdgpu_FrameStatus_ScratchExceeded` and their output is undefined.
+ */
 ZSTDGPU_API zstdgpu_Status zstdgpu_SetupAllStageSubmission(zstdgpu_PerRequestContext inPerRequestContext);
 
 /**
@@ -211,6 +226,9 @@ ZSTDGPU_API zstdgpu_Status zstdgpu_SetupAllStageSubmission(zstdgpu_PerRequestCon
  *              reading from GPU counter readback, enabling stages 0 and 1 to be recorded into
  *              the same command list without a CPU fence.
  *              Can be called before or after `zstdgpu_SetupInputs*` functions.
+ *
+ *  @note       The counts must cover the content. When it has more blocks of any type than specified, every frame
+ *              of the request reports `kzstdgpu_FrameStatus_BlockCountExceeded` and its output is undefined.
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_SetupFrameInfoConstants(zstdgpu_PerRequestContext inPerRequestContext, uint32_t rawBlockCount, uint32_t rleBlockCount, uint32_t cmpBlockCount);
 
@@ -220,6 +238,10 @@ ZSTDGPU_API zstdgpu_Status zstdgpu_SetupFrameInfoConstants(zstdgpu_PerRequestCon
  *              reading from GPU counter readback, enabling stages 1 and 2 to be recorded into
  *              the same command list without a CPU fence.
  *              Can be called before or after `zstdgpu_SetupInputs*` functions.
+ *
+ *  @note       The counts must cover the content. When it has more literal bytes or sequences than specified, every
+ *              accepted frame reports `kzstdgpu_FrameStatus_ScratchExceeded` instead (a frame that already reports a
+ *              failure keeps it), and the output of every frame is undefined.
  */
 ZSTDGPU_API zstdgpu_Status zstdgpu_SetupBlockInfoConstants(zstdgpu_PerRequestContext inPerRequestContext, uint32_t literalsByteCount, uint32_t sequenceCount);
 

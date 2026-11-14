@@ -1190,6 +1190,12 @@ ZSTDGPU_ENUM(Status) zstdgpu_SetupInputsAsFramesInCpuMemory(uint32_t *outStageCo
             // NOTE(pamartis): we only release ID3D12Resource with the PerRequest context.
             // ID3D12Resource within zstdgpu_ResourceDataGpu will be released with the zstdgpu_ResourceDataGpu_Term call.
             // which is going to be executed either by one of Submit functions or by destroying PerRequest context
+            // Except the caller's input buffers: drop the resource data's reference to them when they are replaced.
+            zstdgpu_ResourceDataGpu_TermInputExternal(&inPerRequestContext->resData,
+                                                      inPerRequestContext->compressedFramesData,
+                                                      inPerRequestContext->compressedFramesRefs,
+                                                      NULL,
+                                                      NULL);
             D3D12AID_SAFE_RELEASE(inPerRequestContext->compressedFramesData);
             D3D12AID_SAFE_RELEASE(inPerRequestContext->compressedFramesRefs);
         }
@@ -1226,6 +1232,12 @@ ZSTDGPU_ENUM(Status) zstdgpu_SetupInputsAsFramesInGpuMemory(uint32_t *outStageCo
             // NOTE(pamartis): we only release ID3D12Resource with the PerRequest context.
             // ID3D12Resource within zstdgpu_ResourceDataGpu will be released with the zstdgpu_ResourceDataGpu_Term call.
             // which is going to be executed either by one of Submit functions or by destroying PerRequest context
+            // Except the caller's input buffers: drop the resource data's reference to them when they are replaced.
+            zstdgpu_ResourceDataGpu_TermInputExternal(&inPerRequestContext->resData,
+                                                      inPerRequestContext->compressedFramesData,
+                                                      inPerRequestContext->compressedFramesRefs,
+                                                      framesMemory,
+                                                      frames);
             D3D12AID_SAFE_RELEASE(inPerRequestContext->compressedFramesData);
             D3D12AID_SAFE_RELEASE(inPerRequestContext->compressedFramesRefs);
         }
@@ -1909,9 +1921,18 @@ ZSTDGPU_ENUM(Status) zstdgpu_SubmitWithInternalMemory(zstdgpu_PerRequestContext 
             return ZSTDGPU_ENUM_CONST(StatusInvalidArgument);
         }
 
+        // A CPU-input request that follows a GPU-input one has no input buffers (the setup dropped the caller's).
+        // Recreate the whole stage: new input buffers must not be placed among buffers laid out for an earlier
+        // request, nor be filled from that request's upload buffers.
+        const uint32_t inputsMissing = stageIndex == 0u &&
+                                       zstdgpu_HasFlag(req->setupFlags, kzstdgpu_SetupFlags_InputsCpuMemory) &&
+                                       (NULL == req->resData.gpuOnly.CompressedData ||
+                                        NULL == req->resData.gpuOnly.FramesRefs);
+
         // NOTE(pamartis): if at least one heap from a given stage is too small, release all heaps and recreate
         // TODO(pamartis): consider releasing only single heap
-        if (req->resData.gpuOnly_ByteCount[stageIndex] < req->resInfo.gpuOnly_ByteCount[stageIndex] ||
+        if (inputsMissing ||
+            req->resData.gpuOnly_ByteCount[stageIndex] < req->resInfo.gpuOnly_ByteCount[stageIndex] ||
             req->resData.cpu2Gpu_ByteCount[stageIndex] < req->resInfo.cpu2Gpu_ByteCount[stageIndex] ||
             req->resData.gpu2Cpu_ByteCount[stageIndex] < req->resInfo.gpu2Cpu_ByteCount[stageIndex])
         {

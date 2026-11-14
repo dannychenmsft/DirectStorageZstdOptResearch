@@ -606,6 +606,25 @@ static void zstdgpu_ResourceDataGpu_ReInitInputExternal(zstdgpu_ResourceDataGpu 
     }
 }
 
+// zstdgpu_ResourceDataGpu_ReInitInputExternal keeps a reference to the caller's input buffers. Drop it when a setup
+// replaces those buffers: otherwise a later CPU-input request keeps them bound and uploads its frames into them.
+static void zstdgpu_ResourceDataGpu_TermInputExternal(zstdgpu_ResourceDataGpu *outResData,
+                                                     ID3D12Resource *oldFramesData,
+                                                     ID3D12Resource *oldFramesRefs,
+                                                     ID3D12Resource *newFramesData,
+                                                     ID3D12Resource *newFramesRefs)
+{
+    if (NULL != oldFramesData && oldFramesData != newFramesData && oldFramesData == outResData->gpuOnly.CompressedData)
+    {
+        D3D12AID_SAFE_RELEASE(outResData->gpuOnly.CompressedData);
+    }
+
+    if (NULL != oldFramesRefs && oldFramesRefs != newFramesRefs && oldFramesRefs == outResData->gpuOnly.FramesRefs)
+    {
+        D3D12AID_SAFE_RELEASE(outResData->gpuOnly.FramesRefs);
+    }
+}
+
 static void zstdgpu_ResourceDataGpu_ReInitOutputsExternal(zstdgpu_ResourceDataGpu *outResData, ID3D12Resource *uncompressedFramesData, ID3D12Resource *uncompressedFramesRefs)
 {
     ZSTDGPU_ASSERT(NULL != uncompressedFramesData);

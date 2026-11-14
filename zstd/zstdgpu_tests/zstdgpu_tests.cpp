@@ -12,11 +12,16 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <vector>
 
 using namespace Decompression;
+
+// zstdgpu.h does not declare it; zstdgpu_demo declares it the same way.
+ZSTDGPU_API void zstdgpu_ReadbackTimestamps(zstdgpu_PerRequestContext req, ID3D12GraphicsCommandList* cmdList);
 
 static std::vector<uint8_t> LoadFile(std::filesystem::path path)
 {
@@ -742,11 +747,13 @@ static void AppendSequencesFrame(std::vector<uint8_t>& data, OffsetsAndSizes& of
 }
 
 // Decodes through the C API on a caller-owned per-request context, so a test can set up the request's
-// info constants or submit all stages at once -- which ZstdDecompressionWork::Decompress never does.
+// info constants, submit all stages at once or upload the frames from CPU memory -- which
+// ZstdDecompressionWork::Decompress never does.
 class ReusedContextWork : public ZstdDecompressionWork
 {
 public:
     using ZstdDecompressionWork::ZstdDecompressionWork;
+    using ZstdDecompressionWork::CreateBuffer;
 
     ID3D12Device* GetDevice() const
     {
@@ -766,6 +773,15 @@ public:
         return bytes;
     }
 
+    // A per-request context has timestamp slots for one decode, so call this before decoding on it again.
+    void ReadbackTimestamps(zstdgpu_PerRequestContext req)
+    {
+        m_commandList->Reset(m_commandAllocator.get(), nullptr);
+        zstdgpu_ReadbackTimestamps(req, m_commandList.get());
+        m_commandList->Close();
+        ExecuteCommandListsSynchronously(m_commandList.get());
+    }
+
     // Decodes one request on `req` with library-owned memory and returns the per-frame statuses and the
     // decoded frames. The status buffer is filled with 0xA5 first, so a status that is never written
     // reads back as 0xA5A5A5A5. `blockInfo`, when given, is passed to zstdgpu_SetupBlockInfoConstants as
@@ -781,13 +797,115 @@ public:
         const uint32_t* frameInfo = nullptr,
         bool singleSubmission = false)
     {
+        const size_t refsBytes = offsetsAndSizes.InputOffsets.size() * sizeof(zstdgpu_OffsetAndSize);
+        auto input = CreateBuffer(data.size(), L"Input");
+        auto inputRefs = CreateBuffer(refsBytes, L"Input Refs");
+        return DecodeFromBuffers(
+            req,
+            data,
+            offsetsAndSizes,
+            outFrameStatus,
+            input.get(),
+            inputRefs.get(),
+            blockInfo,
+            frameInfo,
+            singleSubmission);
+    }
+
+    // Decode, with the frames copied into the caller's `input` and `inputRefs` buffers.
+    Frames DecodeFromBuffers(
+        zstdgpu_PerRequestContext req,
+        std::vector<uint8_t>& data,
+        OffsetsAndSizes& offsetsAndSizes,
+        std::vector<uint32_t>& outFrameStatus,
+        ID3D12Resource* input,
+        ID3D12Resource* inputRefs,
+        const uint32_t* blockInfo = nullptr,
+        const uint32_t* frameInfo = nullptr,
+        bool singleSubmission = false)
+    {
         const uint32_t frameCount = static_cast<uint32_t>(offsetsAndSizes.InputOffsets.size());
         const uint32_t refsBytes = static_cast<uint32_t>(frameCount * sizeof(zstdgpu_OffsetAndSize));
 
-        auto input = CreateBuffer(data.size(), L"Input");
-        CopyToResource(input.get(), data.data(), data.size());
-        auto inputRefs = CreateBuffer(refsBytes, L"Input Refs");
-        CopyToResource(inputRefs.get(), reinterpret_cast<uint8_t*>(offsetsAndSizes.InputOffsets.data()), refsBytes);
+        CopyToResource(input, data.data(), data.size());
+        CopyToResource(inputRefs, reinterpret_cast<uint8_t*>(offsetsAndSizes.InputOffsets.data()), refsBytes);
+        return DecodeWith(
+            req,
+            offsetsAndSizes,
+            outFrameStatus,
+            [&](uint32_t* stageCount) {
+                return zstdgpu_SetupInputsAsFramesInGpuMemory(
+                    stageCount,
+                    req,
+                    input,
+                    static_cast<uint32_t>(data.size()),
+                    inputRefs,
+                    frameCount);
+            },
+            blockInfo,
+            frameInfo,
+            singleSubmission);
+    }
+
+    // Decode, with the frames uploaded from CPU memory by the library.
+    Frames DecodeFromCpuMemory(
+        zstdgpu_PerRequestContext req,
+        std::vector<uint8_t>& data,
+        OffsetsAndSizes& offsetsAndSizes,
+        std::vector<uint32_t>& outFrameStatus)
+    {
+        const uint32_t frameCount = static_cast<uint32_t>(offsetsAndSizes.InputOffsets.size());
+        Upload upload{&data, &offsetsAndSizes};
+        return DecodeWith(
+            req,
+            offsetsAndSizes,
+            outFrameStatus,
+            [&](uint32_t* stageCount) {
+                return zstdgpu_SetupInputsAsFramesInCpuMemory(
+                    stageCount,
+                    req,
+                    frameCount,
+                    static_cast<uint32_t>(data.size()),
+                    &UploadFrames,
+                    &upload);
+            });
+    }
+
+private:
+    struct Upload
+    {
+        const std::vector<uint8_t>* data;
+        const OffsetsAndSizes* offsetsAndSizes;
+    };
+
+    static void UploadFrames(
+        void* dstFramesMemory,
+        uint32_t dstFramesMemorySizeInBytes,
+        zstdgpu_OffsetAndSize* dstFrames,
+        uint32_t dstFrameCount,
+        void* uploadUserdata)
+    {
+        const Upload& upload = *static_cast<const Upload*>(uploadUserdata);
+        const size_t bytes = std::min<size_t>(dstFramesMemorySizeInBytes, upload.data->size());
+        const size_t frames = std::min<size_t>(dstFrameCount, upload.offsetsAndSizes->InputOffsets.size());
+        memcpy(dstFramesMemory, upload.data->data(), bytes);
+        memcpy(dstFrames, upload.offsetsAndSizes->InputOffsets.data(), frames * sizeof(zstdgpu_OffsetAndSize));
+    }
+
+    // `setupInputs(&stageCount)` sets up the request's inputs; the rest is as described for Decode.
+    template <typename SetupInputs>
+    Frames DecodeWith(
+        zstdgpu_PerRequestContext req,
+        OffsetsAndSizes& offsetsAndSizes,
+        std::vector<uint32_t>& outFrameStatus,
+        SetupInputs setupInputs,
+        const uint32_t* blockInfo = nullptr,
+        const uint32_t* frameInfo = nullptr,
+        bool singleSubmission = false)
+    {
+        const uint32_t frameCount = static_cast<uint32_t>(offsetsAndSizes.InputOffsets.size());
+        const uint32_t refsBytes = static_cast<uint32_t>(frameCount * sizeof(zstdgpu_OffsetAndSize));
+
         auto output = CreateBuffer(offsetsAndSizes.UnCompressedFramesMemorySizeInBytes, L"Output");
         auto outputRefs = CreateBuffer(refsBytes, L"Output Refs");
         CopyToResource(outputRefs.get(), reinterpret_cast<uint8_t*>(offsetsAndSizes.OutputOffsets.data()), refsBytes);
@@ -795,15 +913,7 @@ public:
         Fill(status.get(), 0xA5);
 
         uint32_t stageCount = 0;
-        EXPECT_EQ(
-            zstdgpu_SetupInputsAsFramesInGpuMemory(
-                &stageCount,
-                req,
-                input.get(),
-                static_cast<uint32_t>(data.size()),
-                inputRefs.get(),
-                frameCount),
-            kzstdgpu_StatusSuccess);
+        EXPECT_EQ(setupInputs(&stageCount), kzstdgpu_StatusSuccess);
         EXPECT_EQ(
             zstdgpu_SetupOutputs(
                 req,
@@ -1083,4 +1193,55 @@ TEST_F(ZstdDecompressionTests, SequenceCountScratchExceededStatusTest)
             EXPECT_EQ(frames[0], expected);
         }
     }
+}
+
+// A request with its frames in CPU memory must upload them into the library's own buffers, not into the buffers of
+// an earlier request with its frames in GPU memory: the caller may reuse those once that request completes. Without
+// the first request, the heaps left by the second one would be too small for the last one, which would then create
+// new buffers and hide the problem.
+TEST_F(ZstdDecompressionTests, CpuInputsAfterGpuInputsTest)
+{
+    ReusedContextWork work(
+        FindDefaultAdapter().Device.get(),
+        L"ZstdDecompressionCpuInputsAfterGpuInputsTest");
+
+    void* persistent = nullptr;
+    ASSERT_EQ(AllocatePersistentContext(work.GetDevice(), &persistent), S_OK);
+    std::unique_ptr<void, decltype(&FreePersistentContext)> persistentGuard(persistent, &FreePersistentContext);
+
+    void* request = nullptr;
+    ASSERT_EQ(AllocatePerRequestContext(persistent, &request), S_OK);
+    std::unique_ptr<void, decltype(&FreePerRequestContext)> requestGuard(request, &FreePerRequestContext);
+    const zstdgpu_PerRequestContext req = reinterpret_cast<zstdgpu_PerRequestContext>(request);
+
+    std::vector<uint8_t> data;
+    OffsetsAndSizes offsetsAndSizes{};
+    AppendSequencesFrame(data, offsetsAndSizes);
+    const size_t refsBytes = offsetsAndSizes.InputOffsets.size() * sizeof(zstdgpu_OffsetAndSize);
+
+    const char kDecoded[] = "AAAABBBBCCCCDDDDEEEE";
+    const Frames expected{std::vector<uint8_t>(kDecoded, kDecoded + sizeof(kDecoded) - 1)};
+    const std::vector<uint32_t> success(1u, kzstdgpu_FrameStatus_Success);
+    std::vector<uint32_t> frameStatus;
+
+    EXPECT_EQ(work.DecodeFromCpuMemory(req, data, offsetsAndSizes, frameStatus), expected);
+    EXPECT_EQ(frameStatus, success);
+    work.ReadbackTimestamps(req);
+
+    auto input = work.CreateBuffer(data.size(), L"Caller Input");
+    auto inputRefs = work.CreateBuffer(refsBytes, L"Caller Input Refs");
+    EXPECT_EQ(
+        work.DecodeFromBuffers(req, data, offsetsAndSizes, frameStatus, input.get(), inputRefs.get()),
+        expected);
+    EXPECT_EQ(frameStatus, success);
+    work.ReadbackTimestamps(req);
+
+    // The last request must leave the caller's buffers untouched.
+    work.Fill(input.get(), 0x5A);
+    work.Fill(inputRefs.get(), 0x5A);
+
+    EXPECT_EQ(work.DecodeFromCpuMemory(req, data, offsetsAndSizes, frameStatus), expected);
+    EXPECT_EQ(frameStatus, success);
+    EXPECT_EQ(work.Read(input.get()), std::vector<uint8_t>(data.size(), 0x5A));
+    EXPECT_EQ(work.Read(inputRefs.get()), std::vector<uint8_t>(refsBytes, 0x5A));
 }
